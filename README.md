@@ -169,10 +169,11 @@ flutter test
 dart format lib test
 ```
 
-## Screenshots                                                    
-                                                                         <p align="center">                                                
+  ## Screenshots                                                    
+                                                                    
+  <p align="center">                                                
     <img src="docs/screenshots/01-quote.png" alt="Quote screen"     
   width="260" />                                                    
     <img src="docs/screenshots/02-home.png" alt="Home screen"       
   width="260" />                                                    
-  </p>
+  </p> 
