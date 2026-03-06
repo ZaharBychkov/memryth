@@ -169,13 +169,10 @@ flutter test
 dart format lib test
 ```
 
-## Скриншот
-
-Основной экран:
-
-- `flutter_01.png`
-
-## Примечания
-
-- Это репозиторий приложения, поэтому `pubspec.lock` хранится в Git осознанно.
-- Локальные IDE-файлы и сборочные артефакты исключены через `.gitignore`.
+## Screenshots                                                    
+                                                                         <p align="center">                                                
+    <img src="docs/screenshots/01-quote.png" alt="Quote screen"     
+  width="260" />                                                    
+    <img src="docs/screenshots/02-home.png" alt="Home screen"       
+  width="260" />                                                    
+  </p>
