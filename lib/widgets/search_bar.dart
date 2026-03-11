@@ -26,7 +26,7 @@ class QuoteSearchBar extends StatelessWidget {
         filled: true,
         fillColor: Colors.white,
         prefixIcon: const Icon(Icons.search, color: Color(0xFF8B7E74)),
-        hintText: 'Поиск по тексту, автору, тегам',
+        hintText: 'Поиск по тексту, автору, источнику, заметке и тегам',
         hintStyle: const TextStyle(color: Color(0xFF8B7E74)),
         suffixIcon: controller.text.isEmpty
             ? null

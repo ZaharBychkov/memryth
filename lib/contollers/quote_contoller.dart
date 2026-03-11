@@ -7,12 +7,26 @@ import '../models/tag.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
 
+enum QuoteSortMode {
+  newest,
+  updated,
+  oldest,
+  random;
+
+  String get label => switch (this) {
+    QuoteSortMode.newest => 'Сначала новые',
+    QuoteSortMode.updated => 'Недавно изменённые',
+    QuoteSortMode.oldest => 'Сначала старые',
+    QuoteSortMode.random => 'Случайный порядок',
+  };
+}
+
 class QuoteController extends ChangeNotifier {
   QuoteController({
     required QuoteRepository quoteRepository,
     required TagRepository tagRepository,
-  })  : _quoteRepository = quoteRepository,
-        _tagRepository = tagRepository;
+  }) : _quoteRepository = quoteRepository,
+       _tagRepository = tagRepository;
 
   final QuoteRepository _quoteRepository;
   final TagRepository _tagRepository;
@@ -20,22 +34,27 @@ class QuoteController extends ChangeNotifier {
 
   List<Quote> _allQuotes = <Quote>[];
   Map<String, Tag> _tagsById = <String, Tag>{};
-  List<String> _orderIds = <String>[];
+  List<String> _randomOrderIds = <String>[];
 
   int _currentIndex = 0;
   String _searchQuery = '';
   final Set<String> _activeTagFilters = <String>{};
+  QuoteType? _activeTypeFilter;
+  bool _favoritesOnly = false;
+  QuoteSortMode _sortMode = QuoteSortMode.newest;
 
   List<Quote> get allQuotes => _allQuotes;
   int get currentIndex => _currentIndex;
   String get searchQuery => _searchQuery;
   int get totalCount => _allQuotes.length;
   Set<String> get activeTagFilters => _activeTagFilters;
+  QuoteType? get activeTypeFilter => _activeTypeFilter;
+  bool get favoritesOnly => _favoritesOnly;
+  QuoteSortMode get sortMode => _sortMode;
 
   List<Quote> get filteredQuotes {
-    final map = <String, Quote>{for (final q in _allQuotes) q.id: q};
-    final ordered = _orderIds.map((id) => map[id]).whereType<Quote>();
-    return ordered.where(_matches).toList(growable: false);
+    final filtered = _allQuotes.where(_matches).toList(growable: false);
+    return _sortQuotes(filtered);
   }
 
   Quote? get currentQuote {
@@ -45,6 +64,12 @@ class QuoteController extends ChangeNotifier {
     return filtered[_currentIndex];
   }
 
+  List<Tag> get allTagsSorted {
+    final items = _tagsById.values.toList();
+    items.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return items;
+  }
+
   List<Tag> tagsForQuote(Quote quote) {
     return quote.tagIds
         .map((id) => _tagsById[id])
@@ -52,12 +77,10 @@ class QuoteController extends ChangeNotifier {
         .toList(growable: false);
   }
 
-  String tagNameById(String id) => _tagsById[id]?.name ?? '';
-
   void loadInitial() {
     _allQuotes = _quoteRepository.getAll();
     _tagsById = {for (final tag in _tagRepository.getAll()) tag.id: tag};
-    _shuffleOrder();
+    _rebuildRandomOrder();
     _currentIndex = 0;
     notifyListeners();
   }
@@ -66,7 +89,7 @@ class QuoteController extends ChangeNotifier {
     final previousCurrentId = currentQuote?.id;
     _allQuotes = _quoteRepository.getAll();
     _tagsById = {for (final tag in _tagRepository.getAll()) tag.id: tag};
-    _rebuildOrderKeepingRelativeOrder();
+    _rebuildRandomOrder();
 
     final filtered = filteredQuotes;
     if (filtered.isEmpty) {
@@ -75,8 +98,10 @@ class QuoteController extends ChangeNotifier {
       return;
     }
 
-    final idx = filtered.indexWhere((q) => q.id == previousCurrentId);
-    _currentIndex = idx >= 0 ? idx : _normalize(_currentIndex, filtered.length);
+    final index = filtered.indexWhere((quote) => quote.id == previousCurrentId);
+    _currentIndex = index >= 0
+        ? index
+        : _normalize(_currentIndex, filtered.length);
     notifyListeners();
   }
 
@@ -102,24 +127,51 @@ class QuoteController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void next() {
-    final filtered = filteredQuotes;
-    if (filtered.isEmpty) return;
-    _currentIndex = (_currentIndex + 1) % filtered.length;
+  void clearFilters() {
+    _searchQuery = '';
+    _activeTagFilters.clear();
+    _activeTypeFilter = null;
+    _favoritesOnly = false;
+    _currentIndex = 0;
     notifyListeners();
   }
 
-  void previous() {
-    final filtered = filteredQuotes;
-    if (filtered.isEmpty) return;
-    _currentIndex = (_currentIndex - 1) % filtered.length;
-    if (_currentIndex < 0) _currentIndex = filtered.length - 1;
+  void setTypeFilter(QuoteType? value) {
+    _activeTypeFilter = value;
+    _currentIndex = 0;
     notifyListeners();
+  }
+
+  void toggleFavoritesOnly() {
+    _favoritesOnly = !_favoritesOnly;
+    _currentIndex = 0;
+    notifyListeners();
+  }
+
+  void setSortMode(QuoteSortMode value) {
+    if (_sortMode == value) return;
+    _sortMode = value;
+    _currentIndex = 0;
+    notifyListeners();
+  }
+
+  Future<void> toggleFavorite(Quote quote) async {
+    await _quoteRepository.save(
+      quote.copyWith(isFavorite: !quote.isFavorite, updatedAt: DateTime.now()),
+    );
   }
 
   bool _matches(Quote quote) {
+    if (_favoritesOnly && !quote.isFavorite) {
+      return false;
+    }
+
+    if (_activeTypeFilter != null && quote.type != _activeTypeFilter) {
+      return false;
+    }
+
     if (_activeTagFilters.isNotEmpty) {
-      final quoteTagNames = tagsForQuote(quote).map((e) => e.name).toSet();
+      final quoteTagNames = tagsForQuote(quote).map((tag) => tag.name).toSet();
       for (final filter in _activeTagFilters) {
         if (!quoteTagNames.contains(filter)) return false;
       }
@@ -130,23 +182,53 @@ class QuoteController extends ChangeNotifier {
 
     final inText = quote.text.toLowerCase().contains(query);
     final inAuthor = quote.author.toLowerCase().contains(query);
-    final inTags =
-        tagsForQuote(quote).any((tag) => tag.name.toLowerCase().contains(query));
+    final inSourceTitle = quote.sourceTitle.toLowerCase().contains(query);
+    final inSourceDetails = quote.sourceDetails.toLowerCase().contains(query);
+    final inNote = quote.note.toLowerCase().contains(query);
+    final inTags = tagsForQuote(
+      quote,
+    ).any((tag) => tag.name.toLowerCase().contains(query));
 
-    return inText || inAuthor || inTags;
+    return inText ||
+        inAuthor ||
+        inSourceTitle ||
+        inSourceDetails ||
+        inNote ||
+        inTags;
   }
 
-  void _shuffleOrder() {
-    _orderIds = _allQuotes.map((q) => q.id).toList(growable: false)..shuffle(_random);
+  List<Quote> _sortQuotes(List<Quote> items) {
+    switch (_sortMode) {
+      case QuoteSortMode.newest:
+        return items.toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      case QuoteSortMode.updated:
+        return items.toList()
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      case QuoteSortMode.oldest:
+        return items.toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      case QuoteSortMode.random:
+        final byId = <String, Quote>{
+          for (final quote in items) quote.id: quote,
+        };
+        return _randomOrderIds
+            .map((id) => byId[id])
+            .whereType<Quote>()
+            .toList(growable: false);
+    }
   }
 
-  void _rebuildOrderKeepingRelativeOrder() {
-    final idsNow = _allQuotes.map((q) => q.id).toSet();
-    final kept = _orderIds.where(idsNow.contains).toList(growable: true);
-    final missing = idsNow.where((id) => !kept.contains(id)).toList(growable: true)
-      ..shuffle(_random);
+  void _rebuildRandomOrder() {
+    final currentIds = _allQuotes.map((quote) => quote.id).toSet();
+    final kept = _randomOrderIds
+        .where(currentIds.contains)
+        .toList(growable: true);
+    final missing =
+        currentIds.where((id) => !kept.contains(id)).toList(growable: true)
+          ..shuffle(_random);
     kept.addAll(missing);
-    _orderIds = kept;
+    _randomOrderIds = kept;
   }
 
   int _normalize(int value, int length) {

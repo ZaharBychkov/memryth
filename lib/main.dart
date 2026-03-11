@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'models/tag.dart';
+
 import 'models/quote.dart';
+import 'models/tag.dart';
 import 'screens/quotes_screen.dart';
 
 void main() async {

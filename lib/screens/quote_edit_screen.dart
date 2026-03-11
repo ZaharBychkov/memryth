@@ -26,13 +26,17 @@ class QuoteEditScreen extends StatefulWidget {
 class _QuoteEditScreenState extends State<QuoteEditScreen> {
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _authorController = TextEditingController();
+  final TextEditingController _sourceTitleController = TextEditingController();
+  final TextEditingController _sourceDetailsController =
+      TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
   final List<_DraftTag> _draftTags = <_DraftTag>[];
   final Random _random = Random();
 
-  late final String _initialText;
-  late final String _initialAuthor;
-  late final String _initialTagsSignature;
+  late final String _initialSignature;
+  late QuoteType _selectedType;
+  bool _isFavorite = false;
 
   bool get _isEditing => widget.quote != null;
 
@@ -43,6 +47,11 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
     if (quote != null) {
       _textController.text = quote.text;
       _authorController.text = quote.author;
+      _sourceTitleController.text = quote.sourceTitle;
+      _sourceDetailsController.text = quote.sourceDetails;
+      _noteController.text = quote.note;
+      _selectedType = quote.type;
+      _isFavorite = quote.isFavorite;
 
       final tagsById = {
         for (final tag in widget.tagRepository.getAll()) tag.id: tag,
@@ -53,17 +62,20 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
           _draftTags.add(_DraftTag(id: tag.id, name: tag.name));
         }
       }
+    } else {
+      _selectedType = QuoteType.quote;
     }
 
-    _initialText = _textController.text.trim();
-    _initialAuthor = _authorController.text.trim();
-    _initialTagsSignature = _buildTagsSignature();
+    _initialSignature = _buildFormSignature();
   }
 
   @override
   void dispose() {
     _textController.dispose();
     _authorController.dispose();
+    _sourceTitleController.dispose();
+    _sourceDetailsController.dispose();
+    _noteController.dispose();
     _tagController.dispose();
     super.dispose();
   }
@@ -74,6 +86,9 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
       borderRadius: BorderRadius.circular(14),
       borderSide: const BorderSide(color: Color(0xFFD8CEC5), width: 1.5),
     );
+
+    final allTags = widget.tagRepository.getAll().toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     return PopScope(
       canPop: !_hasUnsavedChanges,
@@ -93,11 +108,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
               Navigator.of(this.context).pop();
             },
           ),
-          title: Text(
-            _isEditing
-                ? '\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435'
-                : '\u041d\u043e\u0432\u0430\u044f \u0446\u0438\u0442\u0430\u0442\u0430',
-          ),
+          title: Text(_isEditing ? 'Редактирование' : 'Новая запись'),
           actions: [
             FilledButton(
               onPressed: _save,
@@ -105,11 +116,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                 backgroundColor: const Color(0xFF4A6FA5),
                 foregroundColor: Colors.white,
               ),
-              child: Text(
-                _isEditing
-                    ? '\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c'
-                    : '\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c',
-              ),
+              child: Text(_isEditing ? 'Сохранить' : 'Добавить'),
             ),
             const SizedBox(width: 12),
           ],
@@ -120,14 +127,51 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text(
+                  'Тип записи',
+                  style: TextStyle(
+                    color: Color(0xFF2C2C2C),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final type in QuoteType.values)
+                      ChoiceChip(
+                        label: Text(type.label),
+                        selected: _selectedType == type,
+                        onSelected: (_) => setState(() => _selectedType = type),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('В избранное'),
+                  subtitle: const Text(
+                    'Быстрый доступ к самым важным записям',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  value: _isFavorite,
+                  activeThumbColor: const Color(0xFFE4A11B),
+                  onChanged: (value) => setState(() => _isFavorite = value),
+                ),
+                const SizedBox(height: 8),
                 TextField(
                   controller: _textController,
                   minLines: 6,
                   maxLines: null,
                   textInputAction: TextInputAction.newline,
                   decoration: InputDecoration(
-                    labelText:
-                        '\u0422\u0435\u043a\u0441\u0442 \u0446\u0438\u0442\u0430\u0442\u044b',
+                    labelText: _selectedType == QuoteType.thought
+                        ? 'Текст мысли'
+                        : 'Текст записи',
+                    hintText: _selectedType == QuoteType.excerpt
+                        ? 'Вставь фрагмент текста полностью'
+                        : 'Сохрани текст, к которому хочешь вернуться',
                     labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
                     fillColor: Colors.white,
                     filled: true,
@@ -141,7 +185,9 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                 TextField(
                   controller: _authorController,
                   decoration: InputDecoration(
-                    labelText: '\u0410\u0432\u0442\u043e\u0440',
+                    labelText: _selectedType == QuoteType.thought
+                        ? 'Автор / собеседник (необязательно)'
+                        : 'Автор',
                     labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
                     fillColor: Colors.white,
                     filled: true,
@@ -150,22 +196,70 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     focusedBorder: border,
                   ),
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  '\u0422\u0435\u0433\u0438',
-                  style: Theme.of(context).textTheme.titleMedium,
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _sourceTitleController,
+                  decoration: InputDecoration(
+                    labelText: 'Источник',
+                    hintText: 'Книга, статья, видео, лекция',
+                    labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: border,
+                    enabledBorder: border,
+                    focusedBorder: border,
+                  ),
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _sourceDetailsController,
+                  decoration: InputDecoration(
+                    labelText: 'Детали источника',
+                    hintText: 'Глава, страница, таймкод',
+                    labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: border,
+                    enabledBorder: border,
+                    focusedBorder: border,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _noteController,
+                  minLines: 3,
+                  maxLines: null,
+                  textInputAction: TextInputAction.newline,
+                  decoration: InputDecoration(
+                    labelText: 'Моя заметка',
+                    hintText:
+                        'Почему ты сохранил эту запись и как хочешь её использовать',
+                    labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: border,
+                    enabledBorder: border,
+                    focusedBorder: border,
+                    alignLabelWithHint: true,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text('Теги', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (var i = 0; i < _draftTags.length; i++)
+                    for (var index = 0; index < _draftTags.length; index++)
                       InputChip(
-                        label: Text(_draftTags[i].name),
-                        side: const BorderSide(color: Color(0xFFD8CEC5), width: 1.2),
+                        label: Text(_draftTags[index].name),
+                        side: const BorderSide(
+                          color: Color(0xFFD8CEC5),
+                          width: 1.2,
+                        ),
                         backgroundColor: const Color(0xFFF5EEE7),
-                        onDeleted: () => setState(() => _draftTags.removeAt(i)),
+                        onDeleted: () =>
+                            setState(() => _draftTags.removeAt(index)),
                       ),
                   ],
                 ),
@@ -176,9 +270,9 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     Expanded(
                       child: TextField(
                         controller: _tagController,
+                        onSubmitted: (_) => _addTag(),
                         decoration: InputDecoration(
-                          labelText:
-                              '\u041d\u043e\u0432\u044b\u0439 \u0442\u0435\u0433',
+                          labelText: 'Новый тег',
                           labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
                           fillColor: Colors.white,
                           filled: true,
@@ -197,13 +291,47 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                           backgroundColor: const Color(0xFF4A6FA5),
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text(
-                          '\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c',
-                        ),
+                        child: const Text('Добавить'),
                       ),
                     ),
                   ],
                 ),
+                if (allTags.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Быстро добавить из существующих',
+                    style: TextStyle(
+                      color: Color(0xFF8B7E74),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final tag in allTags)
+                        FilterChip(
+                          label: Text(tag.name),
+                          selected: _draftTags.any((item) => item.id == tag.id),
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _ensureTagAdded(
+                                  _DraftTag(id: tag.id, name: tag.name),
+                                );
+                              } else {
+                                _draftTags.removeWhere(
+                                  (item) => item.id == tag.id,
+                                );
+                              }
+                            });
+                          },
+                        ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -212,13 +340,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
     );
   }
 
-  bool get _hasUnsavedChanges {
-    if (_textController.text.trim() != _initialText) return true;
-    if (_authorController.text.trim() != _initialAuthor) return true;
-    if (_buildTagsSignature() != _initialTagsSignature) return true;
-    if (_tagController.text.trim().isNotEmpty) return true;
-    return false;
-  }
+  bool get _hasUnsavedChanges => _buildFormSignature() != _initialSignature;
 
   Future<bool> _handleBackNavigation() async {
     if (!_hasUnsavedChanges) return true;
@@ -227,18 +349,12 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text(
-            '\u0412\u044b\u0439\u0442\u0438 \u0431\u0435\u0437 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u044f?',
-          ),
-          content: const Text(
-            '\u0412\u043d\u0435\u0441\u0435\u043d\u043d\u044b\u0435 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f \u0431\u0443\u0434\u0443\u0442 \u043f\u043e\u0442\u0435\u0440\u044f\u043d\u044b.',
-          ),
+          title: const Text('Выйти без сохранения?'),
+          content: const Text('Все несохранённые изменения будут потеряны.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text(
-                '\u041e\u0441\u0442\u0430\u0442\u044c\u0441\u044f',
-              ),
+              child: const Text('Остаться'),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -246,7 +362,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                 backgroundColor: const Color(0xFFB84A3A),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('\u0412\u044b\u0439\u0442\u0438'),
+              child: const Text('Выйти'),
             ),
           ],
         );
@@ -257,12 +373,23 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
   }
 
   void _addTag() {
-    final raw = _tagController.text;
-    if (raw.trim().isEmpty) return;
+    final raw = _tagController.text.trim();
+    if (raw.isEmpty) return;
+
     setState(() {
-      _draftTags.add(_DraftTag(name: raw));
+      _ensureTagAdded(_DraftTag(name: raw));
       _tagController.clear();
     });
+  }
+
+  void _ensureTagAdded(_DraftTag draft) {
+    final normalized = draft.name.trim().toLowerCase();
+    final alreadyExists = _draftTags.any(
+      (item) => item.name.trim().toLowerCase() == normalized,
+    );
+    if (!alreadyExists) {
+      _draftTags.add(draft);
+    }
   }
 
   Future<void> _save() async {
@@ -270,6 +397,14 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
     if (text.isEmpty) return;
 
     final author = _authorController.text.trim();
+    final sourceTitle = _sourceTitleController.text.trim();
+    final sourceDetails = _sourceDetailsController.text.trim();
+    final note = _noteController.text.trim();
+
+    final existingTags = {
+      for (final tag in widget.tagRepository.getAll())
+        tag.name.trim().toLowerCase(): tag,
+    };
     final tagIds = <String>[];
 
     for (final draft in _draftTags) {
@@ -278,12 +413,21 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
         continue;
       }
 
+      final normalized = draft.name.trim().toLowerCase();
+      final existing = existingTags[normalized];
+      if (existing != null) {
+        tagIds.add(existing.id);
+        continue;
+      }
+
       final id = _genId();
-      final tag = Tag(id: id, name: draft.name);
+      final tag = Tag(id: id, name: draft.name.trim());
       await widget.tagRepository.save(tag);
+      existingTags[normalized] = tag;
       tagIds.add(id);
     }
 
+    final now = DateTime.now();
     final original = widget.quote;
     final quote = original == null
         ? Quote(
@@ -291,11 +435,24 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
             text: text,
             author: author,
             tagIds: tagIds,
+            typeKey: _selectedType.key,
+            createdAt: now,
+            updatedAt: now,
+            isFavorite: _isFavorite,
+            sourceTitle: sourceTitle,
+            sourceDetails: sourceDetails,
+            note: note,
           )
         : original.copyWith(
             text: text,
             author: author,
             tagIds: tagIds,
+            typeKey: _selectedType.key,
+            updatedAt: now,
+            isFavorite: _isFavorite,
+            sourceTitle: sourceTitle,
+            sourceDetails: sourceDetails,
+            note: note,
           );
 
     await widget.quoteRepository.save(quote);
@@ -303,10 +460,22 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
     Navigator.of(context).pop(true);
   }
 
-  String _buildTagsSignature() {
-    return _draftTags
-        .map((tag) => '${tag.id ?? ''}::${tag.name.trim()}')
+  String _buildFormSignature() {
+    final tagsSignature = _draftTags
+        .map((tag) => '${tag.id ?? ''}::${tag.name.trim().toLowerCase()}')
         .join('||');
+
+    return [
+      _selectedType.key,
+      _isFavorite.toString(),
+      _textController.text.trim(),
+      _authorController.text.trim(),
+      _sourceTitleController.text.trim(),
+      _sourceDetailsController.text.trim(),
+      _noteController.text.trim(),
+      _tagController.text.trim(),
+      tagsSignature,
+    ].join('§');
   }
 
   String _genId() {
