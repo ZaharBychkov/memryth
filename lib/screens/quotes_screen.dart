@@ -8,6 +8,7 @@ import '../models/quote.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
 import '../settings/app_settings_scope.dart';
+import '../settings/app_strings.dart';
 import '../widgets/quote_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/settings_drawer.dart';
@@ -70,10 +71,9 @@ class _QuotesScreenState extends State<QuotesScreen> {
   @override
   Widget build(BuildContext context) {
     final settingsController = AppSettingsScope.of(context);
+    final strings = AppStrings(settingsController.settings.language);
     final controller = _controller;
-    if (controller == null) {
-      return const SizedBox.shrink();
-    }
+    if (controller == null) return const SizedBox.shrink();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerBg = isDark ? const Color(0xFF1A1E24) : const Color(0xFFF5F0E6);
@@ -99,7 +99,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
             backgroundColor: Theme.of(context).colorScheme.primary,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.add),
-            label: const Text('Новая запись'),
+            label: Text(strings.newEntry),
           ),
           appBar: AppBar(
             centerTitle: true,
@@ -108,7 +108,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
               children: [
                 const SizedBox(width: 8),
                 PopupMenuButton<QuoteSortMode>(
-                  tooltip: 'Сортировка',
+                  tooltip: strings.sortTooltip,
                   initialValue: controller.sortMode,
                   onSelected: controller.setSortMode,
                   color: isDark
@@ -124,18 +124,16 @@ class _QuotesScreenState extends State<QuotesScreen> {
                       width: 1.2,
                     ),
                   ),
-                  itemBuilder: (context) {
-                    return [
-                      for (final mode in QuoteSortMode.values)
-                        PopupMenuItem(
-                          value: mode,
-                          child: _SortMenuItem(
-                            label: mode.label,
-                            selected: mode == controller.sortMode,
-                          ),
+                  itemBuilder: (context) => [
+                    for (final mode in QuoteSortMode.values)
+                      PopupMenuItem(
+                        value: mode,
+                        child: _SortMenuItem(
+                          label: strings.sortModeLabel(mode),
+                          selected: mode == controller.sortMode,
                         ),
-                    ];
-                  },
+                      ),
+                  ],
                   child: _HeaderIconShell(
                     child: Icon(
                       Icons.sort_rounded,
@@ -159,9 +157,12 @@ class _QuotesScreenState extends State<QuotesScreen> {
                 ),
               ],
             ),
-            title: const Text(
-              'MEMRYTH',
-              style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.8),
+            title: Text(
+              strings.appTitle,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8,
+              ),
             ),
             actions: [
               SizedBox(
@@ -196,6 +197,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
                     children: [
                       QuoteSearchBar(
                         controller: _searchController,
+                        hintText: strings.searchHint,
                         onChanged: controller.setSearchQuery,
                         onClear: () {
                           _searchController.clear();
@@ -203,33 +205,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
                         },
                       ),
                       const SizedBox(height: 10),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _CompactFilterChip(
-                              label: 'Избранное',
-                              selected: controller.favoritesOnly,
-                              onTap: controller.toggleFavoritesOnly,
-                            ),
-                            const SizedBox(width: 8),
-                            for (final type in QuoteType.values) ...[
-                              _CompactFilterChip(
-                                label: type.label,
-                                selected: controller.activeTypeFilter == type,
-                                onTap: () {
-                                  controller.setTypeFilter(
-                                    controller.activeTypeFilter == type
-                                        ? null
-                                        : type,
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                          ],
-                        ),
-                      ),
+                      _buildTypeFiltersRow(controller, strings, isDark),
                     ],
                   ),
                 ),
@@ -244,34 +220,9 @@ class _QuotesScreenState extends State<QuotesScreen> {
                       ),
                     ),
                   ),
-                if (_hasActiveFilters(controller))
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 6,
-                        children: [
-                          if (controller.favoritesOnly)
-                            InputChip(
-                              label: const Text('Только избранное'),
-                              selected: true,
-                              onDeleted: controller.toggleFavoritesOnly,
-                            ),
-                          if (controller.activeTypeFilter != null)
-                            InputChip(
-                              label: Text(controller.activeTypeFilter!.label),
-                              selected: true,
-                              onDeleted: () => controller.setTypeFilter(null),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
                 Expanded(
                   child: filtered.isEmpty
-                      ? _buildEmptyState(controller)
+                      ? _buildEmptyState(controller, strings)
                       : ListView.builder(
                           controller: _scrollController,
                           padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
@@ -300,7 +251,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
                                 onFavoriteToggle: () =>
                                     controller.toggleFavorite(quote),
                                 onLongPressStart: (details) =>
-                                    _showQuoteMenu(quote, details),
+                                    _showQuoteMenu(quote, details, strings),
                               ),
                             );
                           },
@@ -314,19 +265,49 @@ class _QuotesScreenState extends State<QuotesScreen> {
     );
   }
 
-  bool _hasActiveFilters(QuoteController controller) {
-    return controller.activeTypeFilter != null || controller.favoritesOnly;
+  Widget _buildTypeFiltersRow(
+    QuoteController controller,
+    AppStrings strings,
+    bool isDark,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              for (var index = 0; index < QuoteType.values.length; index++) ...[
+                Expanded(
+                  child: _TypeFilterButton(
+                    label: strings.quoteTypeLabel(QuoteType.values[index]),
+                    selected: controller.activeTypeFilters.contains(
+                      QuoteType.values[index],
+                    ),
+                    onTap: () =>
+                        controller.toggleTypeFilter(QuoteType.values[index]),
+                  ),
+                ),
+                if (index < QuoteType.values.length - 1)
+                  const SizedBox(width: 8),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        _FavoriteFilterButton(
+          selected: controller.favoritesOnly,
+          onTap: controller.toggleFavoritesOnly,
+          isDark: isDark,
+        ),
+      ],
+    );
   }
 
-  Widget _buildEmptyState(QuoteController controller) {
+  Widget _buildEmptyState(QuoteController controller, AppStrings strings) {
     if (controller.totalCount == 0) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            'Пока нет записей. Нажмите “Новая запись”, чтобы добавить первую.',
-            textAlign: TextAlign.center,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(strings.emptyList, textAlign: TextAlign.center),
         ),
       );
     }
@@ -335,17 +316,14 @@ class _QuotesScreenState extends State<QuotesScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Ничего не найдено по текущему фильтру',
-            textAlign: TextAlign.center,
-          ),
+          Text(strings.emptyFilter, textAlign: TextAlign.center),
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: () {
               _searchController.clear();
               controller.clearFilters();
             },
-            child: const Text('Сбросить фильтры'),
+            child: Text(strings.resetFilters),
           ),
         ],
       ),
@@ -355,6 +333,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   Future<void> _showQuoteMenu(
     Quote quote,
     LongPressStartDetails details,
+    AppStrings strings,
   ) async {
     final action = await showGeneralDialog<String>(
       context: context,
@@ -363,7 +342,10 @@ class _QuotesScreenState extends State<QuotesScreen> {
       barrierColor: const Color(0x22000000),
       transitionDuration: const Duration(milliseconds: 140),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return _QuoteActionMenu(anchor: details.globalPosition);
+        return _QuoteActionMenu(
+          anchor: details.globalPosition,
+          strings: strings,
+        );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curved = CurvedAnimation(
@@ -391,15 +373,15 @@ class _QuotesScreenState extends State<QuotesScreen> {
       return;
     }
     if (action == 'copy') {
-      await _copyQuoteToClipboard(quote);
+      await _copyQuoteToClipboard(quote, strings);
       return;
     }
     if (action == 'delete') {
-      await _deleteQuote(quote.id);
+      await _deleteQuote(quote.id, strings);
     }
   }
 
-  Future<void> _copyQuoteToClipboard(Quote quote) async {
+  Future<void> _copyQuoteToClipboard(Quote quote, AppStrings strings) async {
     final buffer = StringBuffer(quote.text.trim());
     if (quote.author.trim().isNotEmpty) {
       buffer.write('\n— ${quote.author.trim()}');
@@ -417,9 +399,9 @@ class _QuotesScreenState extends State<QuotesScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text('Запись скопирована'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(strings.copied),
+          duration: const Duration(seconds: 2),
         ),
       );
   }
@@ -460,17 +442,17 @@ class _QuotesScreenState extends State<QuotesScreen> {
     );
   }
 
-  Future<void> _deleteQuote(String quoteId) async {
+  Future<void> _deleteQuote(String quoteId, AppStrings strings) async {
     final approved = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Удалить запись?'),
-          content: const Text('Это действие нельзя отменить.'),
+          title: Text(strings.deleteEntry),
+          content: Text(strings.deleteWarning),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Отмена'),
+              child: Text(strings.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -478,7 +460,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
                 backgroundColor: const Color(0xFFB84A3A),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Удалить'),
+              child: Text(strings.delete),
             ),
           ],
         );
@@ -564,8 +546,8 @@ class _HeaderIconShell extends StatelessWidget {
   }
 }
 
-class _CompactFilterChip extends StatelessWidget {
-  const _CompactFilterChip({
+class _TypeFilterButton extends StatelessWidget {
+  const _TypeFilterButton({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -580,30 +562,38 @@ class _CompactFilterChip extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        height: 40,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected
               ? Theme.of(
                   context,
                 ).colorScheme.primary.withAlpha(isDark ? 56 : 36)
               : (isDark ? const Color(0xFF262B33) : Colors.white),
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).dividerColor,
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: selected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).textTheme.bodyMedium?.color,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Text(
+              label,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: selected
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
           ),
         ),
       ),
@@ -611,10 +601,53 @@ class _CompactFilterChip extends StatelessWidget {
   }
 }
 
+class _FavoriteFilterButton extends StatelessWidget {
+  const _FavoriteFilterButton({
+    required this.selected,
+    required this.onTap,
+    required this.isDark,
+  });
+
+  final bool selected;
+  final VoidCallback onTap;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final inactiveColor = isDark
+        ? const Color(0xFFD7CEC3)
+        : const Color(0xFF6E6258);
+    final activeColor = isDark
+        ? const Color(0xFFEAE4DB)
+        : const Color(0xFF4E4035);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF262B33) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? activeColor : Theme.of(context).dividerColor,
+          ),
+        ),
+        child: Icon(
+          selected ? Icons.star_rounded : Icons.star_border_rounded,
+          size: 20,
+          color: selected ? activeColor : inactiveColor,
+        ),
+      ),
+    );
+  }
+}
+
 class _QuoteActionMenu extends StatelessWidget {
-  const _QuoteActionMenu({required this.anchor});
+  const _QuoteActionMenu({required this.anchor, required this.strings});
 
   final Offset anchor;
+  final AppStrings strings;
 
   @override
   Widget build(BuildContext context) {
@@ -688,23 +721,23 @@ class _QuoteActionMenu extends StatelessWidget {
               child: Column(
                 children: [
                   _MenuItem(
-                    label: 'Открыть',
+                    label: strings.open,
                     onTap: () => Navigator.of(context).pop('read'),
                     isTop: true,
                   ),
                   const _DividerLine(),
                   _MenuItem(
-                    label: 'Редактировать',
+                    label: strings.edit,
                     onTap: () => Navigator.of(context).pop('edit'),
                   ),
                   const _DividerLine(),
                   _MenuItem(
-                    label: 'Копировать',
+                    label: strings.copy,
                     onTap: () => Navigator.of(context).pop('copy'),
                   ),
                   const _DividerLine(),
                   _MenuItem(
-                    label: 'Удалить',
+                    label: strings.delete,
                     onTap: () => Navigator.of(context).pop('delete'),
                     isBottom: true,
                     color: const Color(0xFFB84A3A),

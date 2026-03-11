@@ -13,12 +13,6 @@ enum QuoteType {
     QuoteType.excerpt => 'excerpt',
   };
 
-  String get label => switch (this) {
-    QuoteType.quote => 'Цитата',
-    QuoteType.thought => 'Мысль',
-    QuoteType.excerpt => 'Фрагмент',
-  };
-
   static QuoteType fromKey(String? value) {
     return QuoteType.values.firstWhere(
       (type) => type.key == value,

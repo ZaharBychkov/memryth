@@ -18,6 +18,7 @@ class AppSettingsController extends ChangeNotifier {
     final box = Hive.box(_boxName);
     final settings = AppSettings(
       themeMode: AppThemeMode.fromKey(box.get('themeMode') as String?),
+      language: AppLanguage.fromKey(box.get('language') as String?),
       quoteTextSize: QuoteTextSize.fromKey(box.get('quoteTextSize') as String?),
       quoteLineSpacing: QuoteLineSpacing.fromKey(
         box.get('quoteLineSpacing') as String?,
@@ -45,6 +46,9 @@ class AppSettingsController extends ChangeNotifier {
 
   Future<void> setThemeMode(AppThemeMode value) =>
       _update(_settings.copyWith(themeMode: value), 'themeMode', value.key);
+
+  Future<void> setLanguage(AppLanguage value) =>
+      _update(_settings.copyWith(language: value), 'language', value.key);
 
   Future<void> toggleTheme() {
     final value = _settings.themeMode == AppThemeMode.light

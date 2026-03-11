@@ -6,6 +6,8 @@ import '../models/quote.dart';
 import '../models/tag.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
+import '../settings/app_settings_scope.dart';
+import '../settings/app_strings.dart';
 
 class QuoteEditScreen extends StatefulWidget {
   const QuoteEditScreen({
@@ -82,6 +84,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings(AppSettingsScope.of(context).settings.language);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final fillColor = isDark ? const Color(0xFF262B33) : Colors.white;
     final border = OutlineInputBorder(
@@ -96,7 +99,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
       canPop: !_hasUnsavedChanges,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final canLeave = await _handleBackNavigation();
+        final canLeave = await _handleBackNavigation(strings);
         if (!mounted || !canLeave) return;
         Navigator.of(this.context).pop();
       },
@@ -105,12 +108,12 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
-              final canLeave = await _handleBackNavigation();
+              final canLeave = await _handleBackNavigation(strings);
               if (!mounted || !canLeave) return;
               Navigator.of(this.context).pop();
             },
           ),
-          title: Text(_isEditing ? 'Редактирование' : 'Новая запись'),
+          title: Text(_isEditing ? strings.editTitle : strings.createTitle),
           actions: [
             FilledButton(
               onPressed: _save,
@@ -118,7 +121,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                 backgroundColor: const Color(0xFF4A6FA5),
                 foregroundColor: Colors.white,
               ),
-              child: Text(_isEditing ? 'Сохранить' : 'Добавить'),
+              child: Text(_isEditing ? strings.save : strings.add),
             ),
             const SizedBox(width: 12),
           ],
@@ -130,7 +133,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Тип записи',
+                  strings.typeEntry,
                   style: TextStyle(
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.w700,
@@ -143,7 +146,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                   children: [
                     for (final type in QuoteType.values)
                       ChoiceChip(
-                        label: Text(type.label),
+                        label: Text(strings.quoteTypeLabel(type)),
                         selected: _selectedType == type,
                         onSelected: (_) => setState(() => _selectedType = type),
                       ),
@@ -152,10 +155,10 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                 const SizedBox(height: 12),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('В избранное'),
-                  subtitle: const Text(
-                    'Быстрый доступ к самым важным записям',
-                    style: TextStyle(fontSize: 13),
+                  title: Text(strings.addToFavorites),
+                  subtitle: Text(
+                    strings.favoriteHint,
+                    style: const TextStyle(fontSize: 13),
                   ),
                   value: _isFavorite,
                   activeThumbColor: const Color(0xFFE4A11B),
@@ -175,11 +178,11 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     border: border,
                     fillColor: fillColor,
                     labelText: _selectedType == QuoteType.thought
-                        ? 'Текст мысли'
-                        : 'Текст записи',
+                        ? strings.entryTextThought
+                        : strings.entryText,
                     hintText: _selectedType == QuoteType.excerpt
-                        ? 'Вставь фрагмент текста полностью'
-                        : 'Сохрани текст, к которому хочешь вернуться',
+                        ? strings.hintExcerpt
+                        : strings.hintEntry,
                     alignLabelWithHint: true,
                   ),
                 ),
@@ -191,8 +194,8 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     border: border,
                     fillColor: fillColor,
                     labelText: _selectedType == QuoteType.thought
-                        ? 'Автор / собеседник (необязательно)'
-                        : 'Автор',
+                        ? strings.authorOptional
+                        : strings.author,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -202,8 +205,8 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     context: context,
                     border: border,
                     fillColor: fillColor,
-                    labelText: 'Источник',
-                    hintText: 'Книга, статья, видео, лекция',
+                    labelText: strings.source,
+                    hintText: strings.sourceHint,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -213,8 +216,8 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     context: context,
                     border: border,
                     fillColor: fillColor,
-                    labelText: 'Детали источника',
-                    hintText: 'Глава, страница, таймкод',
+                    labelText: strings.sourceDetails,
+                    hintText: strings.sourceDetailsHint,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -227,14 +230,16 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     context: context,
                     border: border,
                     fillColor: fillColor,
-                    labelText: 'Моя заметка',
-                    hintText:
-                        'Почему ты сохранил эту запись и как хочешь её использовать',
+                    labelText: strings.note,
+                    hintText: strings.noteHint,
                     alignLabelWithHint: true,
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text('Теги', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  strings.tags,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
@@ -267,7 +272,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                           context: context,
                           border: border,
                           fillColor: fillColor,
-                          labelText: 'Новый тег',
+                          labelText: strings.newTag,
                         ),
                       ),
                     ),
@@ -280,7 +285,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                           backgroundColor: const Color(0xFF4A6FA5),
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('Добавить'),
+                        child: Text(strings.add),
                       ),
                     ),
                   ],
@@ -288,7 +293,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                 if (allTags.isNotEmpty) ...[
                   const SizedBox(height: 14),
                   Text(
-                    'Быстро добавить из существующих',
+                    strings.quickAddTags,
                     style: TextStyle(
                       color: isDark
                           ? const Color(0xFFB8AEA2)
@@ -365,19 +370,19 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
 
   bool get _hasUnsavedChanges => _buildFormSignature() != _initialSignature;
 
-  Future<bool> _handleBackNavigation() async {
+  Future<bool> _handleBackNavigation(AppStrings strings) async {
     if (!_hasUnsavedChanges) return true;
 
     final approved = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Выйти без сохранения?'),
-          content: const Text('Все несохранённые изменения будут потеряны.'),
+          title: Text(strings.exitWithoutSaving),
+          content: Text(strings.changesLost),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Остаться'),
+              child: Text(strings.stay),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -385,7 +390,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                 backgroundColor: const Color(0xFFB84A3A),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Выйти'),
+              child: Text(strings.exit),
             ),
           ],
         );

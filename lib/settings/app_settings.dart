@@ -9,15 +9,34 @@ enum AppThemeMode {
     AppThemeMode.dark => 'dark',
   };
 
-  String get label => switch (this) {
-    AppThemeMode.light => 'Светлая',
-    AppThemeMode.dark => 'Тёмная',
+  String label(AppLanguage language) => switch ((this, language)) {
+    (AppThemeMode.light, AppLanguage.ru) => 'Светлая',
+    (AppThemeMode.dark, AppLanguage.ru) => 'Тёмная',
+    (AppThemeMode.light, AppLanguage.en) => 'Light',
+    (AppThemeMode.dark, AppLanguage.en) => 'Dark',
   };
 
   static AppThemeMode fromKey(String? value) {
     return AppThemeMode.values.firstWhere(
       (mode) => mode.key == value,
       orElse: () => AppThemeMode.light,
+    );
+  }
+}
+
+enum AppLanguage {
+  ru,
+  en;
+
+  String get key => switch (this) {
+    AppLanguage.ru => 'ru',
+    AppLanguage.en => 'en',
+  };
+
+  static AppLanguage fromKey(String? value) {
+    return AppLanguage.values.firstWhere(
+      (language) => language.key == value,
+      orElse: () => AppLanguage.ru,
     );
   }
 }
@@ -33,10 +52,13 @@ enum QuoteTextSize {
     QuoteTextSize.large => 'large',
   };
 
-  String get label => switch (this) {
-    QuoteTextSize.small => 'Маленький',
-    QuoteTextSize.medium => 'Обычный',
-    QuoteTextSize.large => 'Крупный',
+  String label(AppLanguage language) => switch ((this, language)) {
+    (QuoteTextSize.small, AppLanguage.ru) => 'Маленький',
+    (QuoteTextSize.medium, AppLanguage.ru) => 'Обычный',
+    (QuoteTextSize.large, AppLanguage.ru) => 'Крупный',
+    (QuoteTextSize.small, AppLanguage.en) => 'Small',
+    (QuoteTextSize.medium, AppLanguage.en) => 'Medium',
+    (QuoteTextSize.large, AppLanguage.en) => 'Large',
   };
 
   double get fontSize => switch (this) {
@@ -64,10 +86,13 @@ enum QuoteLineSpacing {
     QuoteLineSpacing.airy => 'airy',
   };
 
-  String get label => switch (this) {
-    QuoteLineSpacing.compact => 'Компактный',
-    QuoteLineSpacing.normal => 'Обычный',
-    QuoteLineSpacing.airy => 'Воздушный',
+  String label(AppLanguage language) => switch ((this, language)) {
+    (QuoteLineSpacing.compact, AppLanguage.ru) => 'Компактный',
+    (QuoteLineSpacing.normal, AppLanguage.ru) => 'Обычный',
+    (QuoteLineSpacing.airy, AppLanguage.ru) => 'Воздушный',
+    (QuoteLineSpacing.compact, AppLanguage.en) => 'Compact',
+    (QuoteLineSpacing.normal, AppLanguage.en) => 'Normal',
+    (QuoteLineSpacing.airy, AppLanguage.en) => 'Airy',
   };
 
   double get height => switch (this) {
@@ -95,10 +120,13 @@ enum UiTextSize {
     UiTextSize.large => 'large',
   };
 
-  String get label => switch (this) {
-    UiTextSize.small => 'Маленький',
-    UiTextSize.medium => 'Обычный',
-    UiTextSize.large => 'Крупный',
+  String label(AppLanguage language) => switch ((this, language)) {
+    (UiTextSize.small, AppLanguage.ru) => 'Маленький',
+    (UiTextSize.medium, AppLanguage.ru) => 'Обычный',
+    (UiTextSize.large, AppLanguage.ru) => 'Крупный',
+    (UiTextSize.small, AppLanguage.en) => 'Small',
+    (UiTextSize.medium, AppLanguage.en) => 'Medium',
+    (UiTextSize.large, AppLanguage.en) => 'Large',
   };
 
   double get scale => switch (this) {
@@ -124,9 +152,11 @@ enum CardDensity {
     CardDensity.comfortable => 'comfortable',
   };
 
-  String get label => switch (this) {
-    CardDensity.compact => 'Компактно',
-    CardDensity.comfortable => 'Свободно',
+  String label(AppLanguage language) => switch ((this, language)) {
+    (CardDensity.compact, AppLanguage.ru) => 'Компактно',
+    (CardDensity.comfortable, AppLanguage.ru) => 'Свободно',
+    (CardDensity.compact, AppLanguage.en) => 'Compact',
+    (CardDensity.comfortable, AppLanguage.en) => 'Comfortable',
   };
 
   double get cardPadding => switch (this) {
@@ -156,9 +186,11 @@ enum TagPreviewSize {
     TagPreviewSize.regular => 'regular',
   };
 
-  String get label => switch (this) {
-    TagPreviewSize.compact => 'Мелкие',
-    TagPreviewSize.regular => 'Обычные',
+  String label(AppLanguage language) => switch ((this, language)) {
+    (TagPreviewSize.compact, AppLanguage.ru) => 'Мелкие',
+    (TagPreviewSize.regular, AppLanguage.ru) => 'Обычные',
+    (TagPreviewSize.compact, AppLanguage.en) => 'Small',
+    (TagPreviewSize.regular, AppLanguage.en) => 'Regular',
   };
 
   static TagPreviewSize fromKey(String? value) {
@@ -172,6 +204,7 @@ enum TagPreviewSize {
 class AppSettings {
   const AppSettings({
     required this.themeMode,
+    required this.language,
     required this.quoteTextSize,
     required this.quoteLineSpacing,
     required this.uiTextSize,
@@ -184,6 +217,7 @@ class AppSettings {
   });
 
   final AppThemeMode themeMode;
+  final AppLanguage language;
   final QuoteTextSize quoteTextSize;
   final QuoteLineSpacing quoteLineSpacing;
   final UiTextSize uiTextSize;
@@ -198,6 +232,7 @@ class AppSettings {
 
   AppSettings copyWith({
     AppThemeMode? themeMode,
+    AppLanguage? language,
     QuoteTextSize? quoteTextSize,
     QuoteLineSpacing? quoteLineSpacing,
     UiTextSize? uiTextSize,
@@ -210,6 +245,7 @@ class AppSettings {
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
+      language: language ?? this.language,
       quoteTextSize: quoteTextSize ?? this.quoteTextSize,
       quoteLineSpacing: quoteLineSpacing ?? this.quoteLineSpacing,
       uiTextSize: uiTextSize ?? this.uiTextSize,
@@ -224,6 +260,7 @@ class AppSettings {
 
   static const defaults = AppSettings(
     themeMode: AppThemeMode.light,
+    language: AppLanguage.ru,
     quoteTextSize: QuoteTextSize.medium,
     quoteLineSpacing: QuoteLineSpacing.normal,
     uiTextSize: UiTextSize.medium,

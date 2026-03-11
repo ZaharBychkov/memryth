@@ -55,7 +55,7 @@ class QuoteController extends ChangeNotifier {
   int _currentIndex = 0;
   String _searchQuery = '';
   final Set<String> _activeTagFilters = <String>{};
-  QuoteType? _activeTypeFilter;
+  final Set<QuoteType> _activeTypeFilters = <QuoteType>{};
   bool _favoritesOnly = false;
   QuoteSortMode _sortMode;
 
@@ -64,7 +64,7 @@ class QuoteController extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   int get totalCount => _allQuotes.length;
   Set<String> get activeTagFilters => _activeTagFilters;
-  QuoteType? get activeTypeFilter => _activeTypeFilter;
+  Set<QuoteType> get activeTypeFilters => _activeTypeFilters;
   bool get favoritesOnly => _favoritesOnly;
   QuoteSortMode get sortMode => _sortMode;
 
@@ -146,14 +146,21 @@ class QuoteController extends ChangeNotifier {
   void clearFilters() {
     _searchQuery = '';
     _activeTagFilters.clear();
-    _activeTypeFilter = null;
+    _activeTypeFilters.clear();
     _favoritesOnly = false;
     _currentIndex = 0;
     notifyListeners();
   }
 
-  void setTypeFilter(QuoteType? value) {
-    _activeTypeFilter = value;
+  void toggleTypeFilter(QuoteType value) {
+    if (_activeTypeFilters.contains(value)) {
+      _activeTypeFilters.remove(value);
+    } else {
+      _activeTypeFilters.add(value);
+    }
+    if (_activeTypeFilters.length == QuoteType.values.length) {
+      _activeTypeFilters.clear();
+    }
     _currentIndex = 0;
     notifyListeners();
   }
@@ -182,7 +189,8 @@ class QuoteController extends ChangeNotifier {
       return false;
     }
 
-    if (_activeTypeFilter != null && quote.type != _activeTypeFilter) {
+    if (_activeTypeFilters.isNotEmpty &&
+        !_activeTypeFilters.contains(quote.type)) {
       return false;
     }
 

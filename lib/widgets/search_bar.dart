@@ -4,11 +4,13 @@ class QuoteSearchBar extends StatelessWidget {
   const QuoteSearchBar({
     super.key,
     required this.controller,
+    required this.hintText,
     required this.onChanged,
     required this.onClear,
   });
 
   final TextEditingController controller;
+  final String hintText;
   final ValueChanged<String> onChanged;
   final VoidCallback onClear;
 
@@ -31,7 +33,7 @@ class QuoteSearchBar extends StatelessWidget {
           Icons.search,
           color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
         ),
-        hintText: 'Поиск по тексту, автору, источнику, заметке и тегам',
+        hintText: hintText,
         hintStyle: TextStyle(
           color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
         ),

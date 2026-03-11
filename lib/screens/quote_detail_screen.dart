@@ -5,6 +5,7 @@ import '../models/tag.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
 import '../settings/app_settings_scope.dart';
+import '../settings/app_strings.dart';
 import '../widgets/tag_chip.dart';
 import 'quote_edit_screen.dart';
 
@@ -33,6 +34,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = AppSettingsScope.of(context).settings;
+    final strings = AppStrings(settings.language);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final quoteStyle = TextStyle(
       color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -42,7 +44,9 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
     );
 
     final metaItems = <String>[];
-    if (_quote.author.trim().isNotEmpty) metaItems.add(_quote.author.trim());
+    if (_quote.author.trim().isNotEmpty) {
+      metaItems.add(_quote.author.trim());
+    }
     if (_quote.sourceTitle.trim().isNotEmpty) {
       metaItems.add(_quote.sourceTitle.trim());
     }
@@ -52,7 +56,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_quote.type.label),
+        title: Text(strings.quoteTypeLabel(_quote.type)),
         actions: [
           IconButton(
             onPressed: _toggleFavorite,
@@ -80,7 +84,10 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _DetailChip(type: _quote.type),
+              _DetailChip(
+                type: _quote.type,
+                label: strings.quoteTypeLabel(_quote.type),
+              ),
               const SizedBox(height: 18),
               SelectableText(_quote.text.trim(), style: quoteStyle),
               if (metaItems.isNotEmpty) ...[
@@ -98,19 +105,22 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
               ],
               const SizedBox(height: 20),
               _MetaSection(
-                title: 'Создано',
+                title: strings.createdAt,
                 value: _formatDateTime(_quote.createdAt),
               ),
               const SizedBox(height: 10),
               _MetaSection(
-                title: 'Обновлено',
+                title: strings.updatedAt,
                 value: _formatDateTime(_quote.updatedAt),
               ),
               if (_quote.note.trim().isNotEmpty) ...[
                 const SizedBox(height: 22),
-                const Text(
-                  'Моя заметка',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                Text(
+                  strings.myNote,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Container(
@@ -134,14 +144,17 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
                 ),
               ],
               const SizedBox(height: 22),
-              const Text(
-                'Теги',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              Text(
+                strings.tags,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 10),
               if (_tags.isEmpty)
                 Text(
-                  'Теги не добавлены',
+                  strings.tagNone,
                   style: TextStyle(
                     color: isDark
                         ? const Color(0xFFB8AEA2)
@@ -209,7 +222,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
         _tags = _quote.tagIds
             .map((id) => tagsById[id])
             .whereType<Tag>()
-            .toList(growable: false);
+            .toList();
       });
     }
   }
@@ -224,9 +237,10 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
 }
 
 class _DetailChip extends StatelessWidget {
-  const _DetailChip({required this.type});
+  const _DetailChip({required this.type, required this.label});
 
   final QuoteType type;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +257,7 @@ class _DetailChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        type.label,
+        label,
         style: TextStyle(
           color: color,
           fontSize: 13,

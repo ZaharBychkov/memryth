@@ -4,6 +4,7 @@ import '../models/quote.dart';
 import '../models/tag.dart';
 import '../settings/app_settings.dart';
 import '../settings/app_settings_scope.dart';
+import '../settings/app_strings.dart';
 import 'tag_chip.dart';
 
 class QuoteCard extends StatefulWidget {
@@ -47,6 +48,7 @@ class _QuoteCardState extends State<QuoteCard> {
   @override
   Widget build(BuildContext context) {
     final settings = AppSettingsScope.of(context).settings;
+    final strings = AppStrings(settings.language);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final padding = settings.cardDensity.cardPadding;
     final quoteTextStyle = TextStyle(
@@ -104,7 +106,10 @@ class _QuoteCardState extends State<QuoteCard> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _TypeBadge(type: widget.quote.type),
+                          _TypeBadge(
+                            type: widget.quote.type,
+                            label: strings.quoteTypeLabel(widget.quote.type),
+                          ),
                           const Spacer(),
                           IconButton(
                             onPressed: widget.onFavoriteToggle,
@@ -139,7 +144,7 @@ class _QuoteCardState extends State<QuoteCard> {
                                 setState(() => _expandedText = !_expandedText),
                             behavior: HitTestBehavior.opaque,
                             child: Text(
-                              _expandedText ? 'Свернуть' : 'Развернуть',
+                              _expandedText ? strings.collapse : strings.expand,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontSize: 13,
@@ -186,7 +191,7 @@ class _QuoteCardState extends State<QuoteCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Моя заметка',
+                                strings.myNote,
                                 style: TextStyle(
                                   color: isDark
                                       ? const Color(0xFFB8AEA2)
@@ -229,7 +234,7 @@ class _QuoteCardState extends State<QuoteCard> {
                         )
                       else
                         Text(
-                          'Теги не добавлены',
+                          strings.tagNone,
                           style: TextStyle(
                             color: isDark
                                 ? const Color(0xFFB8AEA2)
@@ -243,8 +248,8 @@ class _QuoteCardState extends State<QuoteCard> {
                               setState(() => _expandedTags = !_expandedTags),
                           child: Text(
                             _expandedTags
-                                ? 'Скрыть теги'
-                                : 'Показать все теги (${tags.length})',
+                                ? strings.hideTags
+                                : strings.showAllTags(tags.length),
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.primary,
                             ),
@@ -345,14 +350,10 @@ class _QuoteCardState extends State<QuoteCard> {
 
     var result = source.substring(0, best).trimRight();
     final lastSpace = result.lastIndexOf(RegExp(r'\s'));
-    if (lastSpace > 0) {
-      result = result.substring(0, lastSpace).trimRight();
-    }
-
+    if (lastSpace > 0) result = result.substring(0, lastSpace).trimRight();
     if (result.isEmpty) {
       return source.substring(0, best.clamp(0, source.length)).trimRight();
     }
-
     return result;
   }
 
@@ -361,15 +362,11 @@ class _QuoteCardState extends State<QuoteCard> {
     required double maxTextWidth,
     required TextSpan text,
   }) {
-    if (maxTextWidth <= 0 || maxTextWidth == double.infinity) {
-      return 0;
-    }
-
+    if (maxTextWidth <= 0 || maxTextWidth == double.infinity) return 0;
     final painter = TextPainter(
       text: text,
       textDirection: Directionality.of(context),
     )..layout(maxWidth: maxTextWidth);
-
     return painter.computeLineMetrics().length;
   }
 
@@ -398,7 +395,7 @@ class _QuoteCardState extends State<QuoteCard> {
       spans.add(
         TextSpan(
           text: source.substring(index, index + lowerNeedle.length),
-          style: TextStyle(
+          style: const TextStyle(
             backgroundColor: Color(0xFFD5E2F5),
             color: Color(0xFF2C2C2C),
             fontWeight: FontWeight.w600,
@@ -414,9 +411,10 @@ class _QuoteCardState extends State<QuoteCard> {
 }
 
 class _TypeBadge extends StatelessWidget {
-  const _TypeBadge({required this.type});
+  const _TypeBadge({required this.type, required this.label});
 
   final QuoteType type;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +435,6 @@ class _TypeBadge extends StatelessWidget {
         Icons.menu_book_rounded,
       ),
     };
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -452,7 +449,7 @@ class _TypeBadge extends StatelessWidget {
           Icon(icon, size: 14, color: foreground),
           const SizedBox(width: 6),
           Text(
-            type.label,
+            label,
             style: TextStyle(
               color: foreground,
               fontSize: 12,
