@@ -18,11 +18,13 @@ class AppStrings {
   String get languageTitle => isRu ? 'Язык' : 'Language';
   String get themeTitle => isRu ? 'Тема' : 'Theme';
   String get quoteTextTitle => isRu ? 'Текст цитаты' : 'Quote text';
-  String get lineSpacingTitle => isRu ? 'Межстрочный интервал' : 'Line spacing';
+  String get lineSpacingTitle =>
+      isRu ? 'Межстрочный интервал' : 'Line spacing';
   String get uiSizeTitle => isRu ? 'Размер интерфейса' : 'UI size';
   String get densityTitle => isRu ? 'Плотность карточек' : 'Card density';
   String get tagSizeTitle => isRu ? 'Размер тегов' : 'Tag size';
-  String get collapsedTitle => isRu ? 'Свернутая запись' : 'Collapsed entry';
+  String get collapsedTitle =>
+      isRu ? 'Свернутая запись' : 'Collapsed entry';
   String get defaultSortTitle =>
       isRu ? 'Сортировка по умолчанию' : 'Default sort';
   String get cardPreviewTitle =>
@@ -30,9 +32,6 @@ class AppStrings {
   String get showNote => isRu ? 'Заметку' : 'Note';
   String get showMeta => isRu ? 'Автора и источник' : 'Author and source';
   String get favorites => isRu ? 'Избранное' : 'Favorites';
-  String get typeQuote => isRu ? 'Цитата' : 'Quote';
-  String get typeThought => isRu ? 'Мысль' : 'Thought';
-  String get typeExcerpt => isRu ? 'Фрагмент' : 'Excerpt';
   String get emptyList => isRu
       ? 'Пока нет записей. Нажмите “Новая запись”, чтобы добавить первую.'
       : 'No entries yet. Tap “New entry” to add your first one.';
@@ -52,7 +51,6 @@ class AppStrings {
   String get searchHint => isRu
       ? 'Поиск по тексту, автору, источнику, заметке и тегам'
       : 'Search text, author, source, note and tags';
-  String get onlyFavorites => isRu ? 'Только избранное' : 'Favorites only';
   String get tagNone => isRu ? 'Теги не добавлены' : 'No tags yet';
   String get hideTags => isRu ? 'Скрыть теги' : 'Hide tags';
   String showAllTags(int count) =>
@@ -60,8 +58,9 @@ class AppStrings {
   String get collapse => isRu ? 'Свернуть' : 'Collapse';
   String get expand => isRu ? 'Развернуть' : 'Expand';
   String get myNote => isRu ? 'Моя заметка' : 'My note';
-  String get createdAt => isRu ? 'Создано' : 'Created';
-  String get updatedAt => isRu ? 'Обновлено' : 'Updated';
+  String get createdAt => isRu ? 'Дата создания' : 'Created date';
+  String get changeDate => isRu ? 'Изменить дату' : 'Change date';
+  String get details => isRu ? 'Подробнее' : 'Details';
   String get tags => isRu ? 'Теги' : 'Tags';
   String get addToFavorites => isRu ? 'В избранное' : 'Favorite';
   String get favoriteHint => isRu
@@ -98,30 +97,29 @@ class AppStrings {
   String get save => isRu ? 'Сохранить' : 'Save';
   String get exitWithoutSaving =>
       isRu ? 'Выйти без сохранения?' : 'Exit without saving?';
-  String get changesLost => isRu
-      ? 'Все несохранённые изменения будут потеряны.'
-      : 'All unsaved changes will be lost.';
+  String get changesLost =>
+      isRu ? 'Все несохранённые изменения будут потеряны.' : 'All unsaved changes will be lost.';
   String get stay => isRu ? 'Остаться' : 'Stay';
   String get exit => isRu ? 'Выйти' : 'Exit';
   String rows(int value) => isRu ? '$value строк' : '$value lines';
 
   String quoteTypeLabel(QuoteType type) => switch ((type, language)) {
-    (QuoteType.quote, AppLanguage.ru) => 'Цитата',
-    (QuoteType.thought, AppLanguage.ru) => 'Мысль',
-    (QuoteType.excerpt, AppLanguage.ru) => 'Фрагмент',
-    (QuoteType.quote, AppLanguage.en) => 'Quote',
-    (QuoteType.thought, AppLanguage.en) => 'Thought',
-    (QuoteType.excerpt, AppLanguage.en) => 'Excerpt',
-  };
+        (QuoteType.quote, AppLanguage.ru) => 'Цитата',
+        (QuoteType.thought, AppLanguage.ru) => 'Мысль',
+        (QuoteType.excerpt, AppLanguage.ru) => 'Фрагмент',
+        (QuoteType.quote, AppLanguage.en) => 'Quote',
+        (QuoteType.thought, AppLanguage.en) => 'Thought',
+        (QuoteType.excerpt, AppLanguage.en) => 'Excerpt',
+      };
 
   String sortModeLabel(QuoteSortMode mode) => switch ((mode, language)) {
-    (QuoteSortMode.newest, AppLanguage.ru) => 'Сначала новые',
-    (QuoteSortMode.updated, AppLanguage.ru) => 'Недавно изменённые',
-    (QuoteSortMode.oldest, AppLanguage.ru) => 'Сначала старые',
-    (QuoteSortMode.random, AppLanguage.ru) => 'Случайный порядок',
-    (QuoteSortMode.newest, AppLanguage.en) => 'Newest first',
-    (QuoteSortMode.updated, AppLanguage.en) => 'Recently updated',
-    (QuoteSortMode.oldest, AppLanguage.en) => 'Oldest first',
-    (QuoteSortMode.random, AppLanguage.en) => 'Random order',
-  };
+        (QuoteSortMode.newest, AppLanguage.ru) => 'Сначала новые',
+        (QuoteSortMode.updated, AppLanguage.ru) => 'Недавно изменённые',
+        (QuoteSortMode.oldest, AppLanguage.ru) => 'Сначала старые',
+        (QuoteSortMode.random, AppLanguage.ru) => 'Случайный порядок',
+        (QuoteSortMode.newest, AppLanguage.en) => 'Newest first',
+        (QuoteSortMode.updated, AppLanguage.en) => 'Recently updated',
+        (QuoteSortMode.oldest, AppLanguage.en) => 'Oldest first',
+        (QuoteSortMode.random, AppLanguage.en) => 'Random order',
+      };
 }

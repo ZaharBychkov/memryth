@@ -38,6 +38,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
 
   late final String _initialSignature;
   late QuoteType _selectedType;
+  late DateTime _createdAt;
   bool _isFavorite = false;
 
   bool get _isEditing => widget.quote != null;
@@ -53,6 +54,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
       _sourceDetailsController.text = quote.sourceDetails;
       _noteController.text = quote.note;
       _selectedType = quote.type;
+      _createdAt = quote.createdAt;
       _isFavorite = quote.isFavorite;
 
       final tagsById = {
@@ -66,6 +68,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
       }
     } else {
       _selectedType = QuoteType.quote;
+      _createdAt = DateTime.now();
     }
 
     _initialSignature = _buildFormSignature();
@@ -91,9 +94,6 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
       borderRadius: BorderRadius.circular(14),
       borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
     );
-
-    final allTags = widget.tagRepository.getAll().toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     return PopScope(
       canPop: !_hasUnsavedChanges,
@@ -153,6 +153,16 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(strings.createdAt),
+                  subtitle: Text(_formatDate(_createdAt)),
+                  trailing: TextButton(
+                    onPressed: _pickCreatedAt,
+                    child: Text(strings.changeDate),
+                  ),
+                ),
+                const SizedBox(height: 4),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(strings.addToFavorites),
@@ -290,44 +300,6 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     ),
                   ],
                 ),
-                if (allTags.isNotEmpty) ...[
-                  const SizedBox(height: 14),
-                  Text(
-                    strings.quickAddTags,
-                    style: TextStyle(
-                      color: isDark
-                          ? const Color(0xFFB8AEA2)
-                          : const Color(0xFF8B7E74),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final tag in allTags)
-                        FilterChip(
-                          label: Text(tag.name),
-                          selected: _draftTags.any((item) => item.id == tag.id),
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                _ensureTagAdded(
-                                  _DraftTag(id: tag.id, name: tag.name),
-                                );
-                              } else {
-                                _draftTags.removeWhere(
-                                  (item) => item.id == tag.id,
-                                );
-                              }
-                            });
-                          },
-                        ),
-                    ],
-                  ),
-                ],
               ],
             ),
           ),
@@ -464,7 +436,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
             author: author,
             tagIds: tagIds,
             typeKey: _selectedType.key,
-            createdAt: now,
+            createdAt: _createdAt,
             updatedAt: now,
             isFavorite: _isFavorite,
             sourceTitle: sourceTitle,
@@ -476,6 +448,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
             author: author,
             tagIds: tagIds,
             typeKey: _selectedType.key,
+            createdAt: _createdAt,
             updatedAt: now,
             isFavorite: _isFavorite,
             sourceTitle: sourceTitle,
@@ -501,6 +474,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
       _sourceTitleController.text.trim(),
       _sourceDetailsController.text.trim(),
       _noteController.text.trim(),
+      _createdAt.toIso8601String(),
       _tagController.text.trim(),
       tagsSignature,
     ].join('§');
@@ -510,6 +484,29 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
     final now = DateTime.now().microsecondsSinceEpoch;
     final suffix = _random.nextInt(1 << 32);
     return '$now$suffix';
+  }
+
+  Future<void> _pickCreatedAt() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _createdAt,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _createdAt = DateTime(
+        picked.year,
+        picked.month,
+        picked.day,
+        _createdAt.hour,
+        _createdAt.minute,
+      );
+    });
+  }
+
+  String _formatDate(DateTime value) {
+    return '${value.day.toString().padLeft(2, '0')}.${value.month.toString().padLeft(2, '0')}.${value.year}';
   }
 }
 

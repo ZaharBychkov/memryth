@@ -30,6 +30,7 @@ class QuoteDetailScreen extends StatefulWidget {
 class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
   late Quote _quote = widget.quote;
   late List<Tag> _tags = widget.tags;
+  bool _detailsExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -43,17 +44,6 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
       fontWeight: FontWeight.w600,
     );
 
-    final metaItems = <String>[];
-    if (_quote.author.trim().isNotEmpty) {
-      metaItems.add(_quote.author.trim());
-    }
-    if (_quote.sourceTitle.trim().isNotEmpty) {
-      metaItems.add(_quote.sourceTitle.trim());
-    }
-    if (_quote.sourceDetails.trim().isNotEmpty) {
-      metaItems.add(_quote.sourceDetails.trim());
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.quoteTypeLabel(_quote.type)),
@@ -61,14 +51,10 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
           IconButton(
             onPressed: _toggleFavorite,
             icon: Icon(
-              _quote.isFavorite
-                  ? Icons.star_rounded
-                  : Icons.star_border_rounded,
+              _quote.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
               color: _quote.isFavorite
                   ? const Color(0xFFE4A11B)
-                  : (isDark
-                        ? const Color(0xFFB8AEA2)
-                        : const Color(0xFF8B7E74)),
+                  : (isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74)),
             ),
           ),
           IconButton(
@@ -80,101 +66,65 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _DetailChip(
-                type: _quote.type,
-                label: strings.quoteTypeLabel(_quote.type),
-              ),
-              const SizedBox(height: 18),
               SelectableText(_quote.text.trim(), style: quoteStyle),
-              if (metaItems.isNotEmpty) ...[
+              if (_quote.author.trim().isNotEmpty) ...[
                 const SizedBox(height: 18),
                 Text(
-                  metaItems.join(' • '),
+                  _quote.author.trim(),
                   style: TextStyle(
-                    color: isDark
-                        ? const Color(0xFFB8AEA2)
-                        : const Color(0xFF8B7E74),
+                    color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
-              const SizedBox(height: 20),
-              _MetaSection(
-                title: strings.createdAt,
-                value: _formatDateTime(_quote.createdAt),
-              ),
-              const SizedBox(height: 10),
-              _MetaSection(
-                title: strings.updatedAt,
-                value: _formatDateTime(_quote.updatedAt),
-              ),
-              if (_quote.note.trim().isNotEmpty) ...[
-                const SizedBox(height: 22),
-                Text(
-                  strings.myNote,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF262B33)
-                        : const Color(0xFFF6F4EF),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                  ),
-                  child: SelectableText(
-                    _quote.note.trim(),
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                      fontSize: 15,
-                      height: settings.quoteLineSpacing.height,
+              const SizedBox(height: 18),
+              Center(
+                child: InkWell(
+                  onTap: () => setState(() => _detailsExpanded = !_detailsExpanded),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Column(
+                      children: [
+                        Text(
+                          strings.details,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Icon(
+                          _detailsExpanded
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-              const SizedBox(height: 22),
-              Text(
-                strings.tags,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
               ),
-              const SizedBox(height: 10),
-              if (_tags.isEmpty)
-                Text(
-                  strings.tagNone,
-                  style: TextStyle(
-                    color: isDark
-                        ? const Color(0xFFB8AEA2)
-                        : const Color(0xFF8B7E74),
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 220),
+                crossFadeState: _detailsExpanded
+                    ? CrossFadeState.showFirst
+                    : CrossFadeState.showSecond,
+                firstChild: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: _DetailsBlock(
+                    quote: _quote,
+                    tags: _tags,
+                    strings: strings,
+                    onChangeDate: _pickCreatedAt,
                   ),
-                )
-              else
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final tag in _tags)
-                      TagChip(
-                        tagName: tag.name,
-                        query: '',
-                        selected: false,
-                        onTap: () {},
-                      ),
-                  ],
                 ),
+                secondChild: const SizedBox.shrink(),
+              ),
             ],
           ),
         ),
@@ -185,6 +135,30 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
   Future<void> _toggleFavorite() async {
     final updated = _quote.copyWith(
       isFavorite: !_quote.isFavorite,
+      updatedAt: DateTime.now(),
+    );
+    await widget.quoteRepository.save(updated);
+    if (!mounted) return;
+    setState(() => _quote = updated);
+  }
+
+  Future<void> _pickCreatedAt() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _quote.createdAt,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null || !mounted) return;
+
+    final updated = _quote.copyWith(
+      createdAt: DateTime(
+        picked.year,
+        picked.month,
+        picked.day,
+        _quote.createdAt.hour,
+        _quote.createdAt.minute,
+      ),
       updatedAt: DateTime.now(),
     );
     await widget.quoteRepository.save(updated);
@@ -219,87 +193,146 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
       };
       setState(() {
         _quote = refreshed!;
-        _tags = _quote.tagIds
-            .map((id) => tagsById[id])
-            .whereType<Tag>()
-            .toList();
+        _tags = _quote.tagIds.map((id) => tagsById[id]).whereType<Tag>().toList();
       });
     }
   }
-
-  String _formatDateTime(DateTime value) {
-    final date =
-        '${value.day.toString().padLeft(2, '0')}.${value.month.toString().padLeft(2, '0')}.${value.year}';
-    final time =
-        '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
-    return '$date • $time';
-  }
 }
 
-class _DetailChip extends StatelessWidget {
-  const _DetailChip({required this.type, required this.label});
+class _DetailsBlock extends StatelessWidget {
+  const _DetailsBlock({
+    required this.quote,
+    required this.tags,
+    required this.strings,
+    required this.onChangeDate,
+  });
 
-  final QuoteType type;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (type) {
-      QuoteType.quote => const Color(0xFF395A8A),
-      QuoteType.thought => const Color(0xFF6A4FA3),
-      QuoteType.excerpt => const Color(0xFF3C7B5A),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withAlpha(30),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _MetaSection extends StatelessWidget {
-  const _MetaSection({required this.title, required this.value});
-
-  final String title;
-  final String value;
+  final Quote quote;
+  final List<Tag> tags;
+  final AppStrings strings;
+  final VoidCallback onChangeDate;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Row(
-      children: [
-        SizedBox(
-          width: 92,
-          child: Text(
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF232830) : const Color(0xFFF6F4EF),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (quote.sourceTitle.trim().isNotEmpty)
+            _InfoLine(title: strings.source, value: quote.sourceTitle.trim()),
+          if (quote.sourceDetails.trim().isNotEmpty)
+            _InfoLine(
+              title: strings.sourceDetails,
+              value: quote.sourceDetails.trim(),
+              topSpacing: 10,
+            ),
+          if (quote.note.trim().isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(
+              strings.myNote,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            SelectableText(
+              quote.note.trim(),
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+                height: 1.4,
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          Text(
+            strings.tags,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          if (tags.isEmpty)
+            Text(
+              strings.tagNone,
+              style: TextStyle(
+                color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
+              ),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final tag in tags)
+                  TagChip(
+                    tagName: tag.name,
+                    query: '',
+                    selected: false,
+                    onTap: () {},
+                  ),
+              ],
+            ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _InfoLine(
+                  title: strings.createdAt,
+                  value: _formatDate(quote.createdAt),
+                ),
+              ),
+              TextButton(
+                onPressed: onChangeDate,
+                child: Text(strings.changeDate),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime value) {
+    return '${value.day.toString().padLeft(2, '0')}.${value.month.toString().padLeft(2, '0')}.${value.year}';
+  }
+}
+
+class _InfoLine extends StatelessWidget {
+  const _InfoLine({
+    required this.title,
+    required this.value,
+    this.topSpacing = 0,
+  });
+
+  final String title;
+  final String value;
+  final double topSpacing;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: EdgeInsets.only(top: topSpacing),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
             title,
             style: TextStyle(
               color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
           ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(value),
+        ],
+      ),
     );
   }
 }
