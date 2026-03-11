@@ -45,8 +45,7 @@ class MemrythApp extends StatelessWidget {
             themeMode: settings.themeMode == AppThemeMode.dark
                 ? ThemeMode.dark
                 : ThemeMode.light,
-            themeAnimationDuration: const Duration(milliseconds: 260),
-            themeAnimationCurve: Curves.easeInOutCubicEmphasized,
+            themeAnimationDuration: Duration.zero,
             scrollBehavior: const _MemrythScrollBehavior(),
             builder: (context, child) {
               final mediaQuery = MediaQuery.of(context);

@@ -135,19 +135,13 @@ class _QuotesScreenState extends State<QuotesScreen> {
                 const SizedBox(width: 8),
                 _HeaderIconButton(
                   onPressed: settingsController.toggleTheme,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    child: Icon(
-                      settingsController.settings.isDarkMode
-                          ? Icons.light_mode_rounded
-                          : Icons.dark_mode_rounded,
-                      key: ValueKey(settingsController.settings.isDarkMode),
-                      color: isDark
-                          ? const Color(0xFFEAE4DB)
-                          : const Color(0xFF2C2C2C),
-                    ),
+                  child: Icon(
+                    settingsController.settings.isDarkMode
+                        ? Icons.light_mode_rounded
+                        : Icons.dark_mode_rounded,
+                    color: isDark
+                        ? const Color(0xFFEAE4DB)
+                        : const Color(0xFF2C2C2C),
                   ),
                 ),
               ],
@@ -183,9 +177,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
           body: SafeArea(
             child: Column(
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
+                Container(
                   width: double.infinity,
                   color: headerBg,
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
@@ -205,17 +197,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
                     ],
                   ),
                 ),
-                if (filtered.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 2),
-                    child: Text(
-                      '${filtered.length}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
                 Expanded(
                   child: filtered.isEmpty
                       ? _buildEmptyState(controller, strings)
@@ -546,9 +527,7 @@ class _HeaderIconShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
+    return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF262B33) : const Color(0xFFF5EEE7),
         borderRadius: BorderRadius.circular(14),
@@ -575,9 +554,7 @@ class _TypeFilterButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
+      child: Container(
         height: 40,
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -637,9 +614,7 @@ class _FavoriteFilterButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
+      child: Container(
         width: 40,
         height: 40,
         decoration: BoxDecoration(

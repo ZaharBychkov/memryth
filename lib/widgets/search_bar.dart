@@ -23,9 +23,7 @@ class QuoteSearchBar extends StatelessWidget {
         : const Color(0xFF8B7E74);
     final borderColor = Theme.of(context).dividerColor;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
+    return Container(
       decoration: BoxDecoration(
         color: fillColor,
         borderRadius: BorderRadius.circular(14),
@@ -38,14 +36,7 @@ class QuoteSearchBar extends StatelessWidget {
         decoration: InputDecoration(
           isDense: true,
           filled: false,
-          prefixIcon: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
-            child: Icon(
-              Icons.search,
-              key: ValueKey<Color>(iconColor),
-              color: iconColor,
-            ),
-          ),
+          prefixIcon: Icon(Icons.search, color: iconColor),
           hintText: hintText,
           hintStyle: TextStyle(color: iconColor),
           suffixIcon: controller.text.isEmpty
