@@ -10,6 +10,7 @@ import '../repositories/tag_repository.dart';
 import '../settings/app_settings_controller.dart';
 import '../settings/app_settings_scope.dart';
 import '../settings/app_strings.dart';
+import '../viewmodels/quote_list_view_model.dart';
 import '../widgets/quote_card.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/settings_drawer.dart';
@@ -24,12 +25,12 @@ class QuotesScreen extends StatefulWidget {
 }
 
 class _QuotesScreenState extends State<QuotesScreen> {
-  final QuoteRepository _quoteRepository = QuoteRepository();
-  final TagRepository _tagRepository = TagRepository();
+  final QuoteRepository _quoteRepository = HiveQuoteRepository();
+  final TagRepository _tagRepository = HiveTagRepository();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  QuoteController? _controller;
+  QuoteListViewModel? _controller;
   StreamSubscription<dynamic>? _quotesSub;
   StreamSubscription<dynamic>? _tagsSub;
 
@@ -44,7 +45,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final settings = AppSettingsScope.of(context).settings;
-    _controller ??= QuoteController(
+    _controller ??= QuoteListViewModel(
       quoteRepository: _quoteRepository,
       tagRepository: _tagRepository,
       initialSortMode: settings.defaultSortMode,

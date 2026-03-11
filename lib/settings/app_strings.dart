@@ -59,6 +59,7 @@ class AppStrings {
   String get expand => isRu ? 'Развернуть' : 'Expand';
   String get myNote => isRu ? 'Моя заметка' : 'My note';
   String get createdAt => isRu ? 'Дата создания' : 'Created date';
+  String get updatedAt => isRu ? 'Обновлено' : 'Updated at';
   String get changeDate => isRu ? 'Изменить дату' : 'Change date';
   String get details => isRu ? 'Подробнее' : 'Details';
   String get tags => isRu ? 'Теги' : 'Tags';

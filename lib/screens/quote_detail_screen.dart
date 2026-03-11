@@ -6,6 +6,7 @@ import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
 import '../settings/app_settings_scope.dart';
 import '../settings/app_strings.dart';
+import '../viewmodels/quote_detail_view_model.dart';
 import '../widgets/tag_chip.dart';
 import 'quote_edit_screen.dart';
 
@@ -28,173 +29,160 @@ class QuoteDetailScreen extends StatefulWidget {
 }
 
 class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
-  late Quote _quote = widget.quote;
-  late List<Tag> _tags = widget.tags;
-  bool _detailsExpanded = false;
+  late final QuoteDetailViewModel _viewModel = QuoteDetailViewModel(
+    quote: widget.quote,
+    tags: widget.tags,
+    quoteRepository: widget.quoteRepository,
+    tagRepository: widget.tagRepository,
+  );
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final settings = AppSettingsScope.of(context).settings;
     final strings = AppStrings(settings.language);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final quoteStyle = TextStyle(
-      color: Theme.of(context).textTheme.bodyLarge?.color,
-      fontSize: settings.quoteTextSize.fontSize + 3,
-      height: settings.quoteLineSpacing.height,
-      fontWeight: FontWeight.w600,
-    );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(strings.quoteTypeLabel(_quote.type)),
-        actions: [
-          IconButton(
-            onPressed: _toggleFavorite,
-            icon: Icon(
-              _quote.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-              color: _quote.isFavorite
-                  ? const Color(0xFFE4A11B)
-                  : (isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74)),
-            ),
-          ),
-          IconButton(
-            onPressed: _openEdit,
-            icon: const Icon(Icons.edit_rounded),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SelectableText(_quote.text.trim(), style: quoteStyle),
-              if (_quote.author.trim().isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(
-                  _quote.author.trim(),
-                  style: TextStyle(
-                    color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 18),
-              Center(
-                child: InkWell(
-                  onTap: () => setState(() => _detailsExpanded = !_detailsExpanded),
-                  borderRadius: BorderRadius.circular(14),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    child: Column(
-                      children: [
-                        Text(
-                          strings.details,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Icon(
-                          _detailsExpanded
-                              ? Icons.keyboard_arrow_up_rounded
-                              : Icons.keyboard_arrow_down_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ],
-                    ),
-                  ),
+    return AnimatedBuilder(
+      animation: _viewModel,
+      builder: (context, _) {
+        final quote = _viewModel.quote;
+        final tags = _viewModel.tags;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final quoteStyle = TextStyle(
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+          fontSize: settings.quoteTextSize.fontSize + 3,
+          height: settings.quoteLineSpacing.height,
+          fontWeight: FontWeight.w600,
+        );
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(strings.quoteTypeLabel(quote.type)),
+            actions: [
+              IconButton(
+                onPressed: _viewModel.toggleFavorite,
+                icon: Icon(
+                  quote.isFavorite
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  color: quote.isFavorite
+                      ? const Color(0xFFE4A11B)
+                      : (isDark
+                            ? const Color(0xFFB8AEA2)
+                            : const Color(0xFF8B7E74)),
                 ),
               ),
-              AnimatedCrossFade(
-                duration: const Duration(milliseconds: 220),
-                crossFadeState: _detailsExpanded
-                    ? CrossFadeState.showFirst
-                    : CrossFadeState.showSecond,
-                firstChild: Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: _DetailsBlock(
-                    quote: _quote,
-                    tags: _tags,
-                    strings: strings,
-                    onChangeDate: _pickCreatedAt,
-                  ),
-                ),
-                secondChild: const SizedBox.shrink(),
+              IconButton(
+                onPressed: _openEdit,
+                icon: const Icon(Icons.edit_rounded),
               ),
+              const SizedBox(width: 8),
             ],
           ),
-        ),
-      ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SelectableText(quote.text.trim(), style: quoteStyle),
+                  if (quote.author.trim().isNotEmpty) ...[
+                    const SizedBox(height: 18),
+                    Text(
+                      quote.author.trim(),
+                      style: TextStyle(
+                        color: isDark
+                            ? const Color(0xFFB8AEA2)
+                            : const Color(0xFF8B7E74),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  Center(
+                    child: InkWell(
+                      onTap: _viewModel.toggleDetailsExpanded,
+                      borderRadius: BorderRadius.circular(14),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              strings.details,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Icon(
+                              _viewModel.detailsExpanded
+                                  ? Icons.keyboard_arrow_up_rounded
+                                  : Icons.keyboard_arrow_down_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 220),
+                    crossFadeState: _viewModel.detailsExpanded
+                        ? CrossFadeState.showFirst
+                        : CrossFadeState.showSecond,
+                    firstChild: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: _DetailsBlock(
+                        quote: quote,
+                        tags: tags,
+                        strings: strings,
+                        onChangeDate: _pickCreatedAt,
+                      ),
+                    ),
+                    secondChild: const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
-  }
-
-  Future<void> _toggleFavorite() async {
-    final updated = _quote.copyWith(
-      isFavorite: !_quote.isFavorite,
-      updatedAt: DateTime.now(),
-    );
-    await widget.quoteRepository.save(updated);
-    if (!mounted) return;
-    setState(() => _quote = updated);
   }
 
   Future<void> _pickCreatedAt() async {
+    final quote = _viewModel.quote;
     final picked = await showDatePicker(
       context: context,
-      initialDate: _quote.createdAt,
+      initialDate: quote.createdAt,
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
     );
     if (picked == null || !mounted) return;
-
-    final updated = _quote.copyWith(
-      createdAt: DateTime(
-        picked.year,
-        picked.month,
-        picked.day,
-        _quote.createdAt.hour,
-        _quote.createdAt.minute,
-      ),
-      updatedAt: DateTime.now(),
-    );
-    await widget.quoteRepository.save(updated);
-    if (!mounted) return;
-    setState(() => _quote = updated);
+    await _viewModel.updateCreatedAt(picked);
   }
 
   Future<void> _openEdit() async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
         builder: (_) => QuoteEditScreen(
-          quoteRepository: widget.quoteRepository,
-          tagRepository: widget.tagRepository,
-          quote: _quote,
+          quoteRepository: _viewModel.quoteRepository,
+          tagRepository: _viewModel.tagRepository,
+          quote: _viewModel.quote,
         ),
       ),
     );
-
-    if (saved != true || !mounted) return;
-
-    final quotes = widget.quoteRepository.getAll();
-    Quote? refreshed;
-    for (final quote in quotes) {
-      if (quote.id == _quote.id) {
-        refreshed = quote;
-        break;
-      }
-    }
-    if (refreshed != null) {
-      final tagsById = {
-        for (final tag in widget.tagRepository.getAll()) tag.id: tag,
-      };
-      setState(() {
-        _quote = refreshed!;
-        _tags = _quote.tagIds.map((id) => tagsById[id]).whereType<Tag>().toList();
-      });
+    if (saved == true && mounted) {
+      _viewModel.refreshFromStorage();
     }
   }
 }
@@ -278,27 +266,30 @@ class _DetailsBlock extends StatelessWidget {
               ],
             ),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _InfoLine(
-                  title: strings.createdAt,
-                  value: _formatDate(quote.createdAt),
-                ),
-              ),
-              TextButton(
-                onPressed: onChangeDate,
-                child: Text(strings.changeDate),
-              ),
-            ],
+          _InfoLine(
+            title: strings.createdAt,
+            value: _formatDate(quote.createdAt),
+            trailing: TextButton(
+              onPressed: onChangeDate,
+              child: Text(strings.changeDate),
+            ),
           ),
+          const SizedBox(height: 10),
+          _InfoLine(title: strings.updatedAt, value: _formatDateTime(quote.updatedAt)),
         ],
       ),
     );
   }
 
-  String _formatDate(DateTime value) {
+  static String _formatDate(DateTime value) {
     return '${value.day.toString().padLeft(2, '0')}.${value.month.toString().padLeft(2, '0')}.${value.year}';
+  }
+
+  static String _formatDateTime(DateTime value) {
+    final date = _formatDate(value);
+    final time =
+        '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+    return '$date, $time';
   }
 }
 
@@ -307,30 +298,38 @@ class _InfoLine extends StatelessWidget {
     required this.title,
     required this.value,
     this.topSpacing = 0,
+    this.trailing,
   });
 
   final String title;
   final String value;
   final double topSpacing;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+
     return Padding(
       padding: EdgeInsets.only(top: topSpacing),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                Text(value, style: TextStyle(color: textColor, height: 1.4)),
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(value),
+          // ignore: use_null_aware_elements
+          if (trailing != null) trailing!,
         ],
       ),
     );
