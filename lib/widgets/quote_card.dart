@@ -166,11 +166,19 @@ class _QuoteCardState extends State<QuoteCard> {
     required bool canExpandText,
     required double maxTextWidth,
   }) {
-    if (_expandedText || !canExpandText) {
+    if (!canExpandText) {
       return Text.rich(
         quoteSpan,
-        maxLines: _expandedText ? null : _collapsedMaxLines,
-        overflow: _expandedText ? TextOverflow.visible : TextOverflow.clip,
+        maxLines: null,
+        overflow: TextOverflow.visible,
+      );
+    }
+
+    if (_expandedText) {
+      return Text.rich(
+        quoteSpan,
+        maxLines: null,
+        overflow: TextOverflow.visible,
       );
     }
 
