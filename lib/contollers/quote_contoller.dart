@@ -51,6 +51,7 @@ class QuoteController extends ChangeNotifier {
   List<Quote> _allQuotes = <Quote>[];
   Map<String, Tag> _tagsById = <String, Tag>{};
   List<String> _randomOrderIds = <String>[];
+  List<Quote> _filteredQuotes = <Quote>[];
 
   int _currentIndex = 0;
   String _searchQuery = '';
@@ -68,10 +69,7 @@ class QuoteController extends ChangeNotifier {
   bool get favoritesOnly => _favoritesOnly;
   QuoteSortMode get sortMode => _sortMode;
 
-  List<Quote> get filteredQuotes {
-    final filtered = _allQuotes.where(_matches).toList(growable: false);
-    return _sortQuotes(filtered);
-  }
+  List<Quote> get filteredQuotes => _filteredQuotes;
 
   Quote? get currentQuote {
     final filtered = filteredQuotes;
@@ -97,6 +95,7 @@ class QuoteController extends ChangeNotifier {
     _allQuotes = _quoteRepository.getAll();
     _tagsById = {for (final tag in _tagRepository.getAll()) tag.id: tag};
     _rebuildRandomOrder();
+    _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
   }
@@ -106,6 +105,7 @@ class QuoteController extends ChangeNotifier {
     _allQuotes = _quoteRepository.getAll();
     _tagsById = {for (final tag in _tagRepository.getAll()) tag.id: tag};
     _rebuildRandomOrder();
+    _recomputeFilteredQuotes();
 
     final filtered = filteredQuotes;
     if (filtered.isEmpty) {
@@ -123,6 +123,7 @@ class QuoteController extends ChangeNotifier {
 
   void setSearchQuery(String value) {
     _searchQuery = value;
+    _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
   }
@@ -133,12 +134,14 @@ class QuoteController extends ChangeNotifier {
     } else {
       _activeTagFilters.add(tagName);
     }
+    _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
   }
 
   void removeTagFilter(String tagName) {
     _activeTagFilters.remove(tagName);
+    _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
   }
@@ -148,6 +151,7 @@ class QuoteController extends ChangeNotifier {
     _activeTagFilters.clear();
     _activeTypeFilters.clear();
     _favoritesOnly = false;
+    _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
   }
@@ -161,12 +165,14 @@ class QuoteController extends ChangeNotifier {
     if (_activeTypeFilters.length == QuoteType.values.length) {
       _activeTypeFilters.clear();
     }
+    _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
   }
 
   void toggleFavoritesOnly() {
     _favoritesOnly = !_favoritesOnly;
+    _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
   }
@@ -174,6 +180,7 @@ class QuoteController extends ChangeNotifier {
   void setSortMode(QuoteSortMode value) {
     if (_sortMode == value) return;
     _sortMode = value;
+    _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
   }
@@ -253,6 +260,11 @@ class QuoteController extends ChangeNotifier {
           ..shuffle(_random);
     kept.addAll(missing);
     _randomOrderIds = kept;
+  }
+
+  void _recomputeFilteredQuotes() {
+    final filtered = _allQuotes.where(_matches).toList(growable: false);
+    _filteredQuotes = _sortQuotes(filtered);
   }
 
   int _normalize(int value, int length) {

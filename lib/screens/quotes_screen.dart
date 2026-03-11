@@ -28,14 +28,10 @@ class _QuotesScreenState extends State<QuotesScreen> {
   final TagRepository _tagRepository = TagRepository();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final Map<int, GlobalKey> _itemKeys = <int, GlobalKey>{};
 
   QuoteController? _controller;
   StreamSubscription<dynamic>? _quotesSub;
   StreamSubscription<dynamic>? _tagsSub;
-  Timer? _scrollSettleTimer;
-  int _centeredIndex = 0;
-  int _lastFilteredCount = -1;
 
   @override
   void initState() {
@@ -63,7 +59,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
   void dispose() {
     _quotesSub?.cancel();
     _tagsSub?.cancel();
-    _scrollSettleTimer?.cancel();
     _searchController.dispose();
     _scrollController.dispose();
     _controller?.dispose();
@@ -86,13 +81,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
       animation: Listenable.merge([controller, settingsController]),
       builder: (context, _) {
         final filtered = controller.filteredQuotes;
-        if (_centeredIndex >= filtered.length && filtered.isNotEmpty) {
-          _centeredIndex = filtered.length - 1;
-        }
-        if (_lastFilteredCount != filtered.length) {
-          _lastFilteredCount = filtered.length;
-          _scheduleCenteredIndexUpdate(filtered.length, immediate: true);
-        }
 
         return Scaffold(
           floatingActionButton: FloatingActionButton.extended(
@@ -220,72 +208,51 @@ class _QuotesScreenState extends State<QuotesScreen> {
                 if (filtered.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 2),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 120),
-                      child: Text(
-                        '${_centeredIndex + 1} / ${filtered.length}',
-                        key: ValueKey('${_centeredIndex}_${filtered.length}'),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
-                        ),
+                    child: Text(
+                      '${filtered.length}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
                       ),
                     ),
                   ),
                 Expanded(
                   child: filtered.isEmpty
                       ? _buildEmptyState(controller, strings)
-                      : NotificationListener<ScrollNotification>(
-                          onNotification: (notification) {
-                            if (notification is ScrollUpdateNotification ||
-                                notification is UserScrollNotification ||
-                                notification is ScrollEndNotification) {
-                              _scheduleCenteredIndexUpdate(filtered.length);
-                            }
-                            return false;
-                          },
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            physics: const BouncingScrollPhysics(
-                              parent: AlwaysScrollableScrollPhysics(),
-                            ),
-                            keyboardDismissBehavior:
-                                ScrollViewKeyboardDismissBehavior.onDrag,
-                            cacheExtent: 900,
-                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final quote = filtered[index];
-                              final key = _itemKeys.putIfAbsent(
-                                index,
-                                () => GlobalKey(),
-                              );
-                              return RepaintBoundary(
-                                child: Padding(
-                                  key: key,
-                                  padding: EdgeInsets.only(
-                                    bottom: settingsController
-                                        .settings
-                                        .cardDensity
-                                        .cardSpacing,
-                                  ),
-                                  child: QuoteCard(
-                                    quote: quote,
-                                    tags: controller.tagsForQuote(quote),
-                                    query: controller.searchQuery,
-                                    activeTagFilters:
-                                        controller.activeTagFilters,
-                                    onTagTap: controller.toggleTagFilter,
-                                    onTap: () => _openDetails(quote),
-                                    onFavoriteToggle: () =>
-                                        controller.toggleFavorite(quote),
-                                    onLongPressStart: (details) =>
-                                        _showQuoteMenu(quote, details, strings),
-                                  ),
+                      : ListView.builder(
+                          controller: _scrollController,
+                          physics: const ClampingScrollPhysics(),
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          cacheExtent: 500,
+                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final quote = filtered[index];
+                            return RepaintBoundary(
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: settingsController
+                                      .settings
+                                      .cardDensity
+                                      .cardSpacing,
                                 ),
-                              );
-                            },
-                          ),
+                                child: QuoteCard(
+                                  quote: quote,
+                                  tags: controller.tagsForQuote(quote),
+                                  query: controller.searchQuery,
+                                  activeTagFilters:
+                                      controller.activeTagFilters,
+                                  onTagTap: controller.toggleTagFilter,
+                                  onTap: () => _openDetails(quote),
+                                  onFavoriteToggle: () =>
+                                      controller.toggleFavorite(quote),
+                                  onLongPressStart: (details) =>
+                                      _showQuoteMenu(quote, details, strings),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                 ),
               ],
@@ -509,23 +476,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
 
   void _onStorageChanged() {
     _controller?.refreshFromStorage();
-    _itemKeys.clear();
-    _scheduleCenteredIndexUpdate(_controller?.filteredQuotes.length ?? 0);
-  }
-
-  void _scheduleCenteredIndexUpdate(int itemCount, {bool immediate = false}) {
-    _scrollSettleTimer?.cancel();
-    final delay = immediate ? Duration.zero : const Duration(milliseconds: 56);
-    _scrollSettleTimer = Timer(delay, () {
-      if (!mounted) {
-        return;
-      }
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _updateCenteredIndex(itemCount);
-        }
-      });
-    });
   }
 
   Future<void> _openSettings(AppSettingsController settingsController) async {
@@ -569,44 +519,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
         );
       },
     );
-  }
-
-  void _updateCenteredIndex(int itemCount) {
-    if (!mounted || itemCount == 0) {
-      return;
-    }
-
-    final viewport = context.findRenderObject() as RenderBox?;
-    if (viewport == null) {
-      return;
-    }
-    final centerY = viewport.size.height / 2;
-
-    var bestIndex = _centeredIndex;
-    var bestDistance = double.infinity;
-
-    for (final entry in _itemKeys.entries) {
-      final itemContext = entry.value.currentContext;
-      if (itemContext == null) {
-        continue;
-      }
-      final box = itemContext.findRenderObject() as RenderBox?;
-      if (box == null || !box.attached) {
-        continue;
-      }
-
-      final topLeft = box.localToGlobal(Offset.zero);
-      final itemCenterY = topLeft.dy + box.size.height / 2;
-      final distance = (itemCenterY - centerY).abs();
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestIndex = entry.key;
-      }
-    }
-
-    if (bestIndex != _centeredIndex && bestIndex < itemCount) {
-      setState(() => _centeredIndex = bestIndex);
-    }
   }
 }
 

@@ -17,43 +17,49 @@ class QuoteSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
-    );
+    final fillColor = isDark ? const Color(0xFF262B33) : Colors.white;
+    final iconColor = isDark
+        ? const Color(0xFFB8AEA2)
+        : const Color(0xFF8B7E74);
+    final borderColor = Theme.of(context).dividerColor;
 
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: isDark ? const Color(0xFF262B33) : Colors.white,
-        prefixIcon: Icon(
-          Icons.search,
-          color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
-        ),
-        hintText: hintText,
-        hintStyle: TextStyle(
-          color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
-        ),
-        suffixIcon: controller.text.isEmpty
-            ? null
-            : IconButton(
-                onPressed: onClear,
-                icon: Icon(
-                  Icons.close,
-                  color: isDark
-                      ? const Color(0xFFB8AEA2)
-                      : const Color(0xFF8B7E74),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: fillColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor, width: 1.5),
+      ),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+        decoration: InputDecoration(
+          isDense: true,
+          filled: false,
+          prefixIcon: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: Icon(
+              Icons.search,
+              key: ValueKey<Color>(iconColor),
+              color: iconColor,
+            ),
+          ),
+          hintText: hintText,
+          hintStyle: TextStyle(color: iconColor),
+          suffixIcon: controller.text.isEmpty
+              ? null
+              : IconButton(
+                  onPressed: onClear,
+                  icon: Icon(Icons.close, color: iconColor),
                 ),
-              ),
-        border: border,
-        enabledBorder: border,
-        focusedBorder: border.copyWith(
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
-            width: 1.6,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 14,
           ),
         ),
       ),

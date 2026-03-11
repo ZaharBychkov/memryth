@@ -35,12 +35,7 @@ class QuoteCard extends StatefulWidget {
 
 class _QuoteCardState extends State<QuoteCard> {
   static const int _collapsedCount = 6;
-  static const int _expandThresholdLines = 10;
-  static const TextStyle _ellipsisStyle = TextStyle(
-    color: Color(0xFF8B8B8B),
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-  );
+  static const int _expandThresholdChars = 280;
 
   bool _expandedTags = false;
   bool _expandedText = false;
@@ -63,206 +58,191 @@ class _QuoteCardState extends State<QuoteCard> {
     final visibleTags = _expandedTags
         ? tags
         : tags.take(_collapsedCount).toList();
+    final canExpandText = widget.quote.text.trim().length > _expandThresholdChars;
     final quoteSpan = TextSpan(
       style: quoteTextStyle,
       children: _highlight(widget.quote.text, widget.query),
     );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxTextWidth = constraints.maxWidth - (padding * 2);
-        final totalTextLines = _measureTextLineCount(
-          context: context,
-          maxTextWidth: maxTextWidth,
-          text: quoteSpan,
-        );
-        final canExpandText = totalTextLines > _expandThresholdLines;
-
-        return GestureDetector(
-          onLongPressStart: widget.onLongPressStart,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: widget.onTap,
-              borderRadius: BorderRadius.circular(20),
-              child: AnimatedSize(
-                duration: const Duration(milliseconds: 320),
-                curve: Curves.easeOutCubic,
-                alignment: Alignment.topCenter,
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(padding),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Theme.of(context).dividerColor,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Column(
+    return GestureDetector(
+      onLongPressStart: widget.onLongPressStart,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(padding),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor,
+                  width: 1.5,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _TypeBadge(
-                            type: widget.quote.type,
-                            label: strings.quoteTypeLabel(widget.quote.type),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: widget.onFavoriteToggle,
-                            visualDensity: VisualDensity.compact,
-                            splashRadius: 20,
-                            icon: Icon(
-                              widget.quote.isFavorite
-                                  ? Icons.star_rounded
-                                  : Icons.star_border_rounded,
-                              color: widget.quote.isFavorite
-                                  ? const Color(0xFFE4A11B)
-                                  : (isDark
-                                        ? const Color(0xFFB8AEA2)
-                                        : const Color(0xFF8B7E74)),
-                            ),
-                          ),
-                        ],
+                      _TypeBadge(
+                        type: widget.quote.type,
+                        label: strings.quoteTypeLabel(widget.quote.type),
                       ),
-                      _buildQuoteText(
-                        context: context,
-                        quoteSpan: quoteSpan,
-                        canExpandText: canExpandText,
-                        quoteTextStyle: quoteTextStyle,
-                        maxTextWidth: maxTextWidth,
-                        collapsedLines: settings.collapsedLines,
+                      const Spacer(),
+                      IconButton(
+                        onPressed: widget.onFavoriteToggle,
+                        visualDensity: VisualDensity.compact,
+                        splashRadius: 20,
+                        icon: Icon(
+                          widget.quote.isFavorite
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: widget.quote.isFavorite
+                              ? const Color(0xFFE4A11B)
+                              : (isDark
+                                    ? const Color(0xFFB8AEA2)
+                                    : const Color(0xFF8B7E74)),
+                        ),
                       ),
-                      if (canExpandText)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: GestureDetector(
-                            onTap: () =>
-                                setState(() => _expandedText = !_expandedText),
-                            behavior: HitTestBehavior.opaque,
-                            child: Text(
-                              _expandedText ? strings.collapse : strings.expand,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                    ],
+                  ),
+                  _buildQuoteText(
+                    quoteSpan: quoteSpan,
+                    canExpandText: canExpandText,
+                    collapsedLines: settings.collapsedLines,
+                  ),
+                  if (canExpandText)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: GestureDetector(
+                        onTap: () =>
+                            setState(() => _expandedText = !_expandedText),
+                        behavior: HitTestBehavior.opaque,
+                        child: Text(
+                          _expandedText ? strings.collapse : strings.expand,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      SizedBox(
-                        height: settings.cardDensity == CardDensity.compact
-                            ? 10
-                            : 14,
                       ),
-                      if (settings.showMetaPreview && _metaLine.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Text(
-                            _metaLine,
+                    ),
+                  SizedBox(
+                    height: settings.cardDensity == CardDensity.compact
+                        ? 10
+                        : 14,
+                  ),
+                  if (settings.showMetaPreview && _metaLine.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        _metaLine,
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(0xFFB8AEA2)
+                              : const Color(0xFF8B7E74),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  if (settings.showNotePreview &&
+                      widget.quote.note.trim().isNotEmpty)
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF262B33)
+                            : const Color(0xFFF6F4EF),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Theme.of(context).dividerColor,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            strings.myNote,
                             style: TextStyle(
                               color: isDark
                                   ? const Color(0xFFB8AEA2)
                                   : const Color(0xFF8B7E74),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ),
-                      if (settings.showNotePreview &&
-                          widget.quote.note.trim().isNotEmpty)
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 14),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF262B33)
-                                : const Color(0xFFF6F4EF),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: Theme.of(context).dividerColor,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                strings.myNote,
-                                style: TextStyle(
-                                  color: isDark
-                                      ? const Color(0xFFB8AEA2)
-                                      : const Color(0xFF8B7E74),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                widget.quote.note.trim(),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyMedium?.color,
-                                  fontSize: 14,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (visibleTags.isNotEmpty)
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final tag in visibleTags)
-                              TagChip(
-                                tagName: tag.name,
-                                query: widget.query,
-                                selected: widget.activeTagFilters.contains(
-                                  tag.name,
-                                ),
-                                onTap: () => widget.onTagTap(tag.name),
-                              ),
-                          ],
-                        )
-                      else
-                        Text(
-                          strings.tagNone,
-                          style: TextStyle(
-                            color: isDark
-                                ? const Color(0xFFB8AEA2)
-                                : const Color(0xFF8B7E74),
-                            fontSize: 13,
-                          ),
-                        ),
-                      if (showExpandTagsButton)
-                        TextButton(
-                          onPressed: () =>
-                              setState(() => _expandedTags = !_expandedTags),
-                          child: Text(
-                            _expandedTags
-                                ? strings.hideTags
-                                : strings.showAllTags(tags.length),
+                          const SizedBox(height: 6),
+                          Text(
+                            widget.quote.note.trim(),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color,
+                              fontSize: 14,
+                              height: 1.35,
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  if (visibleTags.isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final tag in visibleTags)
+                          TagChip(
+                            tagName: tag.name,
+                            query: widget.query,
+                            selected: widget.activeTagFilters.contains(
+                              tag.name,
+                            ),
+                            onTap: () => widget.onTagTap(tag.name),
+                          ),
+                      ],
+                    )
+                  else
+                    Text(
+                      strings.tagNone,
+                      style: TextStyle(
+                        color: isDark
+                            ? const Color(0xFFB8AEA2)
+                            : const Color(0xFF8B7E74),
+                        fontSize: 13,
+                      ),
+                    ),
+                  if (showExpandTagsButton)
+                    TextButton(
+                      onPressed: () =>
+                          setState(() => _expandedTags = !_expandedTags),
+                      child: Text(
+                        _expandedTags
+                            ? strings.hideTags
+                            : strings.showAllTags(tags.length),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                    ],
-                  ),
-                ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -277,15 +257,12 @@ class _QuoteCardState extends State<QuoteCard> {
     if (widget.quote.sourceDetails.trim().isNotEmpty) {
       parts.add(widget.quote.sourceDetails.trim());
     }
-    return parts.join(' • ');
+    return parts.join(' вЂў ');
   }
 
   Widget _buildQuoteText({
-    required BuildContext context,
     required TextSpan quoteSpan,
     required bool canExpandText,
-    required TextStyle quoteTextStyle,
-    required double maxTextWidth,
     required int collapsedLines,
   }) {
     if (!canExpandText || _expandedText) {
@@ -296,78 +273,11 @@ class _QuoteCardState extends State<QuoteCard> {
       );
     }
 
-    final collapsedText = _truncateTextForCollapsed(
-      context: context,
-      source: widget.quote.text,
-      maxTextWidth: maxTextWidth,
-      suffix: ' ...',
-      quoteTextStyle: quoteTextStyle,
-      collapsedLines: collapsedLines,
-    );
-
     return Text.rich(
-      TextSpan(
-        style: quoteTextStyle,
-        children: [
-          ..._highlight(collapsedText, widget.query),
-          const TextSpan(text: ' ...', style: _ellipsisStyle),
-        ],
-      ),
+      quoteSpan,
       maxLines: collapsedLines,
-      overflow: TextOverflow.clip,
+      overflow: TextOverflow.ellipsis,
     );
-  }
-
-  String _truncateTextForCollapsed({
-    required BuildContext context,
-    required String source,
-    required double maxTextWidth,
-    required String suffix,
-    required TextStyle quoteTextStyle,
-    required int collapsedLines,
-  }) {
-    var low = 0;
-    var high = source.length;
-    var best = 0;
-
-    while (low <= high) {
-      final mid = (low + high) ~/ 2;
-      final text = source.substring(0, mid).trimRight();
-      final candidate = '$text$suffix';
-      final painter = TextPainter(
-        text: TextSpan(text: candidate, style: quoteTextStyle),
-        maxLines: collapsedLines,
-        textDirection: Directionality.of(context),
-      )..layout(maxWidth: maxTextWidth);
-
-      if (painter.didExceedMaxLines) {
-        high = mid - 1;
-      } else {
-        best = mid;
-        low = mid + 1;
-      }
-    }
-
-    var result = source.substring(0, best).trimRight();
-    final lastSpace = result.lastIndexOf(RegExp(r'\s'));
-    if (lastSpace > 0) result = result.substring(0, lastSpace).trimRight();
-    if (result.isEmpty) {
-      return source.substring(0, best.clamp(0, source.length)).trimRight();
-    }
-    return result;
-  }
-
-  int _measureTextLineCount({
-    required BuildContext context,
-    required double maxTextWidth,
-    required TextSpan text,
-  }) {
-    if (maxTextWidth <= 0 || maxTextWidth == double.infinity) return 0;
-    final painter = TextPainter(
-      text: text,
-      textDirection: Directionality.of(context),
-    )..layout(maxWidth: maxTextWidth);
-    return painter.computeLineMetrics().length;
   }
 
   List<TextSpan> _highlight(String source, String query) {
