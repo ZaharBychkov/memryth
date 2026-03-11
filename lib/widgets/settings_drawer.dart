@@ -6,9 +6,14 @@ import '../settings/app_settings_controller.dart';
 import '../settings/app_strings.dart';
 
 class SettingsDrawer extends StatelessWidget {
-  const SettingsDrawer({super.key, required this.controller});
+  const SettingsDrawer({
+    super.key,
+    required this.controller,
+    this.embedded = false,
+  });
 
   final AppSettingsController controller;
+  final bool embedded;
 
   @override
   Widget build(BuildContext context) {
@@ -19,159 +24,147 @@ class SettingsDrawer extends StatelessWidget {
         ? const Color(0xFFB8AEA2)
         : const Color(0xFF8B7E74);
 
-    return Drawer(
-      child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          children: [
-            Row(
-              children: [
-                Text(
-                  strings.settings,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-            Text(
-              strings.settingsSubtitle,
-              style: TextStyle(
-                color: sectionTitleColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(
-              title: strings.languageTitle,
-              color: sectionTitleColor,
-            ),
-            const SizedBox(height: 8),
-            _LanguageToggle(
-              value: settings.language,
-              onChanged: controller.setLanguage,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(title: strings.themeTitle, color: sectionTitleColor),
-            const SizedBox(height: 8),
-            _OptionGrid<AppThemeMode>(
-              values: AppThemeMode.values,
-              currentValue: settings.themeMode,
-              labelBuilder: (value) => value.label(settings.language),
-              onSelected: controller.setThemeMode,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(
-              title: strings.quoteTextTitle,
-              color: sectionTitleColor,
-            ),
-            const SizedBox(height: 8),
-            _OptionGrid<QuoteTextSize>(
-              values: QuoteTextSize.values,
-              currentValue: settings.quoteTextSize,
-              labelBuilder: (value) => value.label(settings.language),
-              onSelected: controller.setQuoteTextSize,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(
-              title: strings.lineSpacingTitle,
-              color: sectionTitleColor,
-            ),
-            const SizedBox(height: 8),
-            _OptionGrid<QuoteLineSpacing>(
-              values: QuoteLineSpacing.values,
-              currentValue: settings.quoteLineSpacing,
-              labelBuilder: (value) => value.label(settings.language),
-              onSelected: controller.setQuoteLineSpacing,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(title: strings.uiSizeTitle, color: sectionTitleColor),
-            const SizedBox(height: 8),
-            _OptionGrid<UiTextSize>(
-              values: UiTextSize.values,
-              currentValue: settings.uiTextSize,
-              labelBuilder: (value) => value.label(settings.language),
-              onSelected: controller.setUiTextSize,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(
-              title: strings.densityTitle,
-              color: sectionTitleColor,
-            ),
-            const SizedBox(height: 8),
-            _OptionGrid<CardDensity>(
-              values: CardDensity.values,
-              currentValue: settings.cardDensity,
-              labelBuilder: (value) => value.label(settings.language),
-              onSelected: controller.setCardDensity,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(
-              title: strings.tagSizeTitle,
-              color: sectionTitleColor,
-            ),
-            const SizedBox(height: 8),
-            _OptionGrid<TagPreviewSize>(
-              values: TagPreviewSize.values,
-              currentValue: settings.tagPreviewSize,
-              labelBuilder: (value) => value.label(settings.language),
-              onSelected: controller.setTagPreviewSize,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(
-              title: strings.collapsedTitle,
-              color: sectionTitleColor,
-            ),
-            const SizedBox(height: 8),
-            _OptionGrid<int>(
-              values: const [4, 6, 8],
-              currentValue: settings.collapsedLines,
-              labelBuilder: strings.rows,
-              onSelected: controller.setCollapsedLines,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(
-              title: strings.defaultSortTitle,
-              color: sectionTitleColor,
-            ),
-            const SizedBox(height: 8),
-            _OptionGrid<QuoteSortMode>(
-              values: QuoteSortMode.values,
-              currentValue: settings.defaultSortMode,
-              labelBuilder: strings.sortModeLabel,
-              columns: 2,
-              onSelected: controller.setDefaultSortMode,
-            ),
-            const SizedBox(height: 16),
-            _SectionTitle(
-              title: strings.cardPreviewTitle,
-              color: sectionTitleColor,
-            ),
-            const SizedBox(height: 8),
-            SwitchListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Text(strings.showNote),
-              value: settings.showNotePreview,
-              onChanged: controller.setShowNotePreview,
-            ),
-            SwitchListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Text(strings.showMeta),
-              value: settings.showMetaPreview,
-              onChanged: controller.setShowMetaPreview,
-            ),
-          ],
+    final content = SafeArea(
+      child: ListView(
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
         ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        children: [
+          Row(
+            children: [
+              Text(
+                strings.settings,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
+          Text(
+            strings.settingsSubtitle,
+            style: TextStyle(
+              color: sectionTitleColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.languageTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _LanguageToggle(
+            value: settings.language,
+            onChanged: controller.setLanguage,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.themeTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _OptionGrid<AppThemeMode>(
+            values: AppThemeMode.values,
+            currentValue: settings.themeMode,
+            labelBuilder: (value) => value.label(settings.language),
+            onSelected: controller.setThemeMode,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.quoteTextTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _OptionGrid<QuoteTextSize>(
+            values: QuoteTextSize.values,
+            currentValue: settings.quoteTextSize,
+            labelBuilder: (value) => value.label(settings.language),
+            onSelected: controller.setQuoteTextSize,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.lineSpacingTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _OptionGrid<QuoteLineSpacing>(
+            values: QuoteLineSpacing.values,
+            currentValue: settings.quoteLineSpacing,
+            labelBuilder: (value) => value.label(settings.language),
+            onSelected: controller.setQuoteLineSpacing,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.uiSizeTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _OptionGrid<UiTextSize>(
+            values: UiTextSize.values,
+            currentValue: settings.uiTextSize,
+            labelBuilder: (value) => value.label(settings.language),
+            onSelected: controller.setUiTextSize,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.densityTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _OptionGrid<CardDensity>(
+            values: CardDensity.values,
+            currentValue: settings.cardDensity,
+            labelBuilder: (value) => value.label(settings.language),
+            onSelected: controller.setCardDensity,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.tagSizeTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _OptionGrid<TagPreviewSize>(
+            values: TagPreviewSize.values,
+            currentValue: settings.tagPreviewSize,
+            labelBuilder: (value) => value.label(settings.language),
+            onSelected: controller.setTagPreviewSize,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.collapsedTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _OptionGrid<int>(
+            values: const [4, 6, 8],
+            currentValue: settings.collapsedLines,
+            labelBuilder: strings.rows,
+            onSelected: controller.setCollapsedLines,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.defaultSortTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          _OptionGrid<QuoteSortMode>(
+            values: QuoteSortMode.values,
+            currentValue: settings.defaultSortMode,
+            labelBuilder: strings.sortModeLabel,
+            columns: 2,
+            onSelected: controller.setDefaultSortMode,
+          ),
+          const SizedBox(height: 16),
+          _SectionTitle(title: strings.cardPreviewTitle, color: sectionTitleColor),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            title: Text(strings.showNote),
+            value: settings.showNotePreview,
+            onChanged: controller.setShowNotePreview,
+          ),
+          SwitchListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            title: Text(strings.showMeta),
+            value: settings.showMetaPreview,
+            onChanged: controller.setShowMetaPreview,
+          ),
+        ],
       ),
     );
+
+    if (embedded) {
+      return Material(
+        color: isDark ? const Color(0xFF1D2127) : const Color(0xFFF7F1EA),
+        borderRadius: const BorderRadius.horizontal(left: Radius.circular(28)),
+        clipBehavior: Clip.antiAlias,
+        child: content,
+      );
+    }
+
+    return Drawer(child: content);
   }
 }
 
@@ -259,6 +252,7 @@ class _LanguageToggleItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
         height: 38,
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -336,7 +330,9 @@ class _OptionTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
         height: 40,
         alignment: Alignment.center,
         decoration: BoxDecoration(

@@ -7,6 +7,7 @@ import '../contollers/quote_contoller.dart';
 import '../models/quote.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
+import '../settings/app_settings_controller.dart';
 import '../settings/app_settings_scope.dart';
 import '../settings/app_strings.dart';
 import '../widgets/quote_card.dart';
@@ -25,7 +26,6 @@ class QuotesScreen extends StatefulWidget {
 class _QuotesScreenState extends State<QuotesScreen> {
   final QuoteRepository _quoteRepository = QuoteRepository();
   final TagRepository _tagRepository = TagRepository();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final Map<int, GlobalKey> _itemKeys = <int, GlobalKey>{};
@@ -33,14 +33,15 @@ class _QuotesScreenState extends State<QuotesScreen> {
   QuoteController? _controller;
   StreamSubscription<dynamic>? _quotesSub;
   StreamSubscription<dynamic>? _tagsSub;
+  Timer? _scrollSettleTimer;
   int _centeredIndex = 0;
+  int _lastFilteredCount = -1;
 
   @override
   void initState() {
     super.initState();
     _quotesSub = _quoteRepository.watch().listen((_) => _onStorageChanged());
     _tagsSub = _tagRepository.watch().listen((_) => _onStorageChanged());
-    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -62,6 +63,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   void dispose() {
     _quotesSub?.cancel();
     _tagsSub?.cancel();
+    _scrollSettleTimer?.cancel();
     _searchController.dispose();
     _scrollController.dispose();
     _controller?.dispose();
@@ -73,7 +75,9 @@ class _QuotesScreenState extends State<QuotesScreen> {
     final settingsController = AppSettingsScope.of(context);
     final strings = AppStrings(settingsController.settings.language);
     final controller = _controller;
-    if (controller == null) return const SizedBox.shrink();
+    if (controller == null) {
+      return const SizedBox.shrink();
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerBg = isDark ? const Color(0xFF1A1E24) : const Color(0xFFF5F0E6);
@@ -85,15 +89,12 @@ class _QuotesScreenState extends State<QuotesScreen> {
         if (_centeredIndex >= filtered.length && filtered.isNotEmpty) {
           _centeredIndex = filtered.length - 1;
         }
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          _updateCenteredIndex(filtered.length);
-        });
+        if (_lastFilteredCount != filtered.length) {
+          _lastFilteredCount = filtered.length;
+          _scheduleCenteredIndexUpdate(filtered.length, immediate: true);
+        }
 
         return Scaffold(
-          key: _scaffoldKey,
-          endDrawer: SettingsDrawer(controller: settingsController),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: _openCreate,
             backgroundColor: Theme.of(context).colorScheme.primary,
@@ -145,14 +146,20 @@ class _QuotesScreenState extends State<QuotesScreen> {
                 ),
                 const SizedBox(width: 8),
                 _HeaderIconButton(
-                  onPressed: () => settingsController.toggleTheme(),
-                  child: Icon(
-                    settingsController.settings.isDarkMode
-                        ? Icons.light_mode_rounded
-                        : Icons.dark_mode_rounded,
-                    color: isDark
-                        ? const Color(0xFFEAE4DB)
-                        : const Color(0xFF2C2C2C),
+                  onPressed: settingsController.toggleTheme,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    child: Icon(
+                      settingsController.settings.isDarkMode
+                          ? Icons.light_mode_rounded
+                          : Icons.dark_mode_rounded,
+                      key: ValueKey(settingsController.settings.isDarkMode),
+                      color: isDark
+                          ? const Color(0xFFEAE4DB)
+                          : const Color(0xFF2C2C2C),
+                    ),
                   ),
                 ),
               ],
@@ -171,8 +178,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     _HeaderIconButton(
-                      onPressed: () =>
-                          _scaffoldKey.currentState?.openEndDrawer(),
+                      onPressed: () => _openSettings(settingsController),
                       child: Icon(
                         Icons.tune_rounded,
                         color: isDark
@@ -189,7 +195,9 @@ class _QuotesScreenState extends State<QuotesScreen> {
           body: SafeArea(
             child: Column(
               children: [
-                Container(
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
                   width: double.infinity,
                   color: headerBg,
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
@@ -212,49 +220,72 @@ class _QuotesScreenState extends State<QuotesScreen> {
                 if (filtered.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 2),
-                    child: Text(
-                      '${_centeredIndex + 1} / ${filtered.length}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 120),
+                      child: Text(
+                        '${_centeredIndex + 1} / ${filtered.length}',
+                        key: ValueKey('${_centeredIndex}_${filtered.length}'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ),
                 Expanded(
                   child: filtered.isEmpty
                       ? _buildEmptyState(controller, strings)
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final quote = filtered[index];
-                            final key = _itemKeys.putIfAbsent(
-                              index,
-                              () => GlobalKey(),
-                            );
-                            return Padding(
-                              key: key,
-                              padding: EdgeInsets.only(
-                                bottom: settingsController
-                                    .settings
-                                    .cardDensity
-                                    .cardSpacing,
-                              ),
-                              child: QuoteCard(
-                                quote: quote,
-                                tags: controller.tagsForQuote(quote),
-                                query: controller.searchQuery,
-                                activeTagFilters: controller.activeTagFilters,
-                                onTagTap: controller.toggleTagFilter,
-                                onTap: () => _openDetails(quote),
-                                onFavoriteToggle: () =>
-                                    controller.toggleFavorite(quote),
-                                onLongPressStart: (details) =>
-                                    _showQuoteMenu(quote, details, strings),
-                              ),
-                            );
+                      : NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            if (notification is ScrollUpdateNotification ||
+                                notification is UserScrollNotification ||
+                                notification is ScrollEndNotification) {
+                              _scheduleCenteredIndexUpdate(filtered.length);
+                            }
+                            return false;
                           },
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics(),
+                            ),
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            cacheExtent: 900,
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final quote = filtered[index];
+                              final key = _itemKeys.putIfAbsent(
+                                index,
+                                () => GlobalKey(),
+                              );
+                              return RepaintBoundary(
+                                child: Padding(
+                                  key: key,
+                                  padding: EdgeInsets.only(
+                                    bottom: settingsController
+                                        .settings
+                                        .cardDensity
+                                        .cardSpacing,
+                                  ),
+                                  child: QuoteCard(
+                                    quote: quote,
+                                    tags: controller.tagsForQuote(quote),
+                                    query: controller.searchQuery,
+                                    activeTagFilters:
+                                        controller.activeTagFilters,
+                                    onTagTap: controller.toggleTagFilter,
+                                    onTap: () => _openDetails(quote),
+                                    onFavoriteToggle: () =>
+                                        controller.toggleFavorite(quote),
+                                    onLongPressStart: (details) =>
+                                        _showQuoteMenu(quote, details, strings),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                 ),
               ],
@@ -363,7 +394,9 @@ class _QuotesScreenState extends State<QuotesScreen> {
       },
     );
 
-    if (!mounted || action == null) return;
+    if (!mounted || action == null) {
+      return;
+    }
     if (action == 'read') {
       await _openDetails(quote);
       return;
@@ -394,7 +427,9 @@ class _QuotesScreenState extends State<QuotesScreen> {
     }
 
     await Clipboard.setData(ClipboardData(text: buffer.toString()));
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -475,19 +510,76 @@ class _QuotesScreenState extends State<QuotesScreen> {
   void _onStorageChanged() {
     _controller?.refreshFromStorage();
     _itemKeys.clear();
+    _scheduleCenteredIndexUpdate(_controller?.filteredQuotes.length ?? 0);
   }
 
-  void _onScroll() {
-    final controller = _controller;
-    if (controller == null) return;
-    _updateCenteredIndex(controller.filteredQuotes.length);
+  void _scheduleCenteredIndexUpdate(int itemCount, {bool immediate = false}) {
+    _scrollSettleTimer?.cancel();
+    final delay = immediate ? Duration.zero : const Duration(milliseconds: 56);
+    _scrollSettleTimer = Timer(delay, () {
+      if (!mounted) {
+        return;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _updateCenteredIndex(itemCount);
+        }
+      });
+    });
+  }
+
+  Future<void> _openSettings(AppSettingsController settingsController) async {
+    final width = MediaQuery.of(context).size.width;
+    final panelWidth = width * 0.92 > 360 ? 360.0 : width * 0.92;
+
+    await showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'settings-panel',
+      barrierColor: const Color(0x24000000),
+      transitionDuration: const Duration(milliseconds: 260),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.centerRight,
+          child: SizedBox(
+            width: panelWidth,
+            height: double.infinity,
+            child: SettingsDrawer(
+              controller: settingsController,
+              embedded: true,
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.08, 0),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   void _updateCenteredIndex(int itemCount) {
-    if (!mounted || itemCount == 0) return;
+    if (!mounted || itemCount == 0) {
+      return;
+    }
 
     final viewport = context.findRenderObject() as RenderBox?;
-    if (viewport == null) return;
+    if (viewport == null) {
+      return;
+    }
     final centerY = viewport.size.height / 2;
 
     var bestIndex = _centeredIndex;
@@ -495,9 +587,13 @@ class _QuotesScreenState extends State<QuotesScreen> {
 
     for (final entry in _itemKeys.entries) {
       final itemContext = entry.value.currentContext;
-      if (itemContext == null) continue;
+      if (itemContext == null) {
+        continue;
+      }
       final box = itemContext.findRenderObject() as RenderBox?;
-      if (box == null || !box.attached) continue;
+      if (box == null || !box.attached) {
+        continue;
+      }
 
       final topLeft = box.localToGlobal(Offset.zero);
       final itemCenterY = topLeft.dy + box.size.height / 2;
@@ -538,9 +634,13 @@ class _HeaderIconShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Material(
-      color: isDark ? const Color(0xFF262B33) : const Color(0xFFF5EEE7),
-      borderRadius: BorderRadius.circular(14),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF262B33) : const Color(0xFFF5EEE7),
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: SizedBox(width: 42, height: 42, child: Center(child: child)),
     );
   }
@@ -563,7 +663,9 @@ class _TypeFilterButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
         height: 40,
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -623,7 +725,9 @@ class _FavoriteFilterButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
         width: 40,
         height: 40,
         decoration: BoxDecoration(

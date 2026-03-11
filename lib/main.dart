@@ -38,13 +38,16 @@ class MemrythApp extends StatelessWidget {
         builder: (context, _) {
           final settings = settingsController.settings;
           return MaterialApp(
-            title: 'Мемритм',
+            title: 'Memryth',
             debugShowCheckedModeBanner: false,
             theme: _buildLightTheme(),
             darkTheme: _buildDarkTheme(),
             themeMode: settings.themeMode == AppThemeMode.dark
                 ? ThemeMode.dark
                 : ThemeMode.light,
+            themeAnimationDuration: const Duration(milliseconds: 260),
+            themeAnimationCurve: Curves.easeInOutCubicEmphasized,
+            scrollBehavior: const _MemrythScrollBehavior(),
             builder: (context, child) {
               final mediaQuery = MediaQuery.of(context);
               return MediaQuery(
@@ -122,6 +125,17 @@ class MemrythApp extends StatelessWidget {
         elevation: 0,
       ),
       drawerTheme: const DrawerThemeData(backgroundColor: Color(0xFF1D2127)),
+    );
+  }
+}
+
+class _MemrythScrollBehavior extends MaterialScrollBehavior {
+  const _MemrythScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics(
+      parent: AlwaysScrollableScrollPhysics(),
     );
   }
 }
