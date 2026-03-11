@@ -16,10 +16,7 @@ class TagAdapter extends TypeAdapter<Tag> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Tag(
-      id: fields[0] as String,
-      name: fields[1] as String,
-    );
+    return Tag(id: fields[0] as String, name: fields[1] as String);
   }
 
   @override

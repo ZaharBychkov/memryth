@@ -10,8 +10,5 @@ class Tag extends HiveObject {
   @HiveField(1)
   final String name;
 
-  Tag({
-    required this.id,
-    required this.name,
-  });
+  Tag({required this.id, required this.name});
 }

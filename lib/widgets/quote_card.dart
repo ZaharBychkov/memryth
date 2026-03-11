@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/quote.dart';
 import '../models/tag.dart';
+import '../settings/app_settings.dart';
+import '../settings/app_settings_scope.dart';
 import 'tag_chip.dart';
 
 class QuoteCard extends StatefulWidget {
@@ -32,19 +34,10 @@ class QuoteCard extends StatefulWidget {
 
 class _QuoteCardState extends State<QuoteCard> {
   static const int _collapsedCount = 6;
-  static const int _collapsedMaxLines = 6;
   static const int _expandThresholdLines = 10;
-  static const int _notePreviewLines = 3;
-  static const TextStyle _quoteTextStyle = TextStyle(
-    color: Color(0xFF2C2C2C),
-    fontSize: 22,
-    height: 1.4,
-    fontWeight: FontWeight.w600,
-  );
   static const TextStyle _ellipsisStyle = TextStyle(
     color: Color(0xFF8B8B8B),
-    fontSize: 25,
-    height: 1.35,
+    fontSize: 24,
     fontWeight: FontWeight.w700,
   );
 
@@ -53,19 +46,29 @@ class _QuoteCardState extends State<QuoteCard> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = AppSettingsScope.of(context).settings;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final padding = settings.cardDensity.cardPadding;
+    final quoteTextStyle = TextStyle(
+      color: Theme.of(context).textTheme.bodyLarge?.color,
+      fontSize: settings.quoteTextSize.fontSize,
+      height: settings.quoteLineSpacing.height,
+      fontWeight: FontWeight.w600,
+    );
+
     final tags = widget.tags;
     final showExpandTagsButton = tags.length > _collapsedCount;
     final visibleTags = _expandedTags
         ? tags
         : tags.take(_collapsedCount).toList();
     final quoteSpan = TextSpan(
-      style: _quoteTextStyle,
+      style: quoteTextStyle,
       children: _highlight(widget.quote.text, widget.query),
     );
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxTextWidth = constraints.maxWidth - 36;
+        final maxTextWidth = constraints.maxWidth - (padding * 2);
         final totalTextLines = _measureTextLineCount(
           context: context,
           maxTextWidth: maxTextWidth,
@@ -85,150 +88,170 @@ class _QuoteCardState extends State<QuoteCard> {
                 curve: Curves.easeOutCubic,
                 alignment: Alignment.topCenter,
                 child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFFD8CEC5),
-                    width: 1.5,
+                  width: double.infinity,
+                  padding: EdgeInsets.all(padding),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Theme.of(context).dividerColor,
+                      width: 1.5,
+                    ),
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _TypeBadge(type: widget.quote.type),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: widget.onFavoriteToggle,
-                          visualDensity: VisualDensity.compact,
-                          splashRadius: 20,
-                          icon: Icon(
-                            widget.quote.isFavorite
-                                ? Icons.star_rounded
-                                : Icons.star_border_rounded,
-                            color: widget.quote.isFavorite
-                                ? const Color(0xFFE4A11B)
-                                : const Color(0xFF8B7E74),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _TypeBadge(type: widget.quote.type),
+                          const Spacer(),
+                          IconButton(
+                            onPressed: widget.onFavoriteToggle,
+                            visualDensity: VisualDensity.compact,
+                            splashRadius: 20,
+                            icon: Icon(
+                              widget.quote.isFavorite
+                                  ? Icons.star_rounded
+                                  : Icons.star_border_rounded,
+                              color: widget.quote.isFavorite
+                                  ? const Color(0xFFE4A11B)
+                                  : (isDark
+                                        ? const Color(0xFFB8AEA2)
+                                        : const Color(0xFF8B7E74)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      _buildQuoteText(
+                        context: context,
+                        quoteSpan: quoteSpan,
+                        canExpandText: canExpandText,
+                        quoteTextStyle: quoteTextStyle,
+                        maxTextWidth: maxTextWidth,
+                        collapsedLines: settings.collapsedLines,
+                      ),
+                      if (canExpandText)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: GestureDetector(
+                            onTap: () =>
+                                setState(() => _expandedText = !_expandedText),
+                            behavior: HitTestBehavior.opaque,
+                            child: Text(
+                              _expandedText ? 'Свернуть' : 'Развернуть',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                    _buildQuoteText(
-                      context: context,
-                      quoteSpan: quoteSpan,
-                      canExpandText: canExpandText,
-                      maxTextWidth: maxTextWidth,
-                    ),
-                    if (canExpandText)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: GestureDetector(
-                          onTap: () =>
-                              setState(() => _expandedText = !_expandedText),
-                          behavior: HitTestBehavior.opaque,
+                      SizedBox(
+                        height: settings.cardDensity == CardDensity.compact
+                            ? 10
+                            : 14,
+                      ),
+                      if (settings.showMetaPreview && _metaLine.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
                           child: Text(
-                            _expandedText ? 'Свернуть' : 'Развернуть',
-                            style: const TextStyle(
-                              color: Color(0xFF4A6FA5),
-                              fontSize: 13,
+                            _metaLine,
+                            style: TextStyle(
+                              color: isDark
+                                  ? const Color(0xFFB8AEA2)
+                                  : const Color(0xFF8B7E74),
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-                      ),
-                    const SizedBox(height: 14),
-                    if (_metaLine.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Text(
-                          _metaLine,
-                          style: const TextStyle(
-                            color: Color(0xFF8B7E74),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                      if (settings.showNotePreview &&
+                          widget.quote.note.trim().isNotEmpty)
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 14),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF262B33)
+                                : const Color(0xFFF6F4EF),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Theme.of(context).dividerColor,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Моя заметка',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? const Color(0xFFB8AEA2)
+                                      : const Color(0xFF8B7E74),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                widget.quote.note.trim(),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.color,
+                                  fontSize: 14,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    if (widget.quote.note.trim().isNotEmpty)
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 14),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF6F4EF),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: const Color(0xFFE2D8CD),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      if (visibleTags.isNotEmpty)
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
-                            const Text(
-                              'Моя заметка',
-                              style: TextStyle(
-                                color: Color(0xFF8B7E74),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                            for (final tag in visibleTags)
+                              TagChip(
+                                tagName: tag.name,
+                                query: widget.query,
+                                selected: widget.activeTagFilters.contains(
+                                  tag.name,
+                                ),
+                                onTap: () => widget.onTagTap(tag.name),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              widget.quote.note.trim(),
-                              maxLines: _notePreviewLines,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFF3B342E),
-                                fontSize: 14,
-                                height: 1.35,
-                              ),
-                            ),
                           ],
+                        )
+                      else
+                        Text(
+                          'Теги не добавлены',
+                          style: TextStyle(
+                            color: isDark
+                                ? const Color(0xFFB8AEA2)
+                                : const Color(0xFF8B7E74),
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
-                    if (visibleTags.isNotEmpty)
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final tag in visibleTags)
-                            TagChip(
-                              tagName: tag.name,
-                              query: widget.query,
-                              selected: widget.activeTagFilters.contains(
-                                tag.name,
-                              ),
-                              onTap: () => widget.onTagTap(tag.name),
+                      if (showExpandTagsButton)
+                        TextButton(
+                          onPressed: () =>
+                              setState(() => _expandedTags = !_expandedTags),
+                          child: Text(
+                            _expandedTags
+                                ? 'Скрыть теги'
+                                : 'Показать все теги (${tags.length})',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
                             ),
-                        ],
-                      )
-                    else
-                      const Text(
-                        'Теги не добавлены',
-                        style: TextStyle(
-                          color: Color(0xFF8B7E74),
-                          fontSize: 13,
+                          ),
                         ),
-                      ),
-                    if (showExpandTagsButton)
-                      TextButton(
-                        onPressed: () =>
-                            setState(() => _expandedTags = !_expandedTags),
-                        child: Text(
-                          _expandedTags
-                              ? 'Скрыть теги'
-                              : 'Показать все теги (${tags.length})',
-                          style: const TextStyle(color: Color(0xFF4A6FA5)),
-                        ),
-                      ),
-                  ],
-                ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -256,7 +279,9 @@ class _QuoteCardState extends State<QuoteCard> {
     required BuildContext context,
     required TextSpan quoteSpan,
     required bool canExpandText,
+    required TextStyle quoteTextStyle,
     required double maxTextWidth,
+    required int collapsedLines,
   }) {
     if (!canExpandText || _expandedText) {
       return Text.rich(
@@ -271,17 +296,19 @@ class _QuoteCardState extends State<QuoteCard> {
       source: widget.quote.text,
       maxTextWidth: maxTextWidth,
       suffix: ' ...',
+      quoteTextStyle: quoteTextStyle,
+      collapsedLines: collapsedLines,
     );
 
     return Text.rich(
       TextSpan(
-        style: _quoteTextStyle,
+        style: quoteTextStyle,
         children: [
           ..._highlight(collapsedText, widget.query),
           const TextSpan(text: ' ...', style: _ellipsisStyle),
         ],
       ),
-      maxLines: _collapsedMaxLines,
+      maxLines: collapsedLines,
       overflow: TextOverflow.clip,
     );
   }
@@ -291,6 +318,8 @@ class _QuoteCardState extends State<QuoteCard> {
     required String source,
     required double maxTextWidth,
     required String suffix,
+    required TextStyle quoteTextStyle,
+    required int collapsedLines,
   }) {
     var low = 0;
     var high = source.length;
@@ -301,8 +330,8 @@ class _QuoteCardState extends State<QuoteCard> {
       final text = source.substring(0, mid).trimRight();
       final candidate = '$text$suffix';
       final painter = TextPainter(
-        text: TextSpan(text: candidate, style: _quoteTextStyle),
-        maxLines: _collapsedMaxLines,
+        text: TextSpan(text: candidate, style: quoteTextStyle),
+        maxLines: collapsedLines,
         textDirection: Directionality.of(context),
       )..layout(maxWidth: maxTextWidth);
 
@@ -369,7 +398,7 @@ class _QuoteCardState extends State<QuoteCard> {
       spans.add(
         TextSpan(
           text: source.substring(index, index + lowerNeedle.length),
-          style: const TextStyle(
+          style: TextStyle(
             backgroundColor: Color(0xFFD5E2F5),
             color: Color(0xFF2C2C2C),
             fontWeight: FontWeight.w600,
@@ -409,10 +438,12 @@ class _TypeBadge extends StatelessWidget {
       ),
     };
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: background,
+        color: isDark ? foreground.withAlpha(32) : background,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

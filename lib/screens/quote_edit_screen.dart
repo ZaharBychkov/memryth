@@ -82,9 +82,11 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fillColor = isDark ? const Color(0xFF262B33) : Colors.white;
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Color(0xFFD8CEC5), width: 1.5),
+      borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
     );
 
     final allTags = widget.tagRepository.getAll().toList()
@@ -127,10 +129,10 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Тип записи',
                   style: TextStyle(
-                    color: Color(0xFF2C2C2C),
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -165,63 +167,54 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                   minLines: 6,
                   maxLines: null,
                   textInputAction: TextInputAction.newline,
-                  decoration: InputDecoration(
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                  decoration: _inputDecoration(
+                    context: context,
+                    border: border,
+                    fillColor: fillColor,
                     labelText: _selectedType == QuoteType.thought
                         ? 'Текст мысли'
                         : 'Текст записи',
                     hintText: _selectedType == QuoteType.excerpt
                         ? 'Вставь фрагмент текста полностью'
                         : 'Сохрани текст, к которому хочешь вернуться',
-                    labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: border,
-                    enabledBorder: border,
-                    focusedBorder: border,
                     alignLabelWithHint: true,
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _authorController,
-                  decoration: InputDecoration(
+                  decoration: _inputDecoration(
+                    context: context,
+                    border: border,
+                    fillColor: fillColor,
                     labelText: _selectedType == QuoteType.thought
                         ? 'Автор / собеседник (необязательно)'
                         : 'Автор',
-                    labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: border,
-                    enabledBorder: border,
-                    focusedBorder: border,
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _sourceTitleController,
-                  decoration: InputDecoration(
+                  decoration: _inputDecoration(
+                    context: context,
+                    border: border,
+                    fillColor: fillColor,
                     labelText: 'Источник',
                     hintText: 'Книга, статья, видео, лекция',
-                    labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: border,
-                    enabledBorder: border,
-                    focusedBorder: border,
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _sourceDetailsController,
-                  decoration: InputDecoration(
+                  decoration: _inputDecoration(
+                    context: context,
+                    border: border,
+                    fillColor: fillColor,
                     labelText: 'Детали источника',
                     hintText: 'Глава, страница, таймкод',
-                    labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: border,
-                    enabledBorder: border,
-                    focusedBorder: border,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -230,16 +223,13 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                   minLines: 3,
                   maxLines: null,
                   textInputAction: TextInputAction.newline,
-                  decoration: InputDecoration(
+                  decoration: _inputDecoration(
+                    context: context,
+                    border: border,
+                    fillColor: fillColor,
                     labelText: 'Моя заметка',
                     hintText:
                         'Почему ты сохранил эту запись и как хочешь её использовать',
-                    labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: border,
-                    enabledBorder: border,
-                    focusedBorder: border,
                     alignLabelWithHint: true,
                   ),
                 ),
@@ -253,11 +243,13 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     for (var index = 0; index < _draftTags.length; index++)
                       InputChip(
                         label: Text(_draftTags[index].name),
-                        side: const BorderSide(
-                          color: Color(0xFFD8CEC5),
+                        side: BorderSide(
+                          color: Theme.of(context).dividerColor,
                           width: 1.2,
                         ),
-                        backgroundColor: const Color(0xFFF5EEE7),
+                        backgroundColor: isDark
+                            ? const Color(0xFF262B33)
+                            : const Color(0xFFF5EEE7),
                         onDeleted: () =>
                             setState(() => _draftTags.removeAt(index)),
                       ),
@@ -271,14 +263,11 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                       child: TextField(
                         controller: _tagController,
                         onSubmitted: (_) => _addTag(),
-                        decoration: InputDecoration(
-                          labelText: 'Новый тег',
-                          labelStyle: const TextStyle(color: Color(0xFF8B7E74)),
-                          fillColor: Colors.white,
-                          filled: true,
+                        decoration: _inputDecoration(
+                          context: context,
                           border: border,
-                          enabledBorder: border,
-                          focusedBorder: border,
+                          fillColor: fillColor,
+                          labelText: 'Новый тег',
                         ),
                       ),
                     ),
@@ -298,10 +287,12 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                 ),
                 if (allTags.isNotEmpty) ...[
                   const SizedBox(height: 14),
-                  const Text(
+                  Text(
                     'Быстро добавить из существующих',
                     style: TextStyle(
-                      color: Color(0xFF8B7E74),
+                      color: isDark
+                          ? const Color(0xFFB8AEA2)
+                          : const Color(0xFF8B7E74),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -337,6 +328,38 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required BuildContext context,
+    required OutlineInputBorder border,
+    required Color fillColor,
+    required String labelText,
+    String? hintText,
+    bool alignLabelWithHint = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      labelStyle: TextStyle(
+        color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
+      ),
+      hintStyle: TextStyle(
+        color: isDark ? const Color(0xFF8F867A) : const Color(0xFF8B7E74),
+      ),
+      fillColor: fillColor,
+      filled: true,
+      border: border,
+      enabledBorder: border,
+      focusedBorder: border.copyWith(
+        borderSide: BorderSide(
+          color: Theme.of(context).colorScheme.primary,
+          width: 1.6,
+        ),
+      ),
+      alignLabelWithHint: alignLabelWithHint,
     );
   }
 

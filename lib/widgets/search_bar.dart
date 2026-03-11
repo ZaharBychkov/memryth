@@ -14,29 +14,46 @@ class QuoteSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Color(0xFFD8CEC5), width: 1.5),
+      borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
     );
 
     return TextField(
       controller: controller,
       onChanged: onChanged,
+      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.white,
-        prefixIcon: const Icon(Icons.search, color: Color(0xFF8B7E74)),
+        fillColor: isDark ? const Color(0xFF262B33) : Colors.white,
+        prefixIcon: Icon(
+          Icons.search,
+          color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
+        ),
         hintText: 'Поиск по тексту, автору, источнику, заметке и тегам',
-        hintStyle: const TextStyle(color: Color(0xFF8B7E74)),
+        hintStyle: TextStyle(
+          color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
+        ),
         suffixIcon: controller.text.isEmpty
             ? null
             : IconButton(
                 onPressed: onClear,
-                icon: const Icon(Icons.close, color: Color(0xFF8B7E74)),
+                icon: Icon(
+                  Icons.close,
+                  color: isDark
+                      ? const Color(0xFFB8AEA2)
+                      : const Color(0xFF8B7E74),
+                ),
               ),
         border: border,
         enabledBorder: border,
-        focusedBorder: border,
+        focusedBorder: border.copyWith(
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 1.6,
+          ),
+        ),
       ),
     );
   }

@@ -13,20 +13,36 @@ enum QuoteSortMode {
   oldest,
   random;
 
+  String get key => switch (this) {
+    QuoteSortMode.newest => 'newest',
+    QuoteSortMode.updated => 'updated',
+    QuoteSortMode.oldest => 'oldest',
+    QuoteSortMode.random => 'random',
+  };
+
   String get label => switch (this) {
     QuoteSortMode.newest => 'Сначала новые',
     QuoteSortMode.updated => 'Недавно изменённые',
     QuoteSortMode.oldest => 'Сначала старые',
     QuoteSortMode.random => 'Случайный порядок',
   };
+
+  static QuoteSortMode fromKey(String? value) {
+    return QuoteSortMode.values.firstWhere(
+      (mode) => mode.key == value,
+      orElse: () => QuoteSortMode.newest,
+    );
+  }
 }
 
 class QuoteController extends ChangeNotifier {
   QuoteController({
     required QuoteRepository quoteRepository,
     required TagRepository tagRepository,
+    QuoteSortMode initialSortMode = QuoteSortMode.newest,
   }) : _quoteRepository = quoteRepository,
-       _tagRepository = tagRepository;
+       _tagRepository = tagRepository,
+       _sortMode = initialSortMode;
 
   final QuoteRepository _quoteRepository;
   final TagRepository _tagRepository;
@@ -41,7 +57,7 @@ class QuoteController extends ChangeNotifier {
   final Set<String> _activeTagFilters = <String>{};
   QuoteType? _activeTypeFilter;
   bool _favoritesOnly = false;
-  QuoteSortMode _sortMode = QuoteSortMode.newest;
+  QuoteSortMode _sortMode;
 
   List<Quote> get allQuotes => _allQuotes;
   int get currentIndex => _currentIndex;

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../settings/app_settings.dart';
+import '../settings/app_settings_scope.dart';
+
 class TagChip extends StatelessWidget {
   const TagChip({
     super.key,
@@ -16,25 +19,37 @@ class TagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background =
-        selected ? const Color(0xFFE8DDD3) : const Color(0xFFF5EEE7);
+    final settings = AppSettingsScope.of(context).settings;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final compact = settings.tagPreviewSize == TagPreviewSize.compact;
+    final background = selected
+        ? Theme.of(context).colorScheme.primary.withAlpha(isDark ? 60 : 28)
+        : (isDark ? const Color(0xFF262B33) : const Color(0xFFF5EEE7));
 
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 8 : 10,
+          vertical: compact ? 5 : 6,
+        ),
         decoration: BoxDecoration(
           color: background,
           border: Border.all(
-            color: selected ? const Color(0xFF4A6FA5) : const Color(0xFFD8CEC5),
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).dividerColor,
             width: 1.2,
           ),
           borderRadius: BorderRadius.circular(14),
         ),
         child: RichText(
           text: TextSpan(
-            style: const TextStyle(color: Color(0xFF8B7E74), fontSize: 13),
+            style: TextStyle(
+              color: isDark ? const Color(0xFFD7CEC3) : const Color(0xFF8B7E74),
+              fontSize: compact ? 12 : 13,
+            ),
             children: _highlight(tagName, query),
           ),
         ),
@@ -67,9 +82,9 @@ class TagChip extends StatelessWidget {
       spans.add(
         TextSpan(
           text: source.substring(index, index + lowerNeedle.length),
-          style: TextStyle(
-            backgroundColor: const Color(0xFFD5E2F5),
-            color: const Color(0xFF2C2C2C),
+          style: const TextStyle(
+            backgroundColor: Color(0xFFD5E2F5),
+            color: Color(0xFF2C2C2C),
             fontWeight: FontWeight.w600,
           ),
         ),

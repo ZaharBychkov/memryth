@@ -4,6 +4,7 @@ import '../models/quote.dart';
 import '../models/tag.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
+import '../settings/app_settings_scope.dart';
 import '../widgets/tag_chip.dart';
 import 'quote_edit_screen.dart';
 
@@ -31,10 +32,17 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = AppSettingsScope.of(context).settings;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final quoteStyle = TextStyle(
+      color: Theme.of(context).textTheme.bodyLarge?.color,
+      fontSize: settings.quoteTextSize.fontSize + 3,
+      height: settings.quoteLineSpacing.height,
+      fontWeight: FontWeight.w600,
+    );
+
     final metaItems = <String>[];
-    if (_quote.author.trim().isNotEmpty) {
-      metaItems.add(_quote.author.trim());
-    }
+    if (_quote.author.trim().isNotEmpty) metaItems.add(_quote.author.trim());
     if (_quote.sourceTitle.trim().isNotEmpty) {
       metaItems.add(_quote.sourceTitle.trim());
     }
@@ -54,7 +62,9 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
                   : Icons.star_border_rounded,
               color: _quote.isFavorite
                   ? const Color(0xFFE4A11B)
-                  : const Color(0xFF8B7E74),
+                  : (isDark
+                        ? const Color(0xFFB8AEA2)
+                        : const Color(0xFF8B7E74)),
             ),
           ),
           IconButton(
@@ -72,21 +82,15 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
             children: [
               _DetailChip(type: _quote.type),
               const SizedBox(height: 18),
-              SelectableText(
-                _quote.text.trim(),
-                style: const TextStyle(
-                  color: Color(0xFF2C2C2C),
-                  fontSize: 25,
-                  height: 1.55,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              SelectableText(_quote.text.trim(), style: quoteStyle),
               if (metaItems.isNotEmpty) ...[
                 const SizedBox(height: 18),
                 Text(
                   metaItems.join(' • '),
-                  style: const TextStyle(
-                    color: Color(0xFF8B7E74),
+                  style: TextStyle(
+                    color: isDark
+                        ? const Color(0xFFB8AEA2)
+                        : const Color(0xFF8B7E74),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -106,27 +110,25 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
                 const SizedBox(height: 22),
                 const Text(
                   'Моя заметка',
-                  style: TextStyle(
-                    color: Color(0xFF2C2C2C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 10),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF6F4EF),
+                    color: isDark
+                        ? const Color(0xFF262B33)
+                        : const Color(0xFFF6F4EF),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE1D7CC)),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: SelectableText(
                     _quote.note.trim(),
-                    style: const TextStyle(
-                      color: Color(0xFF3B342E),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                       fontSize: 15,
-                      height: 1.45,
+                      height: settings.quoteLineSpacing.height,
                     ),
                   ),
                 ),
@@ -134,17 +136,17 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
               const SizedBox(height: 22),
               const Text(
                 'Теги',
-                style: TextStyle(
-                  color: Color(0xFF2C2C2C),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 10),
               if (_tags.isEmpty)
-                const Text(
+                Text(
                   'Теги не добавлены',
-                  style: TextStyle(color: Color(0xFF8B7E74)),
+                  style: TextStyle(
+                    color: isDark
+                        ? const Color(0xFFB8AEA2)
+                        : const Color(0xFF8B7E74),
+                  ),
                 )
               else
                 Wrap(
@@ -260,14 +262,15 @@ class _MetaSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         SizedBox(
           width: 92,
           child: Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF8B7E74),
+            style: TextStyle(
+              color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
@@ -276,7 +279,10 @@ class _MetaSection extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(color: Color(0xFF2C2C2C), fontSize: 14),
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+              fontSize: 14,
+            ),
           ),
         ),
       ],
