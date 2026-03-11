@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../models/quote.dart';
 import '../models/tag.dart';
@@ -28,7 +28,8 @@ class QuoteCard extends StatefulWidget {
 
 class _QuoteCardState extends State<QuoteCard> {
   static const int _collapsedCount = 6;
-  static const int _collapsedMaxLines = 4;
+  static const int _collapsedMaxLines = 6;
+  static const int _expandThresholdLines = 10;
   static const TextStyle _quoteTextStyle = TextStyle(
     color: Color(0xFF2C2C2C),
     fontSize: 22,
@@ -49,7 +50,9 @@ class _QuoteCardState extends State<QuoteCard> {
   Widget build(BuildContext context) {
     final tags = widget.tags;
     final showExpandTagsButton = tags.length > _collapsedCount;
-    final visibleTags = _expandedTags ? tags : tags.take(_collapsedCount).toList();
+    final visibleTags = _expandedTags
+        ? tags
+        : tags.take(_collapsedCount).toList();
     final quoteSpan = TextSpan(
       style: _quoteTextStyle,
       children: _highlight(widget.quote.text, widget.query),
@@ -58,11 +61,12 @@ class _QuoteCardState extends State<QuoteCard> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxTextWidth = constraints.maxWidth - 36;
-        final canExpandText = _canExpandText(
+        final totalTextLines = _measureTextLineCount(
           context: context,
           maxTextWidth: maxTextWidth,
           text: quoteSpan,
         );
+        final canExpandText = totalTextLines > _expandThresholdLines;
 
         return GestureDetector(
           onTap: canExpandText
@@ -124,7 +128,9 @@ class _QuoteCardState extends State<QuoteCard> {
                           TagChip(
                             tagName: tag.name,
                             query: widget.query,
-                            selected: widget.activeTagFilters.contains(tag.name),
+                            selected: widget.activeTagFilters.contains(
+                              tag.name,
+                            ),
                             onTap: () => widget.onTagTap(tag.name),
                           ),
                       ],
@@ -136,7 +142,8 @@ class _QuoteCardState extends State<QuoteCard> {
                     ),
                   if (showExpandTagsButton)
                     TextButton(
-                      onPressed: () => setState(() => _expandedTags = !_expandedTags),
+                      onPressed: () =>
+                          setState(() => _expandedTags = !_expandedTags),
                       child: Text(
                         _expandedTags
                             ? 'Скрыть теги'
@@ -228,22 +235,21 @@ class _QuoteCardState extends State<QuoteCard> {
     return result;
   }
 
-  bool _canExpandText({
+  int _measureTextLineCount({
     required BuildContext context,
     required double maxTextWidth,
     required TextSpan text,
   }) {
     if (maxTextWidth <= 0 || maxTextWidth == double.infinity) {
-      return false;
+      return 0;
     }
 
     final painter = TextPainter(
       text: text,
-      maxLines: _collapsedMaxLines,
       textDirection: Directionality.of(context),
     )..layout(maxWidth: maxTextWidth);
 
-    return painter.didExceedMaxLines;
+    return painter.computeLineMetrics().length;
   }
 
   List<TextSpan> _highlight(String source, String query) {
