@@ -31,7 +31,9 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/memryth_dart_project/
 /coverage/
+dart_devtools_*.json
 
 # Symbolication related
 app.*.symbols
