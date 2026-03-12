@@ -248,7 +248,9 @@ class _DetailsBlock extends StatelessWidget {
             Text(
               strings.tagNone,
               style: TextStyle(
-                color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
+                color: isDark
+                    ? const Color(0xFFB8AEA2)
+                    : const Color(0xFF8B7E74),
               ),
             )
           else
@@ -275,7 +277,10 @@ class _DetailsBlock extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          _InfoLine(title: strings.updatedAt, value: _formatDateTime(quote.updatedAt)),
+          _InfoLine(
+            title: strings.updatedAt,
+            value: _formatDateTime(quote.updatedAt),
+          ),
         ],
       ),
     );
@@ -321,7 +326,10 @@ class _InfoLine extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(value, style: TextStyle(color: textColor, height: 1.4)),

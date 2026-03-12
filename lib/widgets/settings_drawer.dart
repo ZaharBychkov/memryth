@@ -71,7 +71,10 @@ class SettingsDrawer extends StatelessWidget {
             onSelected: controller.setThemeMode,
           ),
           const SizedBox(height: 16),
-          _SectionTitle(title: strings.quoteTextTitle, color: sectionTitleColor),
+          _SectionTitle(
+            title: strings.quoteTextTitle,
+            color: sectionTitleColor,
+          ),
           const SizedBox(height: 8),
           _OptionGrid<QuoteTextSize>(
             values: QuoteTextSize.values,
@@ -80,7 +83,10 @@ class SettingsDrawer extends StatelessWidget {
             onSelected: controller.setQuoteTextSize,
           ),
           const SizedBox(height: 16),
-          _SectionTitle(title: strings.lineSpacingTitle, color: sectionTitleColor),
+          _SectionTitle(
+            title: strings.lineSpacingTitle,
+            color: sectionTitleColor,
+          ),
           const SizedBox(height: 8),
           _OptionGrid<QuoteLineSpacing>(
             values: QuoteLineSpacing.values,
@@ -116,7 +122,10 @@ class SettingsDrawer extends StatelessWidget {
             onSelected: controller.setTagPreviewSize,
           ),
           const SizedBox(height: 16),
-          _SectionTitle(title: strings.collapsedTitle, color: sectionTitleColor),
+          _SectionTitle(
+            title: strings.collapsedTitle,
+            color: sectionTitleColor,
+          ),
           const SizedBox(height: 8),
           _OptionGrid<int>(
             values: const [4, 6, 8],
@@ -125,7 +134,10 @@ class SettingsDrawer extends StatelessWidget {
             onSelected: controller.setCollapsedLines,
           ),
           const SizedBox(height: 16),
-          _SectionTitle(title: strings.defaultSortTitle, color: sectionTitleColor),
+          _SectionTitle(
+            title: strings.defaultSortTitle,
+            color: sectionTitleColor,
+          ),
           const SizedBox(height: 8),
           _OptionGrid<QuoteSortMode>(
             values: QuoteSortMode.values,
@@ -135,7 +147,10 @@ class SettingsDrawer extends StatelessWidget {
             onSelected: controller.setDefaultSortMode,
           ),
           const SizedBox(height: 16),
-          _SectionTitle(title: strings.cardPreviewTitle, color: sectionTitleColor),
+          _SectionTitle(
+            title: strings.cardPreviewTitle,
+            color: sectionTitleColor,
+          ),
           const SizedBox(height: 8),
           SwitchListTile(
             dense: true,

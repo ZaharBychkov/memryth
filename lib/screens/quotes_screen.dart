@@ -223,8 +223,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
                                   quote: quote,
                                   tags: controller.tagsForQuote(quote),
                                   query: controller.searchQuery,
-                                  activeTagFilters:
-                                      controller.activeTagFilters,
+                                  activeTagFilters: controller.activeTagFilters,
                                   onTagTap: controller.toggleTagFilter,
                                   onTap: () => _openDetails(quote),
                                   onFavoriteToggle: () =>
@@ -366,7 +365,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   Future<void> _copyQuoteToClipboard(Quote quote, AppStrings strings) async {
     final buffer = StringBuffer(quote.text.trim());
     if (quote.author.trim().isNotEmpty) {
-      buffer.write('\n— ${quote.author.trim()}');
+      buffer.write('\n- ${quote.author.trim()}');
     }
     if (quote.sourceTitle.trim().isNotEmpty) {
       buffer.write('\n${quote.sourceTitle.trim()}');

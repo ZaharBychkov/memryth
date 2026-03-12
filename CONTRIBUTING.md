@@ -4,12 +4,12 @@ Thank you for contributing to MEMRYTH.
 
 ## Workflow
 
-1. Fork the repository (or create a feature branch if you have access).
+1. Fork the repository or create a feature branch if you have access.
 2. Create a branch from `main`:
    - `feature/<short-description>` for new features
    - `fix/<short-description>` for bug fixes
 3. Make focused changes with clear commit messages.
-4. Run checks locally before opening a pull request.
+4. Run local checks before opening a pull request.
 
 ## Local Checks
 
@@ -22,31 +22,31 @@ dart format lib test
 
 ## Pull Request Requirements
 
-- Clear title and description of the change.
-- Include screenshots for UI changes.
-- Keep PRs small and focused.
-- Link related issues if available.
+- Clear title and description of the change
+- Screenshots for UI changes
+- Small and focused scope
+- Related issue link if available
 
 ## Coding Notes
 
-- Follow Dart style and lints from `analysis_options.yaml`.
-- Avoid committing generated build artifacts.
-- Never commit secrets (`.env`, keys, keystores).
+- Follow Dart style and lints from `analysis_options.yaml`
+- Avoid committing generated build artifacts
+- Never commit secrets such as `.env`, keys, or keystores
 
 ---
 
-# Вклад в проект (русская версия)
+# Вклад в проект
 
 Спасибо за вклад в MEMRYTH.
 
 ## Рабочий процесс
 
-1. Сделайте форк репозитория (или создайте feature-ветку, если есть доступ).
+1. Сделайте форк репозитория или создайте feature-ветку, если у вас есть доступ.
 2. Создайте ветку от `main`:
-   - `feature/<краткое-описание>` для новых фич
+   - `feature/<краткое-описание>` для новых возможностей
    - `fix/<краткое-описание>` для исправлений
-3. Вносите небольшие и сфокусированные изменения с понятными коммитами.
-4. Перед Pull Request запустите проверки локально.
+3. Вносите небольшие и сфокусированные изменения с понятными сообщениями коммитов.
+4. Перед Pull Request запускайте локальные проверки.
 
 ## Локальные проверки
 
@@ -59,13 +59,13 @@ dart format lib test
 
 ## Требования к Pull Request
 
-- Понятный заголовок и описание изменений.
-- Добавляйте скриншоты для UI-изменений.
-- Держите PR небольшими и сфокусированными.
-- При наличии прикладывайте ссылку на issue.
+- Понятный заголовок и описание изменений
+- Скриншоты для изменений интерфейса
+- Небольшой и сфокусированный объем изменений
+- Ссылка на связанный issue, если он есть
 
 ## Заметки по коду
 
-- Следуйте стилю Dart и линт-правилам из `analysis_options.yaml`.
-- Не коммитьте сборочные артефакты.
-- Никогда не коммитьте секреты (`.env`, ключи, keystore).
+- Следуйте стилю Dart и правилам из `analysis_options.yaml`
+- Не коммитьте артефакты сборки
+- Никогда не коммитьте секреты: `.env`, ключи, keystore

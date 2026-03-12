@@ -1,21 +1,37 @@
-# MEMRYTH (Flutter)
+# MEMRYTH
 
-MEMRYTH is a Flutter app for storing and organizing quotes.
-You can add, edit, delete, search, filter by tags, and copy quotes in a share-friendly format.
+MEMRYTH is an Android-first Flutter app for collecting meaningful text fragments in one place. It supports quotes, personal thoughts, and excerpts, each with source metadata, tags, favorites, notes, and reading-focused display settings.
 
-## Features
+## Highlights
 
-- Add and edit quotes
-- Delete quotes with confirmation dialog
-- Search by quote text/author
-- Tag-based filtering
-- Expand/collapse long quote text
-- Long-press menu on quote card:
-  - Edit
-  - Copy (`quote text` + new line + `- author`)
-  - Delete
-- Confirmation dialog when leaving edit screen with unsaved changes
+- Three entry types: `Quote`, `Thought`, `Excerpt`
+- Full-text search across text, author, source, note, and tags
+- Filters by entry type, favorites, and selected tags
+- Sorting by newest, updated, oldest, or random order
+- Detailed entry screen with metadata and editable created date
 - Local offline storage with Hive
+- Bilingual interface: English and Russian
+- Reading controls: theme, text size, line spacing, tag size, preview density, default sort
+- Android-only project setup
+
+## Current Product Logic
+
+MEMRYTH is no longer just a quote list. The current version is a personal text memory space:
+
+- `Quote` for finished citations from external sources
+- `Thought` for your own ideas, conclusions, and observations
+- `Excerpt` for larger fragments from books, articles, lectures, or videos
+
+Each entry may contain:
+
+- main text
+- author or speaker
+- source title
+- source details such as chapter, page, or timestamp
+- private note
+- tags
+- favorite state
+- created and updated dates
 
 ## Tech Stack
 
@@ -29,44 +45,45 @@ You can add, edit, delete, search, filter by tags, and copy quotes in a share-fr
 ```text
 lib/
   main.dart
+  data/
   models/
   repositories/
+  contollers/
+  viewmodels/
   screens/
   widgets/
+  settings/
 ```
+
+Detailed Russian documentation about architecture and responsibilities is available in [docs/app_logic_ru.md](docs/app_logic_ru.md).
+
+## Screenshots
+
+### English
+
+<p align="center">
+  <img src="docs/screenshots/en-home.png" alt="English home screen" width="260" />
+  <img src="docs/screenshots/en-create.png" alt="English create screen" width="260" />
+</p>
+
+### Russian
+
+<p align="center">
+  <img src="docs/screenshots/ru-home.png" alt="Russian home screen" width="260" />
+  <img src="docs/screenshots/ru-create.png" alt="Russian create screen" width="260" />
+</p>
+
+### Settings
+
+<p align="center">
+  <img src="docs/screenshots/settings.png" alt="Settings screen" width="260" />
+</p>
 
 ## Getting Started
 
-### 1. Prerequisites
-
-- Flutter SDK installed
-- Dart SDK (comes with Flutter)
-- Android Studio / VS Code (optional, but recommended)
-
-### 2. Install dependencies
-
 ```bash
 flutter pub get
-```
-
-### 3. Run the app
-
-```bash
 flutter run
-```
-
-## Build
-
-### Android APK
-
-```bash
-flutter build apk --release
-```
-
-### Windows (if enabled)
-
-```bash
-flutter build windows --release
 ```
 
 ## Useful Commands
@@ -75,105 +92,9 @@ flutter build windows --release
 flutter analyze
 flutter test
 dart format lib test
-```
-
-## Screenshot
-
-Main UI screenshot:
-
-- `flutter_01.png`
-
-## Notes
-
-- This repository is an app project, so `pubspec.lock` is intentionally versioned.
-- Local IDE and generated build artifacts are excluded via `.gitignore`.
-
----
-
-# MEMRYTH (Flutter) - Русская версия
-
-MEMRYTH - это Flutter-приложение для хранения и удобной организации цитат.
-Можно добавлять, редактировать, удалять, искать, фильтровать по тегам и копировать цитаты в удобном формате.
-
-## Возможности
-
-- Добавление и редактирование цитат
-- Удаление с подтверждением
-- Поиск по тексту цитаты и автору
-- Фильтрация по тегам
-- Сворачивание/разворачивание длинного текста цитаты
-- Меню по долгому нажатию на карточку цитаты:
-  - Редактировать
-  - Копировать (`текст цитаты` + новая строка + `- автор`)
-  - Удалить
-- Подтверждение при выходе с экрана редактирования при несохраненных изменениях
-- Локальное офлайн-хранилище на Hive
-
-## Технологии
-
-- Flutter
-- Dart
-- Hive / hive_flutter
-- Material 3
-
-## Структура проекта
-
-```text
-lib/
-  main.dart
-  models/
-  repositories/
-  screens/
-  widgets/
-```
-
-## Быстрый старт
-
-### 1. Что нужно установить
-
-- Flutter SDK
-- Dart SDK (идет вместе с Flutter)
-- Android Studio / VS Code (опционально, но рекомендуется)
-
-### 2. Установка зависимостей
-
-```bash
-flutter pub get
-```
-
-### 3. Запуск приложения
-
-```bash
-flutter run
-```
-
-## Сборка
-
-### Android APK
-
-```bash
 flutter build apk --release
 ```
 
-### Windows (если поддержка включена)
+## Russian Summary
 
-```bash
-flutter build windows --release
-```
-
-## Полезные команды
-
-```bash
-flutter analyze
-flutter test
-dart format lib test
-```
-
-  ## Screenshots                                                    
-                                                                    
-  <p align="center">                                                
-    <img src="docs/screenshots/01-quote.png" alt="Quote screen"     
-  width="260" />                                                    
-    <img src="docs/screenshots/02-home.png" alt="Home screen"       
-  width="260" />                                                    
-  </p> 
+MEMRYTH — это Flutter-приложение для Android, в котором можно хранить цитаты, мысли и фрагменты текста. У каждой записи есть теги, источник, заметка, избранное, дата создания и настройки отображения. Интерфейс поддерживает английский и русский языки.

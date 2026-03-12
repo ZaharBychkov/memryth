@@ -22,7 +22,7 @@ enum QuoteSortMode {
 
   String get label => switch (this) {
     QuoteSortMode.newest => 'Сначала новые',
-    QuoteSortMode.updated => 'Недавно изменённые',
+    QuoteSortMode.updated => 'Недавно измененные',
     QuoteSortMode.oldest => 'Сначала старые',
     QuoteSortMode.random => 'Случайный порядок',
   };
@@ -68,7 +68,6 @@ class QuoteController extends ChangeNotifier {
   Set<QuoteType> get activeTypeFilters => _activeTypeFilters;
   bool get favoritesOnly => _favoritesOnly;
   QuoteSortMode get sortMode => _sortMode;
-
   List<Quote> get filteredQuotes => _filteredQuotes;
 
   Quote? get currentQuote {

@@ -111,7 +111,8 @@ class QuoteEditViewModel extends ChangeNotifier {
     final note = noteController.text.trim();
 
     final existingTags = {
-      for (final tag in _tagRepository.getAll()) tag.name.trim().toLowerCase(): tag,
+      for (final tag in _tagRepository.getAll())
+        tag.name.trim().toLowerCase(): tag,
     };
     final tagIds = <String>[];
 
@@ -183,7 +184,7 @@ class QuoteEditViewModel extends ChangeNotifier {
       _createdAt.toIso8601String(),
       tagController.text.trim(),
       tagsSignature,
-    ].join('В§');
+    ].join('§');
   }
 
   void _ensureTagAdded(DraftTag draft) {

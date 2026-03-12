@@ -81,7 +81,9 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                     backgroundColor: const Color(0xFF4A6FA5),
                     foregroundColor: Colors.white,
                   ),
-                  child: Text(_viewModel.isEditing ? strings.save : strings.add),
+                  child: Text(
+                    _viewModel.isEditing ? strings.save : strings.add,
+                  ),
                 ),
                 const SizedBox(width: 12),
               ],
@@ -206,13 +208,20 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Text(strings.tags, style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      strings.tags,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        for (var index = 0; index < _viewModel.draftTags.length; index++)
+                        for (
+                          var index = 0;
+                          index < _viewModel.draftTags.length;
+                          index++
+                        )
                           InputChip(
                             label: Text(_viewModel.draftTags[index].name),
                             side: BorderSide(

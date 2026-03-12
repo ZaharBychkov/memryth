@@ -6,17 +6,17 @@ We are committed to providing a friendly, safe, and respectful environment for e
 
 ## Expected Behavior
 
-- Be respectful and constructive.
-- Give and receive feedback professionally.
-- Focus on what is best for the project and community.
-- Show empathy toward other contributors.
+- Be respectful and constructive
+- Give and receive feedback professionally
+- Focus on what is best for the project and community
+- Show empathy toward other contributors
 
 ## Unacceptable Behavior
 
-- Harassment, discrimination, or personal attacks.
-- Trolling, insulting, or derogatory comments.
-- Publishing private information without permission.
-- Any conduct that is inappropriate in a professional setting.
+- Harassment, discrimination, or personal attacks
+- Trolling, insulting, or derogatory comments
+- Publishing private information without permission
+- Any conduct that is inappropriate in a professional setting
 
 ## Enforcement
 
@@ -28,25 +28,25 @@ This Code of Conduct applies within project spaces and in public spaces when som
 
 ---
 
-# Кодекс поведения (русская версия)
+# Кодекс поведения
 
 ## Наше обязательство
 
-Мы стремимся поддерживать дружелюбную, безопасную и уважительную среду для всех, независимо от опыта и бэкграунда.
+Мы поддерживаем дружелюбную, безопасную и уважительную среду для всех участников независимо от опыта и бэкграунда.
 
 ## Ожидаемое поведение
 
-- Будьте уважительными и конструктивными.
-- Давайте и принимайте обратную связь профессионально.
-- Думайте о пользе для проекта и сообщества.
-- Проявляйте эмпатию к другим участникам.
+- Будьте уважительны и конструктивны
+- Давайте и принимайте обратную связь профессионально
+- Думайте о пользе для проекта и сообщества
+- Проявляйте эмпатию к другим участникам
 
 ## Недопустимое поведение
 
-- Домогательства, дискриминация или личные оскорбления.
-- Троллинг, уничижительные или агрессивные комментарии.
-- Публикация личной информации без разрешения.
-- Любое поведение, неприемлемое в профессиональной среде.
+- Домогательства, дискриминация и личные оскорбления
+- Троллинг, уничижительные или агрессивные комментарии
+- Публикация личной информации без разрешения
+- Любое поведение, неприемлемое в профессиональной среде
 
 ## Применение правил
 
@@ -54,4 +54,4 @@ This Code of Conduct applies within project spaces and in public spaces when som
 
 ## Область действия
 
-Этот Кодекс поведения действует в пространствах проекта и в публичных местах, где участник представляет проект.
+Этот кодекс поведения действует в пространствах проекта и в публичных местах, где участник представляет проект.

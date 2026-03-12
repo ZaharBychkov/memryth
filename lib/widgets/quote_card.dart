@@ -58,7 +58,8 @@ class _QuoteCardState extends State<QuoteCard> {
     final visibleTags = _expandedTags
         ? tags
         : tags.take(_collapsedCount).toList();
-    final canExpandText = widget.quote.text.trim().length > _expandThresholdChars;
+    final canExpandText =
+        widget.quote.text.trim().length > _expandThresholdChars;
     final quoteSpan = TextSpan(
       style: quoteTextStyle,
       children: _highlight(widget.quote.text, widget.query),
@@ -189,8 +190,9 @@ class _QuoteCardState extends State<QuoteCard> {
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium?.color,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.color,
                               fontSize: 14,
                               height: 1.35,
                             ),
@@ -257,7 +259,7 @@ class _QuoteCardState extends State<QuoteCard> {
     if (widget.quote.sourceDetails.trim().isNotEmpty) {
       parts.add(widget.quote.sourceDetails.trim());
     }
-    return parts.join(' вЂў ');
+    return parts.join(' • ');
   }
 
   Widget _buildQuoteText({
