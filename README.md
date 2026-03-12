@@ -2,6 +2,14 @@
 
 MEMRYTH is an Android-first Flutter app for collecting meaningful text fragments in one place. It supports quotes, personal thoughts, and excerpts, each with source metadata, tags, favorites, notes, and reading-focused display settings.
 
+## License Notice
+
+This repository is public for portfolio and review purposes only.
+
+- Source viewing is allowed.
+- Copying, modification, redistribution, derivative use, and commercial use are not allowed without prior written permission.
+- See [LICENSE](LICENSE) for the full terms.
+
 ## Highlights
 
 - Three entry types: `Quote`, `Thought`, `Excerpt`

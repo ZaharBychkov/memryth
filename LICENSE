@@ -1,21 +1,60 @@
-MIT License
+MEMRYTH Source-Available License
 
-Copyright (c) 2026 msi
+Copyright (c) 2026 Zahar Bychkov
+All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Ownership
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The MEMRYTH application, its source code, assets, documentation, design decisions,
+and all related materials in this repository are the exclusive intellectual
+property of Zahar Bychkov, unless otherwise noted.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. Permitted Use
+
+This repository is made publicly available strictly for portfolio, review,
+educational observation, and evaluation purposes.
+
+You may:
+
+- view the source code on GitHub;
+- clone or fork the repository only as technically required by GitHub to view
+  and inspect the project;
+- discuss, reference, or link to the project while preserving attribution.
+
+3. Prohibited Use
+
+Without prior written permission from Zahar Bychkov, you may not:
+
+- copy the source code or substantial portions of it for use in another project;
+- modify, adapt, translate, or create derivative works based on this project;
+- redistribute, republish, sublicense, or sell this project or any modified version;
+- use this project or its code in commercial, internal business, client, freelance,
+  educational product, or production environments;
+- use the name "MEMRYTH", related branding, screenshots, assets, or other identifiers
+  as if rights to them were granted to you.
+
+4. No Trademark License
+
+No trademark rights, branding rights, naming rights, or rights to product identity
+are granted under this license.
+
+5. No Open-Source Grant
+
+This license does not grant any open-source rights. No permission is granted to
+use, copy, modify, merge, publish, distribute, sublicense, or commercially exploit
+the code except as explicitly stated above.
+
+6. Disclaimer
+
+THIS PROJECT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE PROJECT OR THE USE OF THIS PROJECT.
+
+7. Contact
+
+For licensing requests, commercial permissions, or other questions, contact the
+author directly before any use beyond repository viewing and evaluation.
