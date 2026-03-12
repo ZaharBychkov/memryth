@@ -77,6 +77,7 @@ Detailed Russian documentation about architecture and responsibilities is availa
 
 <p align="center">
   <img src="docs/screenshots/settings.png" alt="Settings screen" width="260" />
+  <img src="docs/screenshots/dark-theme.png" alt="Dark theme home screen" width="260" />
 </p>
 
 ## Getting Started
