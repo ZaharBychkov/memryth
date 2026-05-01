@@ -7,6 +7,13 @@ class AppSettingsController extends ChangeNotifier {
   AppSettingsController._(this._box, this._settings);
 
   static const _boxName = 'settings';
+  static const _obsoleteKeys = <String>[
+    'uiTextSize',
+    'cardDensity',
+    'tagPreviewSize',
+    'collapsedLines',
+    'defaultSortMode',
+  ];
 
   final Box _box;
   AppSettings _settings;
@@ -27,6 +34,7 @@ class AppSettingsController extends ChangeNotifier {
           (box.get('showMetaPreview') as bool?) ??
           AppSettings.defaults.showMetaPreview,
     );
+    await box.deleteAll(_obsoleteKeys);
     return AppSettingsController._(box, settings);
   }
 
@@ -75,6 +83,7 @@ class AppSettingsController extends ChangeNotifier {
       'showNotePreview': _settings.showNotePreview,
       'showMetaPreview': _settings.showMetaPreview,
     });
+    await _box.deleteAll(_obsoleteKeys);
   }
 
   Future<void> _update(AppSettings next, String key, Object value) async {
