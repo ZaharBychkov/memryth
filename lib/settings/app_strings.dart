@@ -13,6 +13,13 @@ class AppStrings {
   String get newEntry => isRu ? 'Новая запись' : 'New entry';
   String get sortTooltip => isRu ? 'Сортировка' : 'Sort';
   String get settings => isRu ? 'Настройки' : 'Settings';
+  String get topicsTitle => isRu ? 'Темы' : 'Topics';
+  String get topicsTooltip => isRu ? 'Индекс тем' : 'Topic index';
+  String get topicsEmpty => isRu
+      ? 'Темы появятся после добавления записей'
+      : 'Topics appear after you add entries';
+  String get topicSortAlphabetic => isRu ? 'А-Я' : 'A-Z';
+  String get topicSortFrequency => isRu ? 'Популярные' : 'Popular';
   String get settingsSubtitle =>
       isRu ? 'Внешний вид и поведение приложения' : 'Visuals and behavior';
   String get languageTitle => isRu ? 'Язык' : 'Language';

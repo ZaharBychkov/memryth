@@ -10,6 +10,7 @@ import '../repositories/tag_repository.dart';
 import '../settings/app_settings_controller.dart';
 import '../settings/app_settings_scope.dart';
 import '../settings/app_strings.dart';
+import '../viewmodels/topic_index.dart';
 import '../viewmodels/quote_list_view_model.dart';
 import '../widgets/quote_card.dart';
 import '../widgets/search_bar.dart';
@@ -161,6 +162,18 @@ class _QuotesScreenState extends State<QuotesScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     _HeaderIconButton(
+                      tooltip: strings.topicsTooltip,
+                      onPressed: () => _openTopics(controller, strings),
+                      child: Icon(
+                        Icons.account_tree_rounded,
+                        color: isDark
+                            ? const Color(0xFFEAE4DB)
+                            : const Color(0xFF2C2C2C),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _HeaderIconButton(
+                      tooltip: strings.settings,
                       onPressed: () => _openSettings(settingsController),
                       child: Icon(
                         Icons.tune_rounded,
@@ -464,21 +477,81 @@ class _QuotesScreenState extends State<QuotesScreen> {
       ),
     );
   }
+
+  Future<void> _openTopics(
+    QuoteController controller,
+    AppStrings strings,
+  ) async {
+    final selectedTopic = await showGeneralDialog<String>(
+      context: context,
+      barrierLabel: 'topics-panel',
+      barrierDismissible: true,
+      barrierColor: const Color(0x33000000),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return _TopicIndexPanel(controller: controller, strings: strings);
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1, 0),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+
+    if (!mounted || selectedTopic == null) {
+      return;
+    }
+
+    final query = '#$selectedTopic';
+    _searchController.value = TextEditingValue(
+      text: query,
+      selection: TextSelection.collapsed(offset: query.length),
+    );
+    controller.setSearchQuery(query);
+    if (_scrollController.hasClients) {
+      await _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
 }
 
 class _HeaderIconButton extends StatelessWidget {
-  const _HeaderIconButton({required this.onPressed, required this.child});
+  const _HeaderIconButton({
+    required this.onPressed,
+    required this.child,
+    this.tooltip,
+  });
 
   final VoidCallback onPressed;
   final Widget child;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final button = InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(14),
       child: _HeaderIconShell(child: child),
     );
+    if (tooltip == null) {
+      return button;
+    }
+    return Tooltip(message: tooltip!, child: button);
   }
 }
 
@@ -496,6 +569,305 @@ class _HeaderIconShell extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: SizedBox(width: 42, height: 42, child: Center(child: child)),
+    );
+  }
+}
+
+class _TopicIndexPanel extends StatefulWidget {
+  const _TopicIndexPanel({required this.controller, required this.strings});
+
+  final QuoteController controller;
+  final AppStrings strings;
+
+  @override
+  State<_TopicIndexPanel> createState() => _TopicIndexPanelState();
+}
+
+class _TopicIndexPanelState extends State<_TopicIndexPanel> {
+  TopicSortMode _sortMode = TopicSortMode.frequency;
+  final Set<String> _expandedPaths = <String>{};
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screen = MediaQuery.sizeOf(context);
+    final panelWidth = screen.width < 520 ? screen.width * 0.92 : 420.0;
+    final topics = buildTopicIndex(
+      quotes: widget.controller.allQuotes,
+      tags: widget.controller.allTagsSorted,
+      sortMode: _sortMode,
+    );
+
+    return Material(
+      color: Colors.transparent,
+      child: SafeArea(
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            width: panelWidth,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1F242B) : const Color(0xFFF8F3EA),
+              border: Border(
+                left: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x26000000),
+                  blurRadius: 24,
+                  offset: Offset(-6, 0),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 10, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.strings.topicsTitle,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _TopicSortButton(
+                          label: widget.strings.topicSortFrequency,
+                          selected: _sortMode == TopicSortMode.frequency,
+                          onTap: () => setState(
+                            () => _sortMode = TopicSortMode.frequency,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _TopicSortButton(
+                          label: widget.strings.topicSortAlphabetic,
+                          selected: _sortMode == TopicSortMode.alphabetic,
+                          onTap: () => setState(
+                            () => _sortMode = TopicSortMode.alphabetic,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: topics.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text(
+                              widget.strings.topicsEmpty,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Theme.of(context).hintColor,
+                              ),
+                            ),
+                          ),
+                        )
+                      : ListView(
+                          padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+                          children: [
+                            for (final topic in topics) _buildTopic(topic, 0),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopic(TopicIndexNode topic, int depth) {
+    final hasChildren = topic.children.isNotEmpty;
+    final expanded = _expandedPaths.contains(topic.path);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _TopicRow(
+          topic: topic,
+          depth: depth,
+          expanded: expanded,
+          hasChildren: hasChildren,
+          onExpand: () {
+            setState(() {
+              if (expanded) {
+                _expandedPaths.remove(topic.path);
+              } else {
+                _expandedPaths.add(topic.path);
+              }
+            });
+          },
+          onSelected: () => Navigator.of(context).pop(topic.path),
+        ),
+        if (hasChildren && expanded)
+          for (final child in topic.children) _buildTopic(child, depth + 1),
+      ],
+    );
+  }
+}
+
+class _TopicSortButton extends StatelessWidget {
+  const _TopicSortButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? Theme.of(
+                  context,
+                ).colorScheme.primary.withAlpha(isDark ? 56 : 34)
+              : (isDark ? const Color(0xFF262B33) : Colors.white),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).dividerColor,
+          ),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).textTheme.bodyMedium?.color,
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TopicRow extends StatelessWidget {
+  const _TopicRow({
+    required this.topic,
+    required this.depth,
+    required this.expanded,
+    required this.hasChildren,
+    required this.onExpand,
+    required this.onSelected,
+  });
+
+  final TopicIndexNode topic;
+  final int depth;
+  final bool expanded;
+  final bool hasChildren;
+  final VoidCallback onExpand;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final muted = isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74);
+
+    return Padding(
+      padding: EdgeInsets.only(left: depth * 18.0, bottom: 6),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onSelected,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: hasChildren
+                      ? IconButton(
+                          padding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                          onPressed: onExpand,
+                          icon: Icon(
+                            expanded
+                                ? Icons.keyboard_arrow_down_rounded
+                                : Icons.chevron_right_rounded,
+                            color: muted,
+                          ),
+                        )
+                      : Icon(Icons.tag_rounded, size: 16, color: muted),
+                ),
+                Expanded(
+                  child: Text(
+                    topic.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  constraints: const BoxConstraints(minWidth: 30),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 5,
+                  ),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF262B33)
+                        : const Color(0xFFF0E8DD),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    topic.count.toString(),
+                    style: TextStyle(
+                      color: muted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
