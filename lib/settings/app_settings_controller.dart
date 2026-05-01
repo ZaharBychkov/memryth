@@ -105,6 +105,24 @@ class AppSettingsController extends ChangeNotifier {
     value.key,
   );
 
+  Future<void> resetSettings() async {
+    _settings = AppSettings.defaults;
+    notifyListeners();
+    await _box.putAll({
+      'themeMode': _settings.themeMode.key,
+      'language': _settings.language.key,
+      'quoteTextSize': _settings.quoteTextSize.key,
+      'quoteLineSpacing': _settings.quoteLineSpacing.key,
+      'uiTextSize': _settings.uiTextSize.key,
+      'cardDensity': _settings.cardDensity.key,
+      'showNotePreview': _settings.showNotePreview,
+      'showMetaPreview': _settings.showMetaPreview,
+      'collapsedLines': _settings.collapsedLines,
+      'defaultSortMode': _settings.defaultSortMode.key,
+      'tagPreviewSize': _settings.tagPreviewSize.key,
+    });
+  }
+
   Future<void> _update(AppSettings next, String key, Object value) async {
     _settings = next;
     notifyListeners();

@@ -13,9 +13,9 @@ import '../settings/app_strings.dart';
 import '../viewmodels/quote_list_view_model.dart';
 import '../widgets/quote_card.dart';
 import '../widgets/search_bar.dart';
-import '../widgets/settings_drawer.dart';
 import 'quote_detail_screen.dart';
 import 'quote_edit_screen.dart';
+import 'settings_screen.dart';
 
 class QuotesScreen extends StatefulWidget {
   const QuotesScreen({super.key});
@@ -460,45 +460,10 @@ class _QuotesScreenState extends State<QuotesScreen> {
   }
 
   Future<void> _openSettings(AppSettingsController settingsController) async {
-    final width = MediaQuery.of(context).size.width;
-    final panelWidth = width * 0.92 > 360 ? 360.0 : width * 0.92;
-
-    await showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'settings-panel',
-      barrierColor: const Color(0x24000000),
-      transitionDuration: const Duration(milliseconds: 260),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Align(
-          alignment: Alignment.centerRight,
-          child: SizedBox(
-            width: panelWidth,
-            height: double.infinity,
-            child: SettingsDrawer(
-              controller: settingsController,
-              embedded: true,
-            ),
-          ),
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curved = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutCubic,
-          reverseCurve: Curves.easeInCubic,
-        );
-        return FadeTransition(
-          opacity: curved,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.08, 0),
-              end: Offset.zero,
-            ).animate(curved),
-            child: child,
-          ),
-        );
-      },
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SettingsScreen(controller: settingsController),
+      ),
     );
   }
 }

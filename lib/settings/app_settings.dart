@@ -42,29 +42,39 @@ enum AppLanguage {
 }
 
 enum QuoteTextSize {
+  extraSmall,
   small,
   medium,
-  large;
+  large,
+  extraLarge;
 
   String get key => switch (this) {
+    QuoteTextSize.extraSmall => 'extraSmall',
     QuoteTextSize.small => 'small',
     QuoteTextSize.medium => 'medium',
     QuoteTextSize.large => 'large',
+    QuoteTextSize.extraLarge => 'extraLarge',
   };
 
   String label(AppLanguage language) => switch ((this, language)) {
+    (QuoteTextSize.extraSmall, AppLanguage.ru) => 'Очень маленький',
     (QuoteTextSize.small, AppLanguage.ru) => 'Маленький',
-    (QuoteTextSize.medium, AppLanguage.ru) => 'Обычный',
+    (QuoteTextSize.medium, AppLanguage.ru) => 'Средний',
     (QuoteTextSize.large, AppLanguage.ru) => 'Крупный',
+    (QuoteTextSize.extraLarge, AppLanguage.ru) => 'Очень крупный',
+    (QuoteTextSize.extraSmall, AppLanguage.en) => 'Extra small',
     (QuoteTextSize.small, AppLanguage.en) => 'Small',
     (QuoteTextSize.medium, AppLanguage.en) => 'Medium',
     (QuoteTextSize.large, AppLanguage.en) => 'Large',
+    (QuoteTextSize.extraLarge, AppLanguage.en) => 'Extra large',
   };
 
   double get fontSize => switch (this) {
+    QuoteTextSize.extraSmall => 18,
     QuoteTextSize.small => 20,
     QuoteTextSize.medium => 22,
-    QuoteTextSize.large => 26,
+    QuoteTextSize.large => 24,
+    QuoteTextSize.extraLarge => 26,
   };
 
   static QuoteTextSize fromKey(String? value) {
@@ -76,28 +86,38 @@ enum QuoteTextSize {
 }
 
 enum QuoteLineSpacing {
+  tight,
   compact,
   normal,
+  relaxed,
   airy;
 
   String get key => switch (this) {
+    QuoteLineSpacing.tight => 'tight',
     QuoteLineSpacing.compact => 'compact',
     QuoteLineSpacing.normal => 'normal',
+    QuoteLineSpacing.relaxed => 'relaxed',
     QuoteLineSpacing.airy => 'airy',
   };
 
   String label(AppLanguage language) => switch ((this, language)) {
+    (QuoteLineSpacing.tight, AppLanguage.ru) => 'Плотный',
     (QuoteLineSpacing.compact, AppLanguage.ru) => 'Компактный',
     (QuoteLineSpacing.normal, AppLanguage.ru) => 'Обычный',
+    (QuoteLineSpacing.relaxed, AppLanguage.ru) => 'Свободный',
     (QuoteLineSpacing.airy, AppLanguage.ru) => 'Воздушный',
+    (QuoteLineSpacing.tight, AppLanguage.en) => 'Tight',
     (QuoteLineSpacing.compact, AppLanguage.en) => 'Compact',
     (QuoteLineSpacing.normal, AppLanguage.en) => 'Normal',
+    (QuoteLineSpacing.relaxed, AppLanguage.en) => 'Relaxed',
     (QuoteLineSpacing.airy, AppLanguage.en) => 'Airy',
   };
 
   double get height => switch (this) {
-    QuoteLineSpacing.compact => 1.28,
+    QuoteLineSpacing.tight => 1.25,
+    QuoteLineSpacing.compact => 1.35,
     QuoteLineSpacing.normal => 1.4,
+    QuoteLineSpacing.relaxed => 1.5,
     QuoteLineSpacing.airy => 1.58,
   };
 
