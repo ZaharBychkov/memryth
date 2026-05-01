@@ -48,7 +48,7 @@ class _QuoteCardState extends State<QuoteCard> {
     final padding = settings.cardDensity.cardPadding;
     final quoteTextStyle = TextStyle(
       color: Theme.of(context).textTheme.bodyLarge?.color,
-      fontSize: settings.quoteTextSize.fontSize,
+      fontSize: settings.quoteTextSize,
       height: settings.quoteLineSpacing.height,
       fontWeight: FontWeight.w600,
     );

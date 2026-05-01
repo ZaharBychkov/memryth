@@ -121,11 +121,12 @@ class ReadingSettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 _SectionTitle(text.readingText),
-                _EnumSlider<QuoteTextSize>(
-                  values: QuoteTextSize.values,
-                  currentValue: settings.quoteTextSize,
+                _DoubleSlider(
                   title: strings.quoteTextTitle,
-                  valueLabel: (value) => value.fontSize.toStringAsFixed(0),
+                  value: settings.quoteTextSize,
+                  min: 18,
+                  max: 28,
+                  valueLabel: (value) => value.toStringAsFixed(1),
                   onChanged: controller.setQuoteTextSize,
                 ),
                 _EnumSlider<QuoteLineSpacing>(
@@ -159,13 +160,6 @@ class ReadingSettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 _SectionTitle(text.cards),
-                _SegmentedOptions<int>(
-                  values: const [4, 6, 8],
-                  currentValue: settings.collapsedLines,
-                  labelBuilder: strings.rows,
-                  onSelected: controller.setCollapsedLines,
-                ),
-                const SizedBox(height: 12),
                 _SegmentedOptions<QuoteSortMode>(
                   values: QuoteSortMode.values,
                   currentValue: settings.defaultSortMode,
@@ -462,7 +456,7 @@ class _PreviewCard extends StatelessWidget {
           Text(
             text.previewBody,
             style: TextStyle(
-              fontSize: settings.quoteTextSize.fontSize,
+              fontSize: settings.quoteTextSize,
               height: settings.quoteLineSpacing.height,
               fontWeight: FontWeight.w600,
             ),
@@ -521,6 +515,62 @@ class _EnumSlider<T> extends StatelessWidget {
             value: index.toDouble(),
             label: valueLabel(values[index]),
             onChanged: (value) => onChanged(values[value.round()]),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DoubleSlider extends StatelessWidget {
+  const _DoubleSlider({
+    required this.title,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.valueLabel,
+    required this.onChanged,
+  });
+
+  final String title;
+  final double value;
+  final double min;
+  final double max;
+  final String Function(double value) valueLabel;
+  final Future<void> Function(double value) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final clamped = value.clamp(min, max);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              Text(
+                valueLabel(clamped),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          Slider(
+            min: min,
+            max: max,
+            value: clamped,
+            label: valueLabel(clamped),
+            onChanged: onChanged,
           ),
         ],
       ),

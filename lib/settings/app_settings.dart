@@ -41,50 +41,6 @@ enum AppLanguage {
   }
 }
 
-enum QuoteTextSize {
-  extraSmall,
-  small,
-  medium,
-  large,
-  extraLarge;
-
-  String get key => switch (this) {
-    QuoteTextSize.extraSmall => 'extraSmall',
-    QuoteTextSize.small => 'small',
-    QuoteTextSize.medium => 'medium',
-    QuoteTextSize.large => 'large',
-    QuoteTextSize.extraLarge => 'extraLarge',
-  };
-
-  String label(AppLanguage language) => switch ((this, language)) {
-    (QuoteTextSize.extraSmall, AppLanguage.ru) => 'Очень маленький',
-    (QuoteTextSize.small, AppLanguage.ru) => 'Маленький',
-    (QuoteTextSize.medium, AppLanguage.ru) => 'Средний',
-    (QuoteTextSize.large, AppLanguage.ru) => 'Крупный',
-    (QuoteTextSize.extraLarge, AppLanguage.ru) => 'Очень крупный',
-    (QuoteTextSize.extraSmall, AppLanguage.en) => 'Extra small',
-    (QuoteTextSize.small, AppLanguage.en) => 'Small',
-    (QuoteTextSize.medium, AppLanguage.en) => 'Medium',
-    (QuoteTextSize.large, AppLanguage.en) => 'Large',
-    (QuoteTextSize.extraLarge, AppLanguage.en) => 'Extra large',
-  };
-
-  double get fontSize => switch (this) {
-    QuoteTextSize.extraSmall => 18,
-    QuoteTextSize.small => 20,
-    QuoteTextSize.medium => 22,
-    QuoteTextSize.large => 24,
-    QuoteTextSize.extraLarge => 26,
-  };
-
-  static QuoteTextSize fromKey(String? value) {
-    return QuoteTextSize.values.firstWhere(
-      (size) => size.key == value,
-      orElse: () => QuoteTextSize.medium,
-    );
-  }
-}
-
 enum QuoteLineSpacing {
   tight,
   compact,
@@ -238,7 +194,7 @@ class AppSettings {
 
   final AppThemeMode themeMode;
   final AppLanguage language;
-  final QuoteTextSize quoteTextSize;
+  final double quoteTextSize;
   final QuoteLineSpacing quoteLineSpacing;
   final UiTextSize uiTextSize;
   final CardDensity cardDensity;
@@ -253,7 +209,7 @@ class AppSettings {
   AppSettings copyWith({
     AppThemeMode? themeMode,
     AppLanguage? language,
-    QuoteTextSize? quoteTextSize,
+    double? quoteTextSize,
     QuoteLineSpacing? quoteLineSpacing,
     UiTextSize? uiTextSize,
     CardDensity? cardDensity,
@@ -281,7 +237,7 @@ class AppSettings {
   static const defaults = AppSettings(
     themeMode: AppThemeMode.light,
     language: AppLanguage.ru,
-    quoteTextSize: QuoteTextSize.medium,
+    quoteTextSize: 22,
     quoteLineSpacing: QuoteLineSpacing.normal,
     uiTextSize: UiTextSize.medium,
     cardDensity: CardDensity.comfortable,

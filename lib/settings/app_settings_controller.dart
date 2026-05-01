@@ -19,7 +19,7 @@ class AppSettingsController extends ChangeNotifier {
     final settings = AppSettings(
       themeMode: AppThemeMode.fromKey(box.get('themeMode') as String?),
       language: AppLanguage.fromKey(box.get('language') as String?),
-      quoteTextSize: QuoteTextSize.fromKey(box.get('quoteTextSize') as String?),
+      quoteTextSize: _readQuoteTextSize(box.get('quoteTextSize')),
       quoteLineSpacing: QuoteLineSpacing.fromKey(
         box.get('quoteLineSpacing') as String?,
       ),
@@ -57,11 +57,8 @@ class AppSettingsController extends ChangeNotifier {
     return setThemeMode(value);
   }
 
-  Future<void> setQuoteTextSize(QuoteTextSize value) => _update(
-    _settings.copyWith(quoteTextSize: value),
-    'quoteTextSize',
-    value.key,
-  );
+  Future<void> setQuoteTextSize(double value) =>
+      _update(_settings.copyWith(quoteTextSize: value), 'quoteTextSize', value);
 
   Future<void> setQuoteLineSpacing(QuoteLineSpacing value) => _update(
     _settings.copyWith(quoteLineSpacing: value),
@@ -111,7 +108,7 @@ class AppSettingsController extends ChangeNotifier {
     await _box.putAll({
       'themeMode': _settings.themeMode.key,
       'language': _settings.language.key,
-      'quoteTextSize': _settings.quoteTextSize.key,
+      'quoteTextSize': _settings.quoteTextSize,
       'quoteLineSpacing': _settings.quoteLineSpacing.key,
       'uiTextSize': _settings.uiTextSize.key,
       'cardDensity': _settings.cardDensity.key,
@@ -127,5 +124,20 @@ class AppSettingsController extends ChangeNotifier {
     _settings = next;
     notifyListeners();
     await _box.put(key, value);
+  }
+
+  static double _readQuoteTextSize(Object? value) {
+    if (value is num) {
+      return value.toDouble().clamp(18, 28);
+    }
+
+    return switch (value) {
+      'extraSmall' => 18,
+      'small' => 20,
+      'medium' => 22,
+      'large' => 24,
+      'extraLarge' => 26,
+      _ => AppSettings.defaults.quoteTextSize,
+    };
   }
 }

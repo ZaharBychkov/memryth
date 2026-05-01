@@ -55,7 +55,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final quoteStyle = TextStyle(
           color: Theme.of(context).textTheme.bodyLarge?.color,
-          fontSize: settings.quoteTextSize.fontSize + 3,
+          fontSize: settings.quoteTextSize + 3,
           height: settings.quoteLineSpacing.height,
           fontWeight: FontWeight.w600,
         );
