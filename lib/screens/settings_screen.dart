@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../contollers/quote_contoller.dart';
 import '../settings/app_settings.dart';
 import '../settings/app_settings_controller.dart';
 import '../settings/app_strings.dart';
@@ -129,45 +128,16 @@ class ReadingSettingsScreen extends StatelessWidget {
                   valueLabel: (value) => value.toStringAsFixed(1),
                   onChanged: controller.setQuoteTextSize,
                 ),
-                _EnumSlider<QuoteLineSpacing>(
-                  values: QuoteLineSpacing.values,
-                  currentValue: settings.quoteLineSpacing,
+                _DoubleSlider(
                   title: strings.lineSpacingTitle,
-                  valueLabel: (value) => value.height.toStringAsFixed(2),
+                  value: settings.quoteLineSpacing,
+                  min: 1.25,
+                  max: 1.65,
+                  valueLabel: (value) => value.toStringAsFixed(2),
                   onChanged: controller.setQuoteLineSpacing,
                 ),
                 const SizedBox(height: 20),
-                _SectionTitle(text.interface),
-                _SegmentedOptions<UiTextSize>(
-                  values: UiTextSize.values,
-                  currentValue: settings.uiTextSize,
-                  labelBuilder: (value) => value.label(settings.language),
-                  onSelected: controller.setUiTextSize,
-                ),
-                const SizedBox(height: 12),
-                _SegmentedOptions<CardDensity>(
-                  values: CardDensity.values,
-                  currentValue: settings.cardDensity,
-                  labelBuilder: (value) => value.label(settings.language),
-                  onSelected: controller.setCardDensity,
-                ),
-                const SizedBox(height: 12),
-                _SegmentedOptions<TagPreviewSize>(
-                  values: TagPreviewSize.values,
-                  currentValue: settings.tagPreviewSize,
-                  labelBuilder: (value) => value.label(settings.language),
-                  onSelected: controller.setTagPreviewSize,
-                ),
-                const SizedBox(height: 20),
                 _SectionTitle(text.cards),
-                _SegmentedOptions<QuoteSortMode>(
-                  values: QuoteSortMode.values,
-                  currentValue: settings.defaultSortMode,
-                  labelBuilder: strings.sortModeLabel,
-                  onSelected: controller.setDefaultSortMode,
-                  columns: 2,
-                ),
-                const SizedBox(height: 8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(strings.showNote),
@@ -457,64 +427,9 @@ class _PreviewCard extends StatelessWidget {
             text.previewBody,
             style: TextStyle(
               fontSize: settings.quoteTextSize,
-              height: settings.quoteLineSpacing.height,
+              height: settings.quoteLineSpacing,
               fontWeight: FontWeight.w600,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EnumSlider<T> extends StatelessWidget {
-  const _EnumSlider({
-    required this.values,
-    required this.currentValue,
-    required this.title,
-    required this.valueLabel,
-    required this.onChanged,
-  });
-
-  final List<T> values;
-  final T currentValue;
-  final String title;
-  final String Function(T value) valueLabel;
-  final Future<void> Function(T value) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final index = values.indexOf(currentValue).clamp(0, values.length - 1);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-              Text(
-                valueLabel(values[index]),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-          Slider(
-            min: 0,
-            max: (values.length - 1).toDouble(),
-            divisions: values.length - 1,
-            value: index.toDouble(),
-            label: valueLabel(values[index]),
-            onChanged: (value) => onChanged(values[value.round()]),
           ),
         ],
       ),
@@ -802,8 +717,8 @@ class _SettingsText {
   String get reading =>
       isRu ? 'Чтение и внешний вид' : 'Reading and appearance';
   String get readingSubtitle => isRu
-      ? 'Тема, язык, размер текста и карточек'
-      : 'Theme, language, text size and cards';
+      ? 'Тема, язык, размер текста и интервал'
+      : 'Theme, language, text size and spacing';
   String get data => isRu ? 'Данные и резервная копия' : 'Data and backup';
   String get dataSubtitle => isRu
       ? 'Экспорт, импорт и восстановление библиотеки'
@@ -823,7 +738,6 @@ class _SettingsText {
       : 'Version, product idea and help';
   String get appearance => isRu ? 'Внешний вид' : 'Appearance';
   String get readingText => isRu ? 'Текст записи' : 'Entry text';
-  String get interface => isRu ? 'Интерфейс' : 'Interface';
   String get cards => isRu ? 'Карточки' : 'Cards';
   String get reset => isRu ? 'Сброс' : 'Reset';
   String get resetSettings =>

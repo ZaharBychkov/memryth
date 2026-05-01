@@ -214,10 +214,8 @@ class _QuotesScreenState extends State<QuotesScreen> {
                             return RepaintBoundary(
                               child: Padding(
                                 padding: EdgeInsets.only(
-                                  bottom: settingsController
-                                      .settings
-                                      .cardDensity
-                                      .cardSpacing,
+                                  bottom:
+                                      settingsController.settings.cardSpacing,
                                 ),
                                 child: QuoteCard(
                                   quote: quote,

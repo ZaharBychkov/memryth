@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../models/quote.dart';
 import '../models/tag.dart';
-import '../settings/app_settings.dart';
 import '../settings/app_settings_scope.dart';
 import '../settings/app_strings.dart';
 import 'tag_chip.dart';
@@ -45,11 +44,11 @@ class _QuoteCardState extends State<QuoteCard> {
     final settings = AppSettingsScope.of(context).settings;
     final strings = AppStrings(settings.language);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final padding = settings.cardDensity.cardPadding;
+    final padding = settings.cardPadding;
     final quoteTextStyle = TextStyle(
       color: Theme.of(context).textTheme.bodyLarge?.color,
       fontSize: settings.quoteTextSize,
-      height: settings.quoteLineSpacing.height,
+      height: settings.quoteLineSpacing,
       fontWeight: FontWeight.w600,
     );
 
@@ -138,11 +137,7 @@ class _QuoteCardState extends State<QuoteCard> {
                         ),
                       ),
                     ),
-                  SizedBox(
-                    height: settings.cardDensity == CardDensity.compact
-                        ? 10
-                        : 14,
-                  ),
+                  const SizedBox(height: 14),
                   if (settings.showMetaPreview && metaLine.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),

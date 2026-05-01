@@ -53,7 +53,7 @@ class MemrythApp extends StatelessWidget {
               final mediaQuery = MediaQuery.of(context);
               return MediaQuery(
                 data: mediaQuery.copyWith(
-                  textScaler: TextScaler.linear(settings.uiTextSize.scale),
+                  textScaler: TextScaler.linear(settings.uiTextScale),
                 ),
                 child: child ?? const SizedBox.shrink(),
               );

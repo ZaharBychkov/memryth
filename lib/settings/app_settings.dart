@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 import '../contollers/quote_contoller.dart';
 
 enum AppThemeMode {
@@ -41,196 +43,48 @@ enum AppLanguage {
   }
 }
 
-enum QuoteLineSpacing {
-  tight,
-  compact,
-  normal,
-  relaxed,
-  airy;
-
-  String get key => switch (this) {
-    QuoteLineSpacing.tight => 'tight',
-    QuoteLineSpacing.compact => 'compact',
-    QuoteLineSpacing.normal => 'normal',
-    QuoteLineSpacing.relaxed => 'relaxed',
-    QuoteLineSpacing.airy => 'airy',
-  };
-
-  String label(AppLanguage language) => switch ((this, language)) {
-    (QuoteLineSpacing.tight, AppLanguage.ru) => 'Плотный',
-    (QuoteLineSpacing.compact, AppLanguage.ru) => 'Компактный',
-    (QuoteLineSpacing.normal, AppLanguage.ru) => 'Обычный',
-    (QuoteLineSpacing.relaxed, AppLanguage.ru) => 'Свободный',
-    (QuoteLineSpacing.airy, AppLanguage.ru) => 'Воздушный',
-    (QuoteLineSpacing.tight, AppLanguage.en) => 'Tight',
-    (QuoteLineSpacing.compact, AppLanguage.en) => 'Compact',
-    (QuoteLineSpacing.normal, AppLanguage.en) => 'Normal',
-    (QuoteLineSpacing.relaxed, AppLanguage.en) => 'Relaxed',
-    (QuoteLineSpacing.airy, AppLanguage.en) => 'Airy',
-  };
-
-  double get height => switch (this) {
-    QuoteLineSpacing.tight => 1.25,
-    QuoteLineSpacing.compact => 1.35,
-    QuoteLineSpacing.normal => 1.4,
-    QuoteLineSpacing.relaxed => 1.5,
-    QuoteLineSpacing.airy => 1.58,
-  };
-
-  static QuoteLineSpacing fromKey(String? value) {
-    return QuoteLineSpacing.values.firstWhere(
-      (spacing) => spacing.key == value,
-      orElse: () => QuoteLineSpacing.normal,
-    );
-  }
-}
-
-enum UiTextSize {
-  small,
-  medium,
-  large;
-
-  String get key => switch (this) {
-    UiTextSize.small => 'small',
-    UiTextSize.medium => 'medium',
-    UiTextSize.large => 'large',
-  };
-
-  String label(AppLanguage language) => switch ((this, language)) {
-    (UiTextSize.small, AppLanguage.ru) => 'Маленький',
-    (UiTextSize.medium, AppLanguage.ru) => 'Обычный',
-    (UiTextSize.large, AppLanguage.ru) => 'Крупный',
-    (UiTextSize.small, AppLanguage.en) => 'Small',
-    (UiTextSize.medium, AppLanguage.en) => 'Medium',
-    (UiTextSize.large, AppLanguage.en) => 'Large',
-  };
-
-  double get scale => switch (this) {
-    UiTextSize.small => 0.92,
-    UiTextSize.medium => 1.0,
-    UiTextSize.large => 1.08,
-  };
-
-  static UiTextSize fromKey(String? value) {
-    return UiTextSize.values.firstWhere(
-      (size) => size.key == value,
-      orElse: () => UiTextSize.medium,
-    );
-  }
-}
-
-enum CardDensity {
-  compact,
-  comfortable;
-
-  String get key => switch (this) {
-    CardDensity.compact => 'compact',
-    CardDensity.comfortable => 'comfortable',
-  };
-
-  String label(AppLanguage language) => switch ((this, language)) {
-    (CardDensity.compact, AppLanguage.ru) => 'Компактно',
-    (CardDensity.comfortable, AppLanguage.ru) => 'Свободно',
-    (CardDensity.compact, AppLanguage.en) => 'Compact',
-    (CardDensity.comfortable, AppLanguage.en) => 'Comfortable',
-  };
-
-  double get cardPadding => switch (this) {
-    CardDensity.compact => 14,
-    CardDensity.comfortable => 18,
-  };
-
-  double get cardSpacing => switch (this) {
-    CardDensity.compact => 8,
-    CardDensity.comfortable => 10,
-  };
-
-  static CardDensity fromKey(String? value) {
-    return CardDensity.values.firstWhere(
-      (density) => density.key == value,
-      orElse: () => CardDensity.comfortable,
-    );
-  }
-}
-
-enum TagPreviewSize {
-  compact,
-  regular;
-
-  String get key => switch (this) {
-    TagPreviewSize.compact => 'compact',
-    TagPreviewSize.regular => 'regular',
-  };
-
-  String label(AppLanguage language) => switch ((this, language)) {
-    (TagPreviewSize.compact, AppLanguage.ru) => 'Мелкие',
-    (TagPreviewSize.regular, AppLanguage.ru) => 'Обычные',
-    (TagPreviewSize.compact, AppLanguage.en) => 'Small',
-    (TagPreviewSize.regular, AppLanguage.en) => 'Regular',
-  };
-
-  static TagPreviewSize fromKey(String? value) {
-    return TagPreviewSize.values.firstWhere(
-      (size) => size.key == value,
-      orElse: () => TagPreviewSize.regular,
-    );
-  }
-}
-
 class AppSettings {
   const AppSettings({
     required this.themeMode,
     required this.language,
     required this.quoteTextSize,
     required this.quoteLineSpacing,
-    required this.uiTextSize,
-    required this.cardDensity,
     required this.showNotePreview,
     required this.showMetaPreview,
-    required this.collapsedLines,
-    required this.defaultSortMode,
-    required this.tagPreviewSize,
   });
 
   final AppThemeMode themeMode;
   final AppLanguage language;
   final double quoteTextSize;
-  final QuoteLineSpacing quoteLineSpacing;
-  final UiTextSize uiTextSize;
-  final CardDensity cardDensity;
+  final double quoteLineSpacing;
   final bool showNotePreview;
   final bool showMetaPreview;
-  final int collapsedLines;
-  final QuoteSortMode defaultSortMode;
-  final TagPreviewSize tagPreviewSize;
 
   bool get isDarkMode => themeMode == AppThemeMode.dark;
+  double get uiTextScale => 1;
+  double get cardPadding => 18;
+  double get cardSpacing => 10;
+  double get tagFontSize => 13;
+  EdgeInsets get tagPadding =>
+      const EdgeInsets.symmetric(horizontal: 10, vertical: 6);
+  int get collapsedLines => 6;
+  QuoteSortMode get defaultSortMode => QuoteSortMode.newest;
 
   AppSettings copyWith({
     AppThemeMode? themeMode,
     AppLanguage? language,
     double? quoteTextSize,
-    QuoteLineSpacing? quoteLineSpacing,
-    UiTextSize? uiTextSize,
-    CardDensity? cardDensity,
+    double? quoteLineSpacing,
     bool? showNotePreview,
     bool? showMetaPreview,
-    int? collapsedLines,
-    QuoteSortMode? defaultSortMode,
-    TagPreviewSize? tagPreviewSize,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
       language: language ?? this.language,
       quoteTextSize: quoteTextSize ?? this.quoteTextSize,
       quoteLineSpacing: quoteLineSpacing ?? this.quoteLineSpacing,
-      uiTextSize: uiTextSize ?? this.uiTextSize,
-      cardDensity: cardDensity ?? this.cardDensity,
       showNotePreview: showNotePreview ?? this.showNotePreview,
       showMetaPreview: showMetaPreview ?? this.showMetaPreview,
-      collapsedLines: collapsedLines ?? this.collapsedLines,
-      defaultSortMode: defaultSortMode ?? this.defaultSortMode,
-      tagPreviewSize: tagPreviewSize ?? this.tagPreviewSize,
     );
   }
 
@@ -238,13 +92,8 @@ class AppSettings {
     themeMode: AppThemeMode.light,
     language: AppLanguage.ru,
     quoteTextSize: 22,
-    quoteLineSpacing: QuoteLineSpacing.normal,
-    uiTextSize: UiTextSize.medium,
-    cardDensity: CardDensity.comfortable,
+    quoteLineSpacing: 1.4,
     showNotePreview: true,
     showMetaPreview: true,
-    collapsedLines: 6,
-    defaultSortMode: QuoteSortMode.newest,
-    tagPreviewSize: TagPreviewSize.regular,
   );
 }

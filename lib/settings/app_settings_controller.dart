@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
-import '../contollers/quote_contoller.dart';
 import 'app_settings.dart';
 
 class AppSettingsController extends ChangeNotifier {
@@ -20,26 +19,13 @@ class AppSettingsController extends ChangeNotifier {
       themeMode: AppThemeMode.fromKey(box.get('themeMode') as String?),
       language: AppLanguage.fromKey(box.get('language') as String?),
       quoteTextSize: _readQuoteTextSize(box.get('quoteTextSize')),
-      quoteLineSpacing: QuoteLineSpacing.fromKey(
-        box.get('quoteLineSpacing') as String?,
-      ),
-      uiTextSize: UiTextSize.fromKey(box.get('uiTextSize') as String?),
-      cardDensity: CardDensity.fromKey(box.get('cardDensity') as String?),
+      quoteLineSpacing: _readQuoteLineSpacing(box.get('quoteLineSpacing')),
       showNotePreview:
           (box.get('showNotePreview') as bool?) ??
           AppSettings.defaults.showNotePreview,
       showMetaPreview:
           (box.get('showMetaPreview') as bool?) ??
           AppSettings.defaults.showMetaPreview,
-      collapsedLines:
-          (box.get('collapsedLines') as int?) ??
-          AppSettings.defaults.collapsedLines,
-      defaultSortMode: QuoteSortMode.fromKey(
-        box.get('defaultSortMode') as String?,
-      ),
-      tagPreviewSize: TagPreviewSize.fromKey(
-        box.get('tagPreviewSize') as String?,
-      ),
     );
     return AppSettingsController._(box, settings);
   }
@@ -60,17 +46,11 @@ class AppSettingsController extends ChangeNotifier {
   Future<void> setQuoteTextSize(double value) =>
       _update(_settings.copyWith(quoteTextSize: value), 'quoteTextSize', value);
 
-  Future<void> setQuoteLineSpacing(QuoteLineSpacing value) => _update(
+  Future<void> setQuoteLineSpacing(double value) => _update(
     _settings.copyWith(quoteLineSpacing: value),
     'quoteLineSpacing',
-    value.key,
+    value,
   );
-
-  Future<void> setUiTextSize(UiTextSize value) =>
-      _update(_settings.copyWith(uiTextSize: value), 'uiTextSize', value.key);
-
-  Future<void> setCardDensity(CardDensity value) =>
-      _update(_settings.copyWith(cardDensity: value), 'cardDensity', value.key);
 
   Future<void> setShowNotePreview(bool value) => _update(
     _settings.copyWith(showNotePreview: value),
@@ -84,24 +64,6 @@ class AppSettingsController extends ChangeNotifier {
     value,
   );
 
-  Future<void> setCollapsedLines(int value) => _update(
-    _settings.copyWith(collapsedLines: value),
-    'collapsedLines',
-    value,
-  );
-
-  Future<void> setDefaultSortMode(QuoteSortMode value) => _update(
-    _settings.copyWith(defaultSortMode: value),
-    'defaultSortMode',
-    value.key,
-  );
-
-  Future<void> setTagPreviewSize(TagPreviewSize value) => _update(
-    _settings.copyWith(tagPreviewSize: value),
-    'tagPreviewSize',
-    value.key,
-  );
-
   Future<void> resetSettings() async {
     _settings = AppSettings.defaults;
     notifyListeners();
@@ -109,14 +71,9 @@ class AppSettingsController extends ChangeNotifier {
       'themeMode': _settings.themeMode.key,
       'language': _settings.language.key,
       'quoteTextSize': _settings.quoteTextSize,
-      'quoteLineSpacing': _settings.quoteLineSpacing.key,
-      'uiTextSize': _settings.uiTextSize.key,
-      'cardDensity': _settings.cardDensity.key,
+      'quoteLineSpacing': _settings.quoteLineSpacing,
       'showNotePreview': _settings.showNotePreview,
       'showMetaPreview': _settings.showMetaPreview,
-      'collapsedLines': _settings.collapsedLines,
-      'defaultSortMode': _settings.defaultSortMode.key,
-      'tagPreviewSize': _settings.tagPreviewSize.key,
     });
   }
 
@@ -138,6 +95,21 @@ class AppSettingsController extends ChangeNotifier {
       'large' => 24,
       'extraLarge' => 26,
       _ => AppSettings.defaults.quoteTextSize,
+    };
+  }
+
+  static double _readQuoteLineSpacing(Object? value) {
+    if (value is num) {
+      return value.toDouble().clamp(1.25, 1.65);
+    }
+
+    return switch (value) {
+      'tight' => 1.25,
+      'compact' => 1.35,
+      'normal' => 1.4,
+      'relaxed' => 1.5,
+      'airy' => 1.58,
+      _ => AppSettings.defaults.quoteLineSpacing,
     };
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../settings/app_settings.dart';
 import '../settings/app_settings_scope.dart';
 
 class TagChip extends StatelessWidget {
@@ -21,7 +20,6 @@ class TagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = AppSettingsScope.of(context).settings;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final compact = settings.tagPreviewSize == TagPreviewSize.compact;
     final background = selected
         ? Theme.of(context).colorScheme.primary.withAlpha(isDark ? 60 : 28)
         : (isDark ? const Color(0xFF262B33) : const Color(0xFFF5EEE7));
@@ -31,8 +29,8 @@ class TagChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: compact ? 8 : 10,
-          vertical: compact ? 5 : 6,
+          horizontal: settings.tagPadding.horizontal / 2,
+          vertical: settings.tagPadding.vertical / 2,
         ),
         decoration: BoxDecoration(
           color: background,
@@ -48,7 +46,7 @@ class TagChip extends StatelessWidget {
           text: TextSpan(
             style: TextStyle(
               color: isDark ? const Color(0xFFD7CEC3) : const Color(0xFF8B7E74),
-              fontSize: compact ? 12 : 13,
+              fontSize: settings.tagFontSize,
             ),
             children: _highlight(tagName, query),
           ),

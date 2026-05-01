@@ -56,7 +56,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> {
         final quoteStyle = TextStyle(
           color: Theme.of(context).textTheme.bodyLarge?.color,
           fontSize: settings.quoteTextSize + 3,
-          height: settings.quoteLineSpacing.height,
+          height: settings.quoteLineSpacing,
           fontWeight: FontWeight.w600,
         );
 
