@@ -211,16 +211,6 @@ class _QuoteCardState extends State<QuoteCard> {
                             onTap: () => widget.onTagTap(tag.name),
                           ),
                       ],
-                    )
-                  else
-                    Text(
-                      strings.tagNone,
-                      style: TextStyle(
-                        color: isDark
-                            ? const Color(0xFFB8AEA2)
-                            : const Color(0xFF8B7E74),
-                        fontSize: 13,
-                      ),
                     ),
                   if (showExpandTagsButton)
                     TextButton(

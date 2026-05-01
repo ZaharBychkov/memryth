@@ -22,7 +22,7 @@ class AppStrings {
   String get lineSpacingTitle => isRu ? 'Межстрочный интервал' : 'Line spacing';
   String get uiSizeTitle => isRu ? 'Размер интерфейса' : 'UI size';
   String get densityTitle => isRu ? 'Плотность карточек' : 'Card density';
-  String get tagSizeTitle => isRu ? 'Размер тегов' : 'Tag size';
+  String get tagSizeTitle => isRu ? 'Размер тем' : 'Topic size';
   String get collapsedTitle =>
       isRu ? 'Высота свернутой карточки' : 'Collapsed card height';
   String get defaultSortTitle =>
@@ -50,12 +50,12 @@ class AppStrings {
   String get edit => isRu ? 'Редактировать' : 'Edit';
   String get copy => isRu ? 'Копировать' : 'Copy';
   String get searchHint => isRu
-      ? 'Поиск по тексту, автору, источнику, заметке и тегам'
-      : 'Search text, author, source, note and tags';
-  String get tagNone => isRu ? 'Теги не добавлены' : 'No tags yet';
-  String get hideTags => isRu ? 'Скрыть теги' : 'Hide tags';
+      ? 'Поиск по тексту, автору, источнику, заметке и темам (#семья)'
+      : 'Search text, author, source, note and topics (#family)';
+  String get tagNone => isRu ? 'Темы не добавлены' : 'No topics yet';
+  String get hideTags => isRu ? 'Скрыть темы' : 'Hide topics';
   String showAllTags(int count) =>
-      isRu ? 'Показать все теги ($count)' : 'Show all tags ($count)';
+      isRu ? 'Показать все темы ($count)' : 'Show all topics ($count)';
   String get collapse => isRu ? 'Свернуть' : 'Collapse';
   String get expand => isRu ? 'Развернуть' : 'Expand';
   String get myNote => isRu ? 'Моя заметка' : 'My note';
@@ -63,7 +63,7 @@ class AppStrings {
   String get updatedAt => isRu ? 'Обновлено' : 'Updated at';
   String get changeDate => isRu ? 'Изменить дату' : 'Change date';
   String get details => isRu ? 'Подробнее' : 'Details';
-  String get tags => isRu ? 'Теги' : 'Tags';
+  String get tags => isRu ? 'Темы' : 'Topics';
   String get addToFavorites => isRu ? 'В избранное' : 'Favorite';
   String get favoriteHint => isRu
       ? 'Быстрый доступ к самым важным записям'
@@ -91,9 +91,10 @@ class AppStrings {
       ? 'Почему вы сохранили эту запись и как хотите ее использовать'
       : 'Why you saved this entry and how you want to use it';
   String get add => isRu ? 'Добавить' : 'Add';
-  String get newTag => isRu ? 'Новый тег' : 'New tag';
-  String get quickAddTags =>
-      isRu ? 'Быстро добавить из существующих' : 'Quick add from existing tags';
+  String get newTag => isRu ? 'Новая тема' : 'New topic';
+  String get quickAddTags => isRu
+      ? 'Быстро добавить из существующих тем'
+      : 'Quick add from existing topics';
   String get editTitle => isRu ? 'Редактирование' : 'Edit entry';
   String get createTitle => isRu ? 'Новая запись' : 'New entry';
   String get save => isRu ? 'Сохранить' : 'Save';

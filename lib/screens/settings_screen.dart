@@ -743,8 +743,8 @@ class _SettingsText {
   String get resetSettings =>
       isRu ? 'Сбросить настройки интерфейса' : 'Reset interface settings';
   String get resetWarning => isRu
-      ? 'Записи, теги и заметки не будут удалены. Сбросятся только настройки внешнего вида и чтения.'
-      : 'Entries, tags and notes will not be deleted. Only appearance and reading settings will be reset.';
+      ? 'Записи, темы и заметки не будут удалены. Сбросятся только настройки внешнего вида и чтения.'
+      : 'Entries, topics and notes will not be deleted. Only appearance and reading settings will be reset.';
   String get cancel => isRu ? 'Отмена' : 'Cancel';
   String get previewTitle => isRu ? 'Предпросмотр' : 'Preview';
   String get previewBody => isRu
@@ -757,8 +757,8 @@ class _SettingsText {
   String get exportLibrary =>
       isRu ? 'Экспортировать библиотеку' : 'Export library';
   String get exportSubtitle => isRu
-      ? 'Сохранить все записи и теги в JSON'
-      : 'Save all entries and tags to JSON';
+      ? 'Сохранить все записи и темы в JSON'
+      : 'Save all entries and topics to JSON';
   String get importLibrary =>
       isRu ? 'Импортировать из файла' : 'Import from file';
   String get importSubtitle => isRu

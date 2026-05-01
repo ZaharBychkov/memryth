@@ -131,7 +131,7 @@ class DemoSeed {
         updatedAt: DateTime(2026, 3, 1, 12, 48),
         sourceTitle: 'Thinking in Bets',
         sourceDetails: 'Глава 6',
-        note: 'Подходит для показа автора, источника и нескольких тегов.',
+        note: 'Подходит для показа автора, источника и нескольких тем.',
       ),
       Quote(
         id: 'entry-009',

@@ -210,14 +210,25 @@ class QuoteController extends ChangeNotifier {
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return true;
 
+    final quoteTags = tagsForQuote(quote);
+    if (query.startsWith('#')) {
+      final topicQuery = query.substring(1).trim();
+      if (topicQuery.isEmpty) {
+        return true;
+      }
+      return quoteTags.any(
+        (tag) => tag.name.toLowerCase().contains(topicQuery),
+      );
+    }
+
     final inText = quote.text.toLowerCase().contains(query);
     final inAuthor = quote.author.toLowerCase().contains(query);
     final inSourceTitle = quote.sourceTitle.toLowerCase().contains(query);
     final inSourceDetails = quote.sourceDetails.toLowerCase().contains(query);
     final inNote = quote.note.toLowerCase().contains(query);
-    final inTags = tagsForQuote(
-      quote,
-    ).any((tag) => tag.name.toLowerCase().contains(query));
+    final inTags = quoteTags.any(
+      (tag) => tag.name.toLowerCase().contains(query),
+    );
 
     return inText ||
         inAuthor ||
