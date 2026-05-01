@@ -87,7 +87,9 @@ class MemrythApp extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Color(0xFFF5F0E6),
         foregroundColor: Color(0xFF2C2C2C),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       drawerTheme: const DrawerThemeData(backgroundColor: Color(0xFFF7F1EA)),
     );
@@ -123,7 +125,9 @@ class MemrythApp extends StatelessWidget {
         centerTitle: true,
         backgroundColor: appBar,
         foregroundColor: text,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       drawerTheme: const DrawerThemeData(backgroundColor: Color(0xFF1D2127)),
     );

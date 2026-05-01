@@ -60,6 +60,7 @@ class _QuoteCardState extends State<QuoteCard> {
         : tags.take(_collapsedCount).toList();
     final canExpandText =
         widget.quote.text.trim().length > _expandThresholdChars;
+    final metaLine = _metaLine(strings);
     final quoteSpan = TextSpan(
       style: quoteTextStyle,
       children: _highlight(widget.quote.text, widget.query),
@@ -142,11 +143,11 @@ class _QuoteCardState extends State<QuoteCard> {
                         ? 10
                         : 14,
                   ),
-                  if (settings.showMetaPreview && _metaLine.isNotEmpty)
+                  if (settings.showMetaPreview && metaLine.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Text(
-                        _metaLine,
+                        metaLine,
                         style: TextStyle(
                           color: isDark
                               ? const Color(0xFFB8AEA2)
@@ -248,18 +249,26 @@ class _QuoteCardState extends State<QuoteCard> {
     );
   }
 
-  String get _metaLine {
+  String _metaLine(AppStrings strings) {
+    final author = widget.quote.author.trim();
+    final source = widget.quote.sourceTitle.trim();
+    final details = widget.quote.sourceDetails.trim();
+
     final parts = <String>[];
-    if (widget.quote.author.trim().isNotEmpty) {
-      parts.add(widget.quote.author.trim());
+    if (author.isNotEmpty && source.isNotEmpty) {
+      parts.add('$author ${strings.sourcePrefix} $source');
+    } else {
+      if (author.isNotEmpty) {
+        parts.add(author);
+      }
+      if (source.isNotEmpty) {
+        parts.add(source);
+      }
     }
-    if (widget.quote.sourceTitle.trim().isNotEmpty) {
-      parts.add(widget.quote.sourceTitle.trim());
+    if (details.isNotEmpty) {
+      parts.add(details);
     }
-    if (widget.quote.sourceDetails.trim().isNotEmpty) {
-      parts.add(widget.quote.sourceDetails.trim());
-    }
-    return parts.join(' • ');
+    return parts.join(', ');
   }
 
   Widget _buildQuoteText({

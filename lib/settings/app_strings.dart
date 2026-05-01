@@ -31,6 +31,7 @@ class AppStrings {
       isRu ? 'Показывать в карточке' : 'Show in cards';
   String get showNote => isRu ? 'Заметку' : 'Note';
   String get showMeta => isRu ? 'Автора и источник' : 'Author and source';
+  String get sourcePrefix => isRu ? 'в' : 'in';
   String get favorites => isRu ? 'Избранное' : 'Favorites';
   String get emptyList => isRu
       ? 'Пока нет записей. Нажмите «Новая запись», чтобы добавить первую.'
