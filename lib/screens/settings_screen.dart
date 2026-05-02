@@ -458,6 +458,15 @@ class AppLockSettingsScreen extends StatelessWidget {
                   onTap: () => _setPin(context, text),
                 ),
                 if (enabled)
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: _IconShell(icon: Icons.fingerprint_rounded),
+                    title: Text(text.biometricUnlock),
+                    subtitle: Text(text.biometricUnlockSubtitle),
+                    value: controller.settings.biometricUnlockEnabled,
+                    onChanged: controller.setBiometricUnlockEnabled,
+                  ),
+                if (enabled)
                   _ActionRow(
                     icon: Icons.lock_open_rounded,
                     title: text.disablePinLock,
@@ -1283,6 +1292,11 @@ class _SettingsText {
   String get pinLockSaved => isRu ? 'PIN-защита включена' : 'PIN lock enabled';
   String get pinLockDisabled =>
       isRu ? 'PIN-защита отключена' : 'PIN lock disabled';
+  String get biometricUnlock =>
+      isRu ? 'Биометрическая разблокировка' : 'Biometric unlock';
+  String get biometricUnlockSubtitle => isRu
+      ? 'Использовать отпечаток или системную биометрию после настройки PIN'
+      : 'Use fingerprint or system biometrics after setting a PIN';
   String get privacyPolicyIntroTitle =>
       isRu ? 'Локально и без аккаунта' : 'Local and account-free';
   String get privacyPolicyIntroBody => isRu

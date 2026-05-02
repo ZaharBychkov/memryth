@@ -54,6 +54,7 @@ class AppSettings {
     required this.hasCompletedOnboarding,
     required this.appLockEnabled,
     required this.appLockConfigured,
+    required this.biometricUnlockEnabled,
   });
 
   final AppThemeMode themeMode;
@@ -65,6 +66,7 @@ class AppSettings {
   final bool hasCompletedOnboarding;
   final bool appLockEnabled;
   final bool appLockConfigured;
+  final bool biometricUnlockEnabled;
 
   bool get isDarkMode => themeMode == AppThemeMode.dark;
   double get uiTextScale => 1;
@@ -86,6 +88,7 @@ class AppSettings {
     bool? hasCompletedOnboarding,
     bool? appLockEnabled,
     bool? appLockConfigured,
+    bool? biometricUnlockEnabled,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -98,6 +101,8 @@ class AppSettings {
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       appLockEnabled: appLockEnabled ?? this.appLockEnabled,
       appLockConfigured: appLockConfigured ?? this.appLockConfigured,
+      biometricUnlockEnabled:
+          biometricUnlockEnabled ?? this.biometricUnlockEnabled,
     );
   }
 
@@ -111,5 +116,6 @@ class AppSettings {
     hasCompletedOnboarding: false,
     appLockEnabled: false,
     appLockConfigured: false,
+    biometricUnlockEnabled: false,
   );
 }

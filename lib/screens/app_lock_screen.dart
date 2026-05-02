@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 
 import '../settings/app_settings.dart';
 import '../settings/app_settings_controller.dart';
@@ -53,8 +54,17 @@ class PinUnlockScreen extends StatefulWidget {
 }
 
 class _PinUnlockScreenState extends State<PinUnlockScreen> {
+  final LocalAuthentication _localAuthentication = LocalAuthentication();
   final TextEditingController _pinController = TextEditingController();
   String _error = '';
+  bool _biometricAvailable = false;
+  bool _checkingBiometrics = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricState();
+  }
 
   @override
   void dispose() {
@@ -65,6 +75,9 @@ class _PinUnlockScreenState extends State<PinUnlockScreen> {
   @override
   Widget build(BuildContext context) {
     final text = _LockText(widget.controller.settings.language);
+    final showBiometric =
+        widget.controller.settings.biometricUnlockEnabled &&
+        _biometricAvailable;
 
     return Scaffold(
       body: SafeArea(
@@ -139,6 +152,31 @@ class _PinUnlockScreenState extends State<PinUnlockScreen> {
                       label: Text(text.unlock),
                     ),
                   ),
+                  if (showBiometric) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _authenticateBiometric,
+                        icon: const Icon(Icons.fingerprint_rounded),
+                        label: Text(text.unlockWithBiometrics),
+                      ),
+                    ),
+                  ] else if (widget
+                          .controller
+                          .settings
+                          .biometricUnlockEnabled &&
+                      !_checkingBiometrics) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      text.biometricsUnavailable,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).hintColor,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -146,6 +184,49 @@ class _PinUnlockScreenState extends State<PinUnlockScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _loadBiometricState() async {
+    try {
+      final supported = await _localAuthentication.isDeviceSupported();
+      final canCheck = await _localAuthentication.canCheckBiometrics;
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _biometricAvailable = supported && canCheck;
+        _checkingBiometrics = false;
+      });
+    } on PlatformException {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _biometricAvailable = false;
+        _checkingBiometrics = false;
+      });
+    }
+  }
+
+  Future<void> _authenticateBiometric() async {
+    final text = _LockText(widget.controller.settings.language);
+    try {
+      final authenticated = await _localAuthentication.authenticate(
+        localizedReason: text.biometricReason,
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+        ),
+      );
+      if (authenticated) {
+        widget.onUnlocked();
+      }
+    } on PlatformException {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _error = text.biometricsFailed);
+    }
   }
 
   void _unlock(_LockText text) {
@@ -176,4 +257,15 @@ class _LockText {
   String get pin => isRu ? 'PIN' : 'PIN';
   String get unlock => isRu ? 'Разблокировать' : 'Unlock';
   String get error => isRu ? 'Неверный PIN' : 'Incorrect PIN';
+  String get unlockWithBiometrics =>
+      isRu ? 'Разблокировать биометрией' : 'Unlock with biometrics';
+  String get biometricReason => isRu
+      ? 'Подтвердите личность, чтобы открыть MEMRYTH'
+      : 'Authenticate to open MEMRYTH';
+  String get biometricsUnavailable => isRu
+      ? 'Биометрия недоступна на этом устройстве.'
+      : 'Biometrics are unavailable on this device.';
+  String get biometricsFailed => isRu
+      ? 'Биометрическая проверка не выполнена.'
+      : 'Biometric authentication failed.';
 }

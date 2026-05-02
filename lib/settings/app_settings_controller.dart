@@ -45,6 +45,9 @@ class AppSettingsController extends ChangeNotifier {
       appLockEnabled:
           ((box.get('appLockEnabled') as bool?) ?? false) && appLockConfigured,
       appLockConfigured: appLockConfigured,
+      biometricUnlockEnabled:
+          ((box.get('biometricUnlockEnabled') as bool?) ?? false) &&
+          appLockConfigured,
     );
     await box.deleteAll(_obsoleteKeys);
     return AppSettingsController._(box, settings)
@@ -119,13 +122,24 @@ class AppSettingsController extends ChangeNotifier {
     _settings = _settings.copyWith(
       appLockEnabled: false,
       appLockConfigured: false,
+      biometricUnlockEnabled: false,
     );
     notifyListeners();
     await _box.putAll({
       'appLockEnabled': false,
       'appLockPinSalt': '',
       'appLockPinHash': '',
+      'biometricUnlockEnabled': false,
     });
+  }
+
+  Future<void> setBiometricUnlockEnabled(bool value) async {
+    final enabled = value && _settings.appLockConfigured;
+    await _update(
+      _settings.copyWith(biometricUnlockEnabled: enabled),
+      'biometricUnlockEnabled',
+      enabled,
+    );
   }
 
   bool verifyPin(String pin) {
@@ -137,6 +151,7 @@ class AppSettingsController extends ChangeNotifier {
       hasCompletedOnboarding: _settings.hasCompletedOnboarding,
       appLockEnabled: _settings.appLockEnabled,
       appLockConfigured: _settings.appLockConfigured,
+      biometricUnlockEnabled: _settings.biometricUnlockEnabled,
     );
     notifyListeners();
     await _box.putAll({
@@ -148,6 +163,7 @@ class AppSettingsController extends ChangeNotifier {
       'showMetaPreview': _settings.showMetaPreview,
       'hasCompletedOnboarding': _settings.hasCompletedOnboarding,
       'appLockEnabled': _settings.appLockEnabled,
+      'biometricUnlockEnabled': _settings.biometricUnlockEnabled,
     });
     await _box.deleteAll(_obsoleteKeys);
   }
