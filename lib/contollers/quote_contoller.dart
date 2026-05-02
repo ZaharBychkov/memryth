@@ -225,6 +225,27 @@ class QuoteController extends ChangeNotifier {
     }
   }
 
+  Future<void> addTagsToQuotes(
+    Iterable<Quote> quotes,
+    Iterable<String> tagIds,
+  ) async {
+    final tagsToAdd = tagIds.where((id) => id.trim().isNotEmpty).toSet();
+    if (tagsToAdd.isEmpty) {
+      return;
+    }
+
+    final now = DateTime.now();
+    for (final quote in quotes) {
+      final nextTagIds = {...quote.tagIds, ...tagsToAdd}.toList();
+      if (nextTagIds.length == quote.tagIds.length) {
+        continue;
+      }
+      await _quoteRepository.save(
+        quote.copyWith(tagIds: nextTagIds, updatedAt: now),
+      );
+    }
+  }
+
   bool _matches(Quote quote) {
     if (_favoritesOnly && !quote.isFavorite) {
       return false;

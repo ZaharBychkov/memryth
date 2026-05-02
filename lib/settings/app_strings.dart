@@ -85,6 +85,13 @@ class AppStrings {
       : 'Exported selected entries: $count';
   String get exportSelectedFailed =>
       isRu ? 'Не удалось экспортировать выбранные записи' : 'Export failed';
+  String get addTopicsToSelected =>
+      isRu ? 'Добавить темы к выбранным' : 'Add topics to selected';
+  String get noTopicsToAssign =>
+      isRu ? 'Сначала создайте хотя бы одну тему' : 'Create a topic first';
+  String get chooseTopics => isRu ? 'Выберите темы' : 'Choose topics';
+  String topicsAddedToSelected(int count) =>
+      isRu ? 'Темы добавлены к записям: $count' : 'Topics added to: $count';
   String get markSelectedFavorite =>
       isRu ? 'Добавить выбранные в избранное' : 'Favorite selected';
   String get unmarkSelectedFavorite =>

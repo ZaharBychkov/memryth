@@ -333,6 +333,13 @@ class _QuotesScreenState extends State<QuotesScreen> {
           icon: const Icon(Icons.ios_share_rounded),
         ),
         IconButton(
+          tooltip: strings.addTopicsToSelected,
+          onPressed: actionsEnabled
+              ? () => _addTagsToSelected(controller, strings)
+              : null,
+          icon: const Icon(Icons.label_rounded),
+        ),
+        IconButton(
           tooltip: strings.markSelectedFavorite,
           onPressed: actionsEnabled
               ? () => _setSelectedFavorites(controller, true, strings)
@@ -681,6 +688,105 @@ class _QuotesScreenState extends State<QuotesScreen> {
           ),
         );
     }
+  }
+
+  Future<void> _addTagsToSelected(
+    QuoteController controller,
+    AppStrings strings,
+  ) async {
+    if (_selectionBusy) {
+      return;
+    }
+
+    final selected = _selectedQuotes(controller);
+    if (selected.isEmpty) {
+      return;
+    }
+    if (controller.allTagsSorted.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(strings.noTopicsToAssign),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      return;
+    }
+
+    final tagIds = await _askTagsToAssign(controller, strings);
+    if (tagIds == null || tagIds.isEmpty) {
+      return;
+    }
+
+    setState(() => _selectionBusy = true);
+    await controller.addTagsToQuotes(selected, tagIds);
+    if (!mounted) {
+      return;
+    }
+
+    _exitSelectionMode();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(strings.topicsAddedToSelected(selected.length)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+  }
+
+  Future<Set<String>?> _askTagsToAssign(
+    QuoteController controller,
+    AppStrings strings,
+  ) async {
+    final selectedTagIds = <String>{};
+    return showDialog<Set<String>>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(strings.chooseTopics),
+              content: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final tag in controller.allTagsSorted)
+                      FilterChip(
+                        label: Text(tag.name),
+                        selected: selectedTagIds.contains(tag.id),
+                        onSelected: (selected) {
+                          setDialogState(() {
+                            if (selected) {
+                              selectedTagIds.add(tag.id);
+                            } else {
+                              selectedTagIds.remove(tag.id);
+                            }
+                          });
+                        },
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(strings.cancel),
+                ),
+                FilledButton(
+                  onPressed: selectedTagIds.isEmpty
+                      ? null
+                      : () => Navigator.of(context).pop({...selectedTagIds}),
+                  child: Text(strings.add),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _saveCurrentFilter(

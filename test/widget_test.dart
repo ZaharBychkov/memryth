@@ -175,6 +175,30 @@ void main() {
       expect(byId['q3']?.isFavorite, isTrue);
     });
 
+    test(
+      'addTagsToQuotes appends tags without duplicating existing ones',
+      () async {
+        final repository = _MemoryQuoteRepository([
+          _quote(id: 'q1', text: 'First', tagIds: const ['existing']),
+          _quote(id: 'q2', text: 'Second', tagIds: const []),
+        ]);
+        final controller = QuoteController(
+          quoteRepository: repository,
+          tagRepository: _MemoryTagRepository(const []),
+        )..loadInitial();
+
+        await controller.addTagsToQuotes(controller.filteredQuotes, [
+          'existing',
+          'new',
+        ]);
+        controller.refreshFromStorage();
+
+        final byId = {for (final quote in repository.getAll()) quote.id: quote};
+        expect(byId['q1']?.tagIds, ['existing', 'new']);
+        expect(byId['q2']?.tagIds, ['existing', 'new']);
+      },
+    );
+
     test('applySavedFilter restores query, filters and sort mode', () {
       final controller = _controller(
         quotes: [
