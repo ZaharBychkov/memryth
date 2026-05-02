@@ -241,7 +241,9 @@ class _DataSettingsScreenState extends State<DataSettingsScreen> {
             _InfoPanel(
               icon: Icons.storage_rounded,
               title: text.localData,
-              body: text.localDataBody,
+              body: text.localDataBodyWithLastExport(
+                widget.controller.settings.lastFullExportAt,
+              ),
             ),
             const SizedBox(height: 16),
             _ActionRow(
@@ -276,6 +278,10 @@ class _DataSettingsScreenState extends State<DataSettingsScreen> {
           fileNameOverrides: [file.uri.pathSegments.last],
         ),
       );
+      if (!mounted) {
+        return;
+      }
+      await widget.controller.markFullExported(DateTime.now());
       if (!mounted) {
         return;
       }
@@ -1215,6 +1221,17 @@ class _SettingsText {
   String get localDataBody => isRu
       ? 'Записи хранятся на устройстве. Экспортируйте JSON-файл, чтобы сохранить резервную копию или перенести библиотеку.'
       : 'Entries are stored on this device. Export a JSON file to keep a backup or move your library.';
+  String localDataBodyWithLastExport(DateTime? exportedAt) {
+    final lastExport = exportedAt == null
+        ? (isRu
+              ? 'Последний полный экспорт: еще не выполнялся.'
+              : 'Last full export: not yet.')
+        : (isRu
+              ? 'Последний полный экспорт: ${_formatDateTime(exportedAt)}.'
+              : 'Last full export: ${_formatDateTime(exportedAt)}.');
+    return '$localDataBody\n\n$lastExport';
+  }
+
   String get exportLibrary =>
       isRu ? 'Экспортировать библиотеку' : 'Export library';
   String get exportSubtitle => isRu

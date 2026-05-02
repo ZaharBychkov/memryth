@@ -48,6 +48,7 @@ class AppSettingsController extends ChangeNotifier {
       biometricUnlockEnabled:
           ((box.get('biometricUnlockEnabled') as bool?) ?? false) &&
           appLockConfigured,
+      lastFullExportAt: _readDateTime(box.get('lastFullExportAt')),
     );
     await box.deleteAll(_obsoleteKeys);
     return AppSettingsController._(box, settings)
@@ -142,6 +143,15 @@ class AppSettingsController extends ChangeNotifier {
     );
   }
 
+  Future<void> markFullExported(DateTime exportedAt) async {
+    final value = exportedAt.toUtc();
+    await _update(
+      _settings.copyWith(lastFullExportAt: value),
+      'lastFullExportAt',
+      value.toIso8601String(),
+    );
+  }
+
   bool verifyPin(String pin) {
     return PinLockService.verifyPin(pin: pin, salt: _pinSalt, hash: _pinHash);
   }
@@ -152,9 +162,10 @@ class AppSettingsController extends ChangeNotifier {
       appLockEnabled: _settings.appLockEnabled,
       appLockConfigured: _settings.appLockConfigured,
       biometricUnlockEnabled: _settings.biometricUnlockEnabled,
+      lastFullExportAt: _settings.lastFullExportAt,
     );
     notifyListeners();
-    await _box.putAll({
+    final values = <String, Object>{
       'themeMode': _settings.themeMode.key,
       'language': _settings.language.key,
       'quoteTextSize': _settings.quoteTextSize,
@@ -164,7 +175,12 @@ class AppSettingsController extends ChangeNotifier {
       'hasCompletedOnboarding': _settings.hasCompletedOnboarding,
       'appLockEnabled': _settings.appLockEnabled,
       'biometricUnlockEnabled': _settings.biometricUnlockEnabled,
-    });
+    };
+    final lastFullExportAt = _settings.lastFullExportAt;
+    if (lastFullExportAt != null) {
+      values['lastFullExportAt'] = lastFullExportAt.toIso8601String();
+    }
+    await _box.putAll(values);
     await _box.deleteAll(_obsoleteKeys);
   }
 
@@ -202,5 +218,15 @@ class AppSettingsController extends ChangeNotifier {
       'airy' => 1.58,
       _ => AppSettings.defaults.quoteLineSpacing,
     };
+  }
+
+  static DateTime? _readDateTime(Object? value) {
+    if (value is DateTime) {
+      return value.toUtc();
+    }
+    if (value is String) {
+      return DateTime.tryParse(value)?.toUtc();
+    }
+    return null;
   }
 }
