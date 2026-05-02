@@ -2,6 +2,32 @@
 
 Дата фиксации: 2026-05-01
 
+Обновление статуса: 2026-05-02
+
+Закрыто после фиксации плана:
+
+- экспорт всей библиотеки в JSON и системный share;
+- импорт JSON в режиме merge без перезаписи существующих записей;
+- отдельный раздел "Данные и резервная копия" в настройках;
+- дата последнего полного экспорта;
+- пустой приватный старт без автоматического demo seed;
+- onboarding первого запуска;
+- Android package id, namespace, release signing и release build;
+- privacy policy, Google Play draft и in-app privacy policy;
+- share-to-app, quick add shortcut;
+- PIN lock и biometric unlock;
+- обзорный экран MEMRYTH Pro;
+- batch selection, batch favorite/unfavorite;
+- export selected через тот же совместимый JSON backup-формат.
+
+Осталось после текущего прохода:
+
+- реальные Google Play Billing / Pro entitlement;
+- Android widgets;
+- saved filters / saved collections / resurfacing;
+- расширенные batch actions, кроме удаления;
+- store screenshots и финальная ручная проверка релизного APK/AAB.
+
 ## 1. К чему стремимся
 
 MEMRYTH должен стать не просто списком цитат, а приватной офлайн-библиотекой личных текстовых фрагментов:
@@ -274,13 +300,22 @@ Pro:
 
 ## 9. Следующий практический шаг
 
-Начинать стоит с блока "Данные" в настройках:
+Блок "Данные" закрыт. Следующий практический порядок:
 
-1. Добавить секцию `Данные` в полноценный экран настроек.
-2. Добавить сервис export/import.
-3. Добавить зависимости `path_provider`, `share_plus`, `file_picker`.
-4. Реализовать export `.json`.
-5. Реализовать import `.json` в режиме merge.
-6. Добавить тесты на JSON-сериализацию и импорт без дублей.
-
-После этого можно переходить к переработке настроек чтения на sliders и reset settings.
+1. Google Play Billing / Pro entitlement:
+   - добавить `in_app_purchase`;
+   - завести локальное состояние Pro unlock;
+   - не ломать текущие Pro-функции, пока нет реального product id из Play Console;
+   - экран Pro должен честно показывать, если покупка еще недоступна.
+2. Android widgets:
+   - сначала простой widget для quick add или случайной избранной записи;
+   - не начинать с синхронизации/облака.
+3. Saved filters / collections:
+   - сохранять текущий search + topic/type/favorite filters как named view;
+   - не добавлять batch delete до отдельного решения.
+4. Финальная релизная проверка:
+   - `flutter analyze`;
+   - `flutter test`;
+   - `flutter build apk --release`;
+   - `flutter build appbundle`;
+   - ручная проверка export/import, share-to-app, quick add, PIN/biometric.
