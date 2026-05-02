@@ -17,7 +17,7 @@
 - share-to-app, quick add shortcut;
 - PIN lock и biometric unlock;
 - обзорный экран MEMRYTH Pro;
-- batch selection, batch favorite/unfavorite;
+- batch selection, batch favorite/unfavorite и batch topic assignment;
 - export selected через тот же совместимый JSON backup-формат;
 - saved filters для сохранения текущего поиска, фильтров и сортировки.
 
@@ -26,7 +26,7 @@
 - реальные Google Play Billing / Pro entitlement;
 - Android widgets;
 - saved collections / resurfacing;
-- расширенные batch actions, кроме удаления;
+- расширенные batch actions, кроме удаления, если появится понятный сценарий;
 - store screenshots и финальная ручная проверка релизного APK/AAB.
 
 ## 1. К чему стремимся
