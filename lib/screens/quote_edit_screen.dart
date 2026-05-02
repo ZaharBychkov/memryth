@@ -13,11 +13,13 @@ class QuoteEditScreen extends StatefulWidget {
     required this.quoteRepository,
     required this.tagRepository,
     this.quote,
+    this.initialText = '',
   });
 
   final QuoteRepository quoteRepository;
   final TagRepository tagRepository;
   final Quote? quote;
+  final String initialText;
 
   @override
   State<QuoteEditScreen> createState() => _QuoteEditScreenState();
@@ -28,6 +30,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
     quoteRepository: widget.quoteRepository,
     tagRepository: widget.tagRepository,
     quote: widget.quote,
+    initialText: widget.initialText,
   );
 
   @override

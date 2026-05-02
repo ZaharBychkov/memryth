@@ -12,6 +12,7 @@ class QuoteEditViewModel extends ChangeNotifier {
     required QuoteRepository quoteRepository,
     required TagRepository tagRepository,
     Quote? quote,
+    String initialText = '',
   }) : _quoteRepository = quoteRepository,
        _tagRepository = tagRepository,
        _quote = quote {
@@ -33,6 +34,7 @@ class QuoteEditViewModel extends ChangeNotifier {
         }
       }
     } else {
+      textController.text = initialText.trim();
       _selectedType = QuoteType.quote;
       _createdAt = DateTime.now();
     }

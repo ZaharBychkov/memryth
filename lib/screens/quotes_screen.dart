@@ -26,6 +26,10 @@ class QuotesScreen extends StatefulWidget {
 }
 
 class _QuotesScreenState extends State<QuotesScreen> {
+  static const MethodChannel _shareChannel = MethodChannel(
+    'app.memryth.android/share',
+  );
+
   final QuoteRepository _quoteRepository = HiveQuoteRepository();
   final TagRepository _tagRepository = HiveTagRepository();
   final TextEditingController _searchController = TextEditingController();
@@ -40,6 +44,11 @@ class _QuotesScreenState extends State<QuotesScreen> {
     super.initState();
     _quotesSub = _quoteRepository.watch().listen((_) => _onStorageChanged());
     _tagsSub = _tagRepository.watch().listen((_) => _onStorageChanged());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _bindShareTarget();
+      }
+    });
   }
 
   @override
@@ -425,15 +434,43 @@ class _QuotesScreenState extends State<QuotesScreen> {
       );
   }
 
-  Future<void> _openCreate() async {
+  Future<void> _openCreate({String initialText = ''}) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => QuoteEditScreen(
           quoteRepository: _quoteRepository,
           tagRepository: _tagRepository,
+          initialText: initialText,
         ),
       ),
     );
+  }
+
+  Future<void> _bindShareTarget() async {
+    _shareChannel.setMethodCallHandler((call) async {
+      if (call.method == 'sharedText' && call.arguments is String) {
+        await _openSharedText(call.arguments as String);
+      }
+    });
+
+    try {
+      final initialText = await _shareChannel.invokeMethod<String>(
+        'consumeInitialText',
+      );
+      if (initialText != null) {
+        await _openSharedText(initialText);
+      }
+    } on MissingPluginException {
+      return;
+    }
+  }
+
+  Future<void> _openSharedText(String value) async {
+    final text = value.trim();
+    if (text.isEmpty || !mounted) {
+      return;
+    }
+    await _openCreate(initialText: text);
   }
 
   Future<void> _openEdit(Quote quote) async {
