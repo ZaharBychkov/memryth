@@ -450,6 +450,10 @@ class _QuotesScreenState extends State<QuotesScreen> {
     _shareChannel.setMethodCallHandler((call) async {
       if (call.method == 'sharedText' && call.arguments is String) {
         await _openSharedText(call.arguments as String);
+        return;
+      }
+      if (call.method == 'quickAdd') {
+        await _openCreate();
       }
     });
 
@@ -459,6 +463,14 @@ class _QuotesScreenState extends State<QuotesScreen> {
       );
       if (initialText != null) {
         await _openSharedText(initialText);
+        return;
+      }
+
+      final shouldQuickAdd = await _shareChannel.invokeMethod<bool>(
+        'consumeQuickAdd',
+      );
+      if (shouldQuickAdd == true && mounted) {
+        await _openCreate();
       }
     } on MissingPluginException {
       return;

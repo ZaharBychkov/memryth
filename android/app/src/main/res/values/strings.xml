@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MEMRYTH</string>
+    <string name="shortcut_new_entry_short">New entry</string>
+    <string name="shortcut_new_entry_long">Create a new MEMRYTH entry</string>
+</resources>

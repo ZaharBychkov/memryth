@@ -8,6 +8,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private var methodChannel: MethodChannel? = null
     private var pendingSharedText: String? = null
+    private var pendingQuickAdd = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -21,6 +22,10 @@ class MainActivity : FlutterActivity() {
                 val text = pendingSharedText ?: extractSharedText(intent)
                 pendingSharedText = null
                 result.success(text)
+            } else if (call.method == "consumeQuickAdd") {
+                val shouldOpen = pendingQuickAdd || isQuickAdd(intent)
+                pendingQuickAdd = false
+                result.success(shouldOpen)
             } else {
                 result.notImplemented()
             }
@@ -30,6 +35,16 @@ class MainActivity : FlutterActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+
+        if (isQuickAdd(intent)) {
+            val channel = methodChannel
+            if (channel == null) {
+                pendingQuickAdd = true
+            } else {
+                channel.invokeMethod("quickAdd", null)
+            }
+            return
+        }
 
         val text = extractSharedText(intent) ?: return
         val channel = methodChannel
@@ -48,5 +63,9 @@ class MainActivity : FlutterActivity() {
             return null
         }
         return intent.getStringExtra(Intent.EXTRA_TEXT)?.trim()
+    }
+
+    private fun isQuickAdd(intent: Intent?): Boolean {
+        return intent?.action == "app.memryth.android.action.QUICK_ADD"
     }
 }
