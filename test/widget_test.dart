@@ -44,6 +44,114 @@ void main() {
     });
   });
 
+  group('QuoteController filters and sorting', () {
+    test('filters entries by type and favorites', () {
+      final controller = _controller(
+        quotes: [
+          _quote(
+            id: 'q1',
+            text: 'Quote',
+            tagIds: const [],
+            typeKey: QuoteType.quote.key,
+            isFavorite: true,
+          ),
+          _quote(
+            id: 'q2',
+            text: 'Thought',
+            tagIds: const [],
+            typeKey: QuoteType.thought.key,
+          ),
+          _quote(
+            id: 'q3',
+            text: 'Excerpt',
+            tagIds: const [],
+            typeKey: QuoteType.excerpt.key,
+            isFavorite: true,
+          ),
+        ],
+        tags: const [],
+      );
+
+      controller.toggleTypeFilter(QuoteType.excerpt);
+      expect(controller.filteredQuotes.map((quote) => quote.id), ['q3']);
+
+      controller.toggleFavoritesOnly();
+      expect(controller.filteredQuotes.map((quote) => quote.id), ['q3']);
+
+      controller.clearFilters();
+      expect(controller.filteredQuotes, hasLength(3));
+      expect(
+        controller.filteredQuotes.map((quote) => quote.id),
+        containsAll(['q1', 'q2', 'q3']),
+      );
+    });
+
+    test('sorts entries by created and updated dates', () {
+      final controller = _controller(
+        quotes: [
+          _quote(
+            id: 'old',
+            text: 'Old',
+            tagIds: const [],
+            createdAt: DateTime(2026, 1, 1),
+            updatedAt: DateTime(2026, 1, 5),
+          ),
+          _quote(
+            id: 'new',
+            text: 'New',
+            tagIds: const [],
+            createdAt: DateTime(2026, 1, 3),
+            updatedAt: DateTime(2026, 1, 3),
+          ),
+          _quote(
+            id: 'updated',
+            text: 'Updated',
+            tagIds: const [],
+            createdAt: DateTime(2026, 1, 2),
+            updatedAt: DateTime(2026, 1, 6),
+          ),
+        ],
+        tags: const [],
+      );
+
+      expect(controller.filteredQuotes.map((quote) => quote.id), [
+        'new',
+        'updated',
+        'old',
+      ]);
+
+      controller.setSortMode(QuoteSortMode.oldest);
+      expect(controller.filteredQuotes.map((quote) => quote.id), [
+        'old',
+        'updated',
+        'new',
+      ]);
+
+      controller.setSortMode(QuoteSortMode.updated);
+      expect(controller.filteredQuotes.map((quote) => quote.id), [
+        'updated',
+        'old',
+        'new',
+      ]);
+    });
+
+    test('toggleFavorite persists favorite state in repository', () async {
+      final repository = _MemoryQuoteRepository([
+        _quote(id: 'q1', text: 'Entry', tagIds: const []),
+      ]);
+      final controller = QuoteController(
+        quoteRepository: repository,
+        tagRepository: _MemoryTagRepository(const []),
+      )..loadInitial();
+
+      await controller.toggleFavorite(controller.filteredQuotes.single);
+      controller.refreshFromStorage();
+
+      expect(repository.getAll().single.isFavorite, isTrue);
+      expect(controller.filteredQuotes.single.isFavorite, isTrue);
+    });
+  });
+
   group('topic index', () {
     test('builds a nested tree and aggregates note counts', () {
       final topics = buildTopicIndex(
@@ -103,6 +211,10 @@ Quote _quote({
   required String id,
   required String text,
   required List<String> tagIds,
+  String typeKey = 'quote',
+  DateTime? createdAt,
+  DateTime? updatedAt,
+  bool isFavorite = false,
 }) {
   final date = DateTime(2026);
   return Quote(
@@ -110,39 +222,49 @@ Quote _quote({
     text: text,
     author: '',
     tagIds: tagIds,
-    createdAt: date,
-    updatedAt: date,
+    typeKey: typeKey,
+    createdAt: createdAt ?? date,
+    updatedAt: updatedAt ?? createdAt ?? date,
+    isFavorite: isFavorite,
   );
 }
 
 class _MemoryQuoteRepository implements QuoteRepository {
-  _MemoryQuoteRepository(this._quotes);
+  _MemoryQuoteRepository(List<Quote> quotes) : _quotes = [...quotes];
 
   final List<Quote> _quotes;
 
   @override
-  List<Quote> getAll() => _quotes;
+  List<Quote> getAll() => [..._quotes];
 
   @override
-  Future<void> save(Quote quote) async {}
+  Future<void> save(Quote quote) async {
+    _quotes.removeWhere((item) => item.id == quote.id);
+    _quotes.add(quote);
+  }
 
   @override
-  Future<void> deleteById(String id) async {}
+  Future<void> deleteById(String id) async {
+    _quotes.removeWhere((quote) => quote.id == id);
+  }
 
   @override
   Stream<BoxEvent> watch() => const Stream<BoxEvent>.empty();
 }
 
 class _MemoryTagRepository implements TagRepository {
-  _MemoryTagRepository(this._tags);
+  _MemoryTagRepository(List<Tag> tags) : _tags = [...tags];
 
   final List<Tag> _tags;
 
   @override
-  List<Tag> getAll() => _tags;
+  List<Tag> getAll() => [..._tags];
 
   @override
-  Future<void> save(Tag tag) async {}
+  Future<void> save(Tag tag) async {
+    _tags.removeWhere((item) => item.id == tag.id);
+    _tags.add(tag);
+  }
 
   @override
   Stream<BoxEvent> watch() => const Stream<BoxEvent>.empty();
