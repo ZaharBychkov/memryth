@@ -24,36 +24,54 @@ class ExportImportService {
   final TagRepository _tagRepository;
   final DateTime Function() _now;
 
-  Map<String, Object?> buildExportMap() {
+  Map<String, Object?> buildExportMap({Iterable<Quote>? quotes}) {
     final exportedAt = _now().toUtc();
-    final tags = _tagRepository.getAll()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    final quotes = _quoteRepository.getAll()
+    final selectedQuotes = (quotes ?? _quoteRepository.getAll()).toList()
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final selectedTagIds = selectedQuotes
+        .expand((quote) => quote.tagIds)
+        .toSet();
+    final tags =
+        _tagRepository
+            .getAll()
+            .where((tag) => quotes == null || selectedTagIds.contains(tag.id))
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
 
     return {
       'app': appName,
       'schemaVersion': schemaVersion,
       'exportedAt': exportedAt.toIso8601String(),
       'tags': [for (final tag in tags) _tagToJson(tag)],
-      'quotes': [for (final quote in quotes) _quoteToJson(quote)],
+      'quotes': [for (final quote in selectedQuotes) _quoteToJson(quote)],
     };
   }
 
-  String buildExportJson() {
-    return const JsonEncoder.withIndent('  ').convert(buildExportMap());
+  String buildExportJson({Iterable<Quote>? quotes}) {
+    return const JsonEncoder.withIndent(
+      '  ',
+    ).convert(buildExportMap(quotes: quotes));
   }
 
-  Future<File> writeExportFile() async {
+  Future<File> writeExportFile({
+    Iterable<Quote>? quotes,
+    String? fileNamePrefix,
+  }) async {
     final directory = await getTemporaryDirectory();
-    final file = File('${directory.path}/$exportFileName');
-    return file.writeAsString(buildExportJson(), flush: true);
+    final file = File(
+      '${directory.path}/${_exportFileName(fileNamePrefix ?? 'memryth-backup')}',
+    );
+    return file.writeAsString(buildExportJson(quotes: quotes), flush: true);
   }
 
-  String get exportFileName {
+  String get exportFileName => _exportFileName('memryth-backup');
+
+  String _exportFileName(String prefix) {
     final local = _now();
     String two(int value) => value.toString().padLeft(2, '0');
-    return 'memryth-backup-'
+    return '$prefix-'
         '${local.year}-${two(local.month)}-${two(local.day)}-'
         '${two(local.hour)}-${two(local.minute)}.json';
   }

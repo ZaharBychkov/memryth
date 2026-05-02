@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../contollers/quote_contoller.dart';
 import '../models/quote.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
+import '../services/export_import_service.dart';
 import '../settings/app_settings_controller.dart';
 import '../settings/app_settings_scope.dart';
 import '../settings/app_strings.dart';
@@ -39,6 +41,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   StreamSubscription<dynamic>? _quotesSub;
   StreamSubscription<dynamic>? _tagsSub;
   bool _selectionMode = false;
+  bool _selectionBusy = false;
   final Set<String> _selectedQuoteIds = <String>{};
 
   @override
@@ -299,6 +302,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   ) {
     final selectedCount = _selectedQuotes(controller).length;
     final hasSelection = selectedCount > 0;
+    final actionsEnabled = hasSelection && !_selectionBusy;
 
     return AppBar(
       centerTitle: false,
@@ -315,15 +319,22 @@ class _QuotesScreenState extends State<QuotesScreen> {
       ),
       actions: [
         IconButton(
+          tooltip: strings.exportSelected,
+          onPressed: actionsEnabled
+              ? () => _exportSelected(controller, strings)
+              : null,
+          icon: const Icon(Icons.ios_share_rounded),
+        ),
+        IconButton(
           tooltip: strings.markSelectedFavorite,
-          onPressed: hasSelection
+          onPressed: actionsEnabled
               ? () => _setSelectedFavorites(controller, true, strings)
               : null,
           icon: const Icon(Icons.star_rounded),
         ),
         IconButton(
           tooltip: strings.unmarkSelectedFavorite,
-          onPressed: hasSelection
+          onPressed: actionsEnabled
               ? () => _setSelectedFavorites(controller, false, strings)
               : null,
           icon: const Icon(Icons.star_border_rounded),
@@ -492,6 +503,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   void _exitSelectionMode() {
     setState(() {
       _selectionMode = false;
+      _selectionBusy = false;
       _selectedQuoteIds.clear();
     });
   }
@@ -517,11 +529,16 @@ class _QuotesScreenState extends State<QuotesScreen> {
     bool isFavorite,
     AppStrings strings,
   ) async {
+    if (_selectionBusy) {
+      return;
+    }
+
     final selected = _selectedQuotes(controller);
     if (selected.isEmpty) {
       return;
     }
 
+    setState(() => _selectionBusy = true);
     await controller.setFavorites(selected, isFavorite);
     if (!mounted) {
       return;
@@ -538,6 +555,70 @@ class _QuotesScreenState extends State<QuotesScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
+  }
+
+  Future<void> _exportSelected(
+    QuoteController controller,
+    AppStrings strings,
+  ) async {
+    if (_selectionBusy) {
+      return;
+    }
+
+    final selected = _selectedQuotes(controller);
+    if (selected.isEmpty) {
+      return;
+    }
+
+    setState(() => _selectionBusy = true);
+    try {
+      final service = ExportImportService(
+        quoteRepository: _quoteRepository,
+        tagRepository: _tagRepository,
+      );
+      final file = await service.writeExportFile(
+        quotes: selected,
+        fileNamePrefix: 'memryth-selected',
+      );
+      if (!mounted) {
+        return;
+      }
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'application/json')],
+          subject: strings.exportSelectedShareSubject,
+          text: strings.exportSelectedShareText,
+          fileNameOverrides: [file.uri.pathSegments.last],
+        ),
+      );
+      if (!mounted) {
+        return;
+      }
+
+      _exitSelectionMode();
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(strings.exportSelectedReady(selected.length)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _selectionBusy = false);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(strings.exportSelectedFailed),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+    }
   }
 
   Future<void> _copyQuoteToClipboard(Quote quote, AppStrings strings) async {

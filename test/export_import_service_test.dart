@@ -37,6 +37,30 @@ void main() {
       expect(quote['updatedAt'], '2026-01-01T00:00:00.000Z');
     });
 
+    test('exports selected quotes with only referenced tags', () {
+      final selected = _quote(id: 'q1', text: 'Selected', tagIds: ['t1']);
+      final service = ExportImportService(
+        quoteRepository: _MemoryQuoteRepository([
+          selected,
+          _quote(id: 'q2', text: 'Not selected', tagIds: ['t2']),
+        ]),
+        tagRepository: _MemoryTagRepository([
+          Tag(id: 't1', name: 'Selected topic'),
+          Tag(id: 't2', name: 'Other topic'),
+        ]),
+        now: () => DateTime.utc(2026, 5, 1, 12),
+      );
+
+      final json =
+          jsonDecode(service.buildExportJson(quotes: [selected]))
+              as Map<String, Object?>;
+      final tags = json['tags'] as List<Object?>;
+      final quotes = json['quotes'] as List<Object?>;
+
+      expect(tags.single, {'id': 't1', 'name': 'Selected topic'});
+      expect((quotes.single as Map<String, Object?>)['id'], 'q1');
+    });
+
     test(
       'merge import reuses existing tags by name and skips quote id conflicts',
       () async {

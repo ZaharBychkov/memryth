@@ -62,6 +62,18 @@ class AppStrings {
   String get selectEntries => isRu ? 'Выбрать записи' : 'Select entries';
   String selectedEntries(int count) =>
       isRu ? 'Выбрано: $count' : '$count selected';
+  String get exportSelected =>
+      isRu ? 'Экспортировать выбранные' : 'Export selected';
+  String get exportSelectedShareSubject =>
+      isRu ? 'Выбранные записи MEMRYTH' : 'Selected MEMRYTH entries';
+  String get exportSelectedShareText => isRu
+      ? 'JSON-файл с выбранными записями MEMRYTH'
+      : 'JSON file with selected MEMRYTH entries';
+  String exportSelectedReady(int count) => isRu
+      ? 'Экспортировано выбранных записей: $count'
+      : 'Exported selected entries: $count';
+  String get exportSelectedFailed =>
+      isRu ? 'Не удалось экспортировать выбранные записи' : 'Export failed';
   String get markSelectedFavorite =>
       isRu ? 'Добавить выбранные в избранное' : 'Favorite selected';
   String get unmarkSelectedFavorite =>
