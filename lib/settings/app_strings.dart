@@ -41,8 +41,10 @@ class AppStrings {
   String get sourcePrefix => isRu ? 'в' : 'in';
   String get favorites => isRu ? 'Избранное' : 'Favorites';
   String get emptyList => isRu
-      ? 'Пока нет записей. Нажмите «Новая запись», чтобы добавить первую.'
-      : 'No entries yet. Tap “New entry” to add your first one.';
+      ? 'Здесь будет ваша личная библиотека мыслей, цитат и фрагментов.'
+      : 'Your private library of thoughts, quotes and excerpts will live here.';
+  String get createFirstEntry =>
+      isRu ? 'Создать первую запись' : 'Create first entry';
   String get emptyFilter => isRu
       ? 'По текущим фильтрам ничего не найдено'
       : 'Nothing matches the current filter.';

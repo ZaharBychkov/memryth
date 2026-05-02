@@ -297,7 +297,32 @@ class _QuotesScreenState extends State<QuotesScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(strings.emptyList, textAlign: TextAlign.center),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.auto_stories_rounded,
+                size: 44,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                strings.emptyList,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 18),
+              FilledButton.icon(
+                onPressed: _openCreate,
+                icon: const Icon(Icons.add_rounded),
+                label: Text(strings.createFirstEntry),
+              ),
+            ],
+          ),
         ),
       );
     }

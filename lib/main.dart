@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'data/demo_seed.dart';
 import 'models/quote.dart';
 import 'models/tag.dart';
 import 'screens/quotes_screen.dart';
@@ -20,7 +19,6 @@ Future<void> main() async {
   await Hive.openBox<Tag>('tags');
   await Hive.openBox<Quote>('quotes');
   await Hive.openBox('settings');
-  await DemoSeed.ensureSeeded();
 
   final settingsController = await AppSettingsController.create();
   runApp(MemrythApp(settingsController: settingsController));
