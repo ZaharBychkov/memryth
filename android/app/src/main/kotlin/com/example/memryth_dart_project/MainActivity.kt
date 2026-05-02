@@ -1,4 +1,4 @@
-package com.example.memryth_dart_project
+package app.memryth.android
 
 import io.flutter.embedding.android.FlutterActivity
 
