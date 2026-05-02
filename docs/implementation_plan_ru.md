@@ -18,13 +18,14 @@
 - PIN lock и biometric unlock;
 - обзорный экран MEMRYTH Pro;
 - batch selection, batch favorite/unfavorite;
-- export selected через тот же совместимый JSON backup-формат.
+- export selected через тот же совместимый JSON backup-формат;
+- saved filters для сохранения текущего поиска, фильтров и сортировки.
 
 Осталось после текущего прохода:
 
 - реальные Google Play Billing / Pro entitlement;
 - Android widgets;
-- saved filters / saved collections / resurfacing;
+- saved collections / resurfacing;
 - расширенные batch actions, кроме удаления;
 - store screenshots и финальная ручная проверка релизного APK/AAB.
 
@@ -310,8 +311,9 @@ Pro:
 2. Android widgets:
    - сначала простой widget для quick add или случайной избранной записи;
    - не начинать с синхронизации/облака.
-3. Saved filters / collections:
-   - сохранять текущий search + topic/type/favorite filters как named view;
+3. Saved collections / resurfacing:
+   - saved filters уже закрыты как named view для search + topic/type/favorite filters;
+   - дальше можно добавлять коллекции записей и повторное всплытие старых записей;
    - не добавлять batch delete до отдельного решения.
 4. Финальная релизная проверка:
    - `flutter analyze`;
