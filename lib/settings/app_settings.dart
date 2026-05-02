@@ -51,6 +51,7 @@ class AppSettings {
     required this.quoteLineSpacing,
     required this.showNotePreview,
     required this.showMetaPreview,
+    required this.hasCompletedOnboarding,
   });
 
   final AppThemeMode themeMode;
@@ -59,6 +60,7 @@ class AppSettings {
   final double quoteLineSpacing;
   final bool showNotePreview;
   final bool showMetaPreview;
+  final bool hasCompletedOnboarding;
 
   bool get isDarkMode => themeMode == AppThemeMode.dark;
   double get uiTextScale => 1;
@@ -77,6 +79,7 @@ class AppSettings {
     double? quoteLineSpacing,
     bool? showNotePreview,
     bool? showMetaPreview,
+    bool? hasCompletedOnboarding,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -85,6 +88,8 @@ class AppSettings {
       quoteLineSpacing: quoteLineSpacing ?? this.quoteLineSpacing,
       showNotePreview: showNotePreview ?? this.showNotePreview,
       showMetaPreview: showMetaPreview ?? this.showMetaPreview,
+      hasCompletedOnboarding:
+          hasCompletedOnboarding ?? this.hasCompletedOnboarding,
     );
   }
 
@@ -95,5 +100,6 @@ class AppSettings {
     quoteLineSpacing: 1.4,
     showNotePreview: true,
     showMetaPreview: true,
+    hasCompletedOnboarding: false,
   );
 }

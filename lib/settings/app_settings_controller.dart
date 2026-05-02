@@ -33,6 +33,9 @@ class AppSettingsController extends ChangeNotifier {
       showMetaPreview:
           (box.get('showMetaPreview') as bool?) ??
           AppSettings.defaults.showMetaPreview,
+      hasCompletedOnboarding:
+          (box.get('hasCompletedOnboarding') as bool?) ??
+          AppSettings.defaults.hasCompletedOnboarding,
     );
     await box.deleteAll(_obsoleteKeys);
     return AppSettingsController._(box, settings);
@@ -72,8 +75,16 @@ class AppSettingsController extends ChangeNotifier {
     value,
   );
 
+  Future<void> completeOnboarding() => _update(
+    _settings.copyWith(hasCompletedOnboarding: true),
+    'hasCompletedOnboarding',
+    true,
+  );
+
   Future<void> resetSettings() async {
-    _settings = AppSettings.defaults;
+    _settings = AppSettings.defaults.copyWith(
+      hasCompletedOnboarding: _settings.hasCompletedOnboarding,
+    );
     notifyListeners();
     await _box.putAll({
       'themeMode': _settings.themeMode.key,
@@ -82,6 +93,7 @@ class AppSettingsController extends ChangeNotifier {
       'quoteLineSpacing': _settings.quoteLineSpacing,
       'showNotePreview': _settings.showNotePreview,
       'showMetaPreview': _settings.showMetaPreview,
+      'hasCompletedOnboarding': _settings.hasCompletedOnboarding,
     });
     await _box.deleteAll(_obsoleteKeys);
   }

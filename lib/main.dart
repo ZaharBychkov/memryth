@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'models/quote.dart';
 import 'models/tag.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/quotes_screen.dart';
 import 'settings/app_settings.dart';
 import 'settings/app_settings_controller.dart';
@@ -56,7 +57,9 @@ class MemrythApp extends StatelessWidget {
                 child: child ?? const SizedBox.shrink(),
               );
             },
-            home: const QuotesScreen(),
+            home: settings.hasCompletedOnboarding
+                ? const QuotesScreen()
+                : OnboardingScreen(controller: settingsController),
           );
         },
       ),
