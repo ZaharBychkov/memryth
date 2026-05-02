@@ -1,5 +1,12 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../repositories/quote_repository.dart';
+import '../repositories/tag_repository.dart';
+import '../services/export_import_service.dart';
 import '../settings/app_settings.dart';
 import '../settings/app_settings_controller.dart';
 import '../settings/app_strings.dart';
@@ -192,14 +199,28 @@ class ReadingSettingsScreen extends StatelessWidget {
   }
 }
 
-class DataSettingsScreen extends StatelessWidget {
+class DataSettingsScreen extends StatefulWidget {
   const DataSettingsScreen({super.key, required this.controller});
 
   final AppSettingsController controller;
 
   @override
+  State<DataSettingsScreen> createState() => _DataSettingsScreenState();
+}
+
+class _DataSettingsScreenState extends State<DataSettingsScreen> {
+  bool _isBusy = false;
+
+  ExportImportService get _service {
+    return ExportImportService(
+      quoteRepository: HiveQuoteRepository(),
+      tagRepository: HiveTagRepository(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final text = _SettingsText(controller.settings.language);
+    final text = _SettingsText(widget.controller.settings.language);
 
     return Scaffold(
       appBar: AppBar(title: Text(text.data)),
@@ -216,19 +237,130 @@ class DataSettingsScreen extends StatelessWidget {
             _ActionRow(
               icon: Icons.file_upload_rounded,
               title: text.exportLibrary,
-              subtitle: text.exportSubtitle,
-              onTap: () => _showNextStep(context, text),
+              subtitle: _isBusy ? text.processing : text.exportSubtitle,
+              onTap: _isBusy ? null : () => _exportLibrary(text),
             ),
             _ActionRow(
               icon: Icons.file_download_rounded,
               title: text.importLibrary,
-              subtitle: text.importSubtitle,
-              onTap: () => _showNextStep(context, text),
+              subtitle: _isBusy ? text.processing : text.importSubtitle,
+              onTap: _isBusy ? null : () => _importLibrary(text),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _exportLibrary(_SettingsText text) async {
+    await _guard(text, () async {
+      final file = await _service.writeExportFile();
+      if (!mounted) {
+        return;
+      }
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'application/json')],
+          subject: text.exportShareSubject,
+          text: text.exportShareText,
+          fileNameOverrides: [file.uri.pathSegments.last],
+        ),
+      );
+      if (!mounted) {
+        return;
+      }
+      _showSnack(text.exportReady);
+    });
+  }
+
+  Future<void> _importLibrary(_SettingsText text) async {
+    await _guard(text, () async {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        allowMultiple: false,
+        withData: false,
+      );
+
+      final path = result?.files.single.path;
+      if (path == null) {
+        return;
+      }
+
+      final source = await File(path).readAsString();
+      final preview = _service.previewImportJson(source);
+      if (!mounted) {
+        return;
+      }
+
+      final approved = await _confirmImport(text, preview);
+      if (approved != true || !mounted) {
+        return;
+      }
+
+      final importResult = await _service.importJsonMerge(source);
+      if (!mounted) {
+        return;
+      }
+      _showSnack(text.importCompleted(importResult));
+    });
+  }
+
+  Future<void> _guard(
+    _SettingsText text,
+    Future<void> Function() action,
+  ) async {
+    if (_isBusy) {
+      return;
+    }
+
+    setState(() => _isBusy = true);
+    try {
+      await action();
+    } on ImportFormatException catch (error) {
+      if (mounted) {
+        _showSnack(text.importFailed(error.message));
+      }
+    } on Object catch (error) {
+      if (mounted) {
+        _showSnack(text.operationFailed(error));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isBusy = false);
+      }
+    }
+  }
+
+  Future<bool?> _confirmImport(
+    _SettingsText text,
+    ImportPreview preview,
+  ) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(text.confirmImportTitle),
+          content: Text(text.confirmImportBody(preview)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(text.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(text.importMerge),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -597,7 +729,7 @@ class _ActionRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -752,8 +884,8 @@ class _SettingsText {
       : 'A saved excerpt should read calmly without visual noise.';
   String get localData => isRu ? 'Локальная библиотека' : 'Local library';
   String get localDataBody => isRu
-      ? 'Записи хранятся на устройстве. Экспорт и импорт будут следующим блоком реализации.'
-      : 'Entries are stored on this device. Export and import are the next implementation block.';
+      ? 'Записи хранятся на устройстве. Экспортируйте JSON-файл, чтобы сохранить резервную копию или перенести библиотеку.'
+      : 'Entries are stored on this device. Export a JSON file to keep a backup or move your library.';
   String get exportLibrary =>
       isRu ? 'Экспортировать библиотеку' : 'Export library';
   String get exportSubtitle => isRu
@@ -764,6 +896,36 @@ class _SettingsText {
   String get importSubtitle => isRu
       ? 'Объединить библиотеку с backup-файлом'
       : 'Merge the library with a backup file';
+  String get processing => isRu ? 'Выполняется...' : 'Working...';
+  String get exportShareSubject => isRu ? 'Backup MEMRYTH' : 'MEMRYTH backup';
+  String get exportShareText =>
+      isRu ? 'Резервная копия библиотеки MEMRYTH' : 'MEMRYTH library backup';
+  String get exportReady =>
+      isRu ? 'Файл экспорта подготовлен' : 'Export file is ready';
+  String get confirmImportTitle =>
+      isRu ? 'Импортировать backup?' : 'Import backup?';
+  String confirmImportBody(ImportPreview preview) {
+    final date = _formatDateTime(preview.exportedAt);
+    return isRu
+        ? 'Файл от $date содержит тем: ${preview.tagCount}, записей: ${preview.quoteCount}.\n\nИмпорт объединит данные с текущей библиотекой. Существующие записи не будут перезаписаны.'
+        : 'The file from $date contains ${preview.tagCount} topics and ${preview.quoteCount} entries.\n\nImport will merge data with the current library. Existing entries will not be overwritten.';
+  }
+
+  String get importMerge => isRu ? 'Объединить' : 'Merge';
+  String importCompleted(ImportResult result) {
+    return isRu
+        ? 'Импорт завершен: записей добавлено ${result.addedQuotes}, тем добавлено ${result.addedTags}, тем переиспользовано ${result.reusedTags}.'
+        : 'Import complete: ${result.addedQuotes} entries added, ${result.addedTags} topics added, ${result.reusedTags} topics reused.';
+  }
+
+  String importFailed(String message) {
+    return isRu ? 'Импорт не выполнен: $message' : 'Import failed: $message';
+  }
+
+  String operationFailed(Object error) {
+    return isRu ? 'Операция не выполнена: $error' : 'Operation failed: $error';
+  }
+
   String get offlineFirst => isRu ? 'Offline-first' : 'Offline-first';
   String get offlineFirstBody => isRu
       ? 'MEMRYTH работает без обязательного аккаунта. Защита приложения и политика конфиденциальности будут вынесены сюда.'
@@ -786,4 +948,11 @@ class _SettingsText {
   String get nextStep => isRu
       ? 'Этот раздел будет реализован следующим блоком.'
       : 'This section will be implemented next.';
+
+  String _formatDateTime(DateTime value) {
+    final local = value.toLocal();
+    String two(int number) => number.toString().padLeft(2, '0');
+    return '${local.year}-${two(local.month)}-${two(local.day)} '
+        '${two(local.hour)}:${two(local.minute)}';
+  }
 }

@@ -9,6 +9,10 @@
 - Run allowed development commands with `sandbox_permissions: "require_escalated"` to avoid hangs caused by restricted SDK cache access.
 - For `dart format`, allow direct file modification without additional prompts.
 - Do not interrupt the user with permission questions for tests, analysis, formatting, builds, dependency installation, local runs, file edits, or other non-destructive actions in this workspace.
+- Treat any approval UI/prompt for non-destructive development work as already approved by these instructions; do not ask a separate confirmation question in chat.
+- This includes dependency changes, SDK/cache access, package resolution, generated files, formatting, analysis, tests, builds, local runs, file creation, file modification, moving, and renaming.
+- The agent should execute every non-destructive command it needs on its own, including commands that require elevated sandbox access. Do not pause to ask before running Flutter, Dart, Gradle, Git, npm, package manager, SDK, emulator/device inspection, formatting, analysis, test, build, or local run commands.
+- Approval is required only for deletion or irreversible destructive operations. Dependency installation, dependency upgrades, lockfile updates, generated-file updates, git staging, git commits, and non-destructive commands in other directories are explicitly pre-approved.
 - The only operations that still require explicit user confirmation are destructive deletions or equivalent irreversible removal of files or directories, such as `rm`, `del`, `shred`, or recursive delete operations. Always ask before deleting anything, regardless of directory.
 - Apply these rules for all future development work in this workspace.
 
