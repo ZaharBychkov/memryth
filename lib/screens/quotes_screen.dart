@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../contollers/quote_contoller.dart';
 import '../models/quote.dart';
+import '../models/saved_filter.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
 import '../services/export_import_service.dart';
@@ -237,6 +238,12 @@ class _QuotesScreenState extends State<QuotesScreen> {
                       ),
                       const SizedBox(height: 10),
                       _buildTypeFiltersRow(controller, strings, isDark),
+                      _buildSavedFiltersRow(
+                        controller,
+                        settingsController,
+                        strings,
+                        isDark,
+                      ),
                     ],
                   ),
                 ),
@@ -379,6 +386,61 @@ class _QuotesScreenState extends State<QuotesScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildSavedFiltersRow(
+    QuoteController controller,
+    AppSettingsController settingsController,
+    AppStrings strings,
+    bool isDark,
+  ) {
+    final savedFilters = settingsController.settings.savedFilters;
+    final canSaveCurrent = _hasActiveFilter(controller);
+    if (savedFilters.isEmpty && !canSaveCurrent) {
+      return const SizedBox.shrink();
+    }
+
+    return SizedBox(
+      height: 52,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(top: 10),
+        children: [
+          if (canSaveCurrent) ...[
+            _SavedFilterButton(
+              label: strings.saveCurrentView,
+              icon: Icons.bookmark_add_rounded,
+              isDark: isDark,
+              onTap: () =>
+                  _saveCurrentFilter(controller, settingsController, strings),
+            ),
+            const SizedBox(width: 8),
+          ],
+          for (final filter in savedFilters) ...[
+            _SavedFilterButton(
+              label: filter.name,
+              icon: Icons.bookmark_rounded,
+              isDark: isDark,
+              onTap: () => _applySavedFilter(filter, controller, strings),
+              onLongPress: () => _confirmRemoveSavedFilter(
+                filter,
+                settingsController,
+                strings,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    );
+  }
+
+  bool _hasActiveFilter(QuoteController controller) {
+    return controller.searchQuery.trim().isNotEmpty ||
+        controller.activeTagFilters.isNotEmpty ||
+        controller.activeTypeFilters.isNotEmpty ||
+        controller.favoritesOnly ||
+        controller.sortMode != QuoteSortMode.newest;
   }
 
   Widget _buildEmptyState(QuoteController controller, AppStrings strings) {
@@ -618,6 +680,124 @@ class _QuotesScreenState extends State<QuotesScreen> {
             duration: const Duration(seconds: 3),
           ),
         );
+    }
+  }
+
+  Future<void> _saveCurrentFilter(
+    QuoteController controller,
+    AppSettingsController settingsController,
+    AppStrings strings,
+  ) async {
+    final name = await _askSavedFilterName(strings);
+    if (name == null || name.trim().isEmpty) {
+      return;
+    }
+
+    final filter = SavedFilter(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      name: name.trim(),
+      searchQuery: controller.searchQuery,
+      tagFilters: controller.activeTagFilters.toList()..sort(),
+      typeKeys: controller.activeTypeFilters.map((type) => type.key).toList()
+        ..sort(),
+      favoritesOnly: controller.favoritesOnly,
+      sortModeKey: controller.sortMode.key,
+    );
+    await settingsController.saveFilter(filter);
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(strings.savedViewSaved),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+  }
+
+  Future<String?> _askSavedFilterName(AppStrings strings) async {
+    final nameController = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(strings.saveCurrentView),
+          content: TextField(
+            controller: nameController,
+            autofocus: true,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(labelText: strings.savedViewName),
+            onSubmitted: (value) => Navigator.of(context).pop(value),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(strings.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(nameController.text),
+              child: Text(strings.save),
+            ),
+          ],
+        );
+      },
+    );
+    nameController.dispose();
+    return result;
+  }
+
+  void _applySavedFilter(
+    SavedFilter filter,
+    QuoteController controller,
+    AppStrings strings,
+  ) {
+    _searchController.value = TextEditingValue(
+      text: filter.searchQuery,
+      selection: TextSelection.collapsed(offset: filter.searchQuery.length),
+    );
+    controller.applySavedFilter(filter);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(strings.savedViewApplied),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+  }
+
+  Future<void> _confirmRemoveSavedFilter(
+    SavedFilter filter,
+    AppSettingsController settingsController,
+    AppStrings strings,
+  ) async {
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(strings.removeSavedViewTitle),
+          content: Text(strings.removeSavedViewBody(filter.name)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFB84A3A),
+                foregroundColor: Colors.white,
+              ),
+              child: Text(strings.delete),
+            ),
+          ],
+        );
+      },
+    );
+    if (approved == true) {
+      await settingsController.removeSavedFilter(filter.id);
     }
   }
 
@@ -1219,6 +1399,66 @@ class _TypeFilterButton extends StatelessWidget {
                     : Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SavedFilterButton extends StatelessWidget {
+  const _SavedFilterButton({
+    required this.label,
+    required this.icon,
+    required this.isDark,
+    required this.onTap,
+    this.onLongPress,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isDark;
+  final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = isDark
+        ? const Color(0xFFEAE4DB)
+        : const Color(0xFF4E4035);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          height: 40,
+          constraints: const BoxConstraints(maxWidth: 220),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF262B33) : Colors.white,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 17, color: foreground),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

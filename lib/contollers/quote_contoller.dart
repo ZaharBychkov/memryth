@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../models/quote.dart';
+import '../models/saved_filter.dart';
 import '../models/tag.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
@@ -179,6 +180,28 @@ class QuoteController extends ChangeNotifier {
   void setSortMode(QuoteSortMode value) {
     if (_sortMode == value) return;
     _sortMode = value;
+    _recomputeFilteredQuotes();
+    _currentIndex = 0;
+    notifyListeners();
+  }
+
+  void applySavedFilter(SavedFilter filter) {
+    _searchQuery = filter.searchQuery;
+    _activeTagFilters
+      ..clear()
+      ..addAll(filter.tagFilters);
+    _activeTypeFilters
+      ..clear()
+      ..addAll(
+        filter.typeKeys
+            .map(QuoteType.fromKey)
+            .where((type) => QuoteType.values.contains(type)),
+      );
+    if (_activeTypeFilters.length == QuoteType.values.length) {
+      _activeTypeFilters.clear();
+    }
+    _favoritesOnly = filter.favoritesOnly;
+    _sortMode = QuoteSortMode.fromKey(filter.sortModeKey);
     _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();

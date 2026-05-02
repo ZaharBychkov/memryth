@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:memryth_dart_project/contollers/quote_contoller.dart';
 import 'package:memryth_dart_project/models/quote.dart';
+import 'package:memryth_dart_project/models/saved_filter.dart';
 import 'package:memryth_dart_project/models/tag.dart';
 import 'package:memryth_dart_project/repositories/quote_repository.dart';
 import 'package:memryth_dart_project/repositories/tag_repository.dart';
@@ -172,6 +173,49 @@ void main() {
       expect(byId['q1']?.isFavorite, isTrue);
       expect(byId['q2']?.isFavorite, isFalse);
       expect(byId['q3']?.isFavorite, isTrue);
+    });
+
+    test('applySavedFilter restores query, filters and sort mode', () {
+      final controller = _controller(
+        quotes: [
+          _quote(
+            id: 'q1',
+            text: 'Family note',
+            tagIds: const ['family'],
+            typeKey: QuoteType.thought.key,
+            isFavorite: true,
+            createdAt: DateTime(2026, 1, 1),
+          ),
+          _quote(
+            id: 'q2',
+            text: 'Family quote',
+            tagIds: const ['family'],
+            typeKey: QuoteType.quote.key,
+            isFavorite: true,
+            createdAt: DateTime(2026, 1, 2),
+          ),
+        ],
+        tags: [Tag(id: 'family', name: 'family')],
+      );
+
+      controller.applySavedFilter(
+        const SavedFilter(
+          id: 'view1',
+          name: 'Thoughts',
+          searchQuery: 'family',
+          tagFilters: ['family'],
+          typeKeys: ['thought'],
+          favoritesOnly: true,
+          sortModeKey: 'oldest',
+        ),
+      );
+
+      expect(controller.searchQuery, 'family');
+      expect(controller.favoritesOnly, isTrue);
+      expect(controller.activeTagFilters, {'family'});
+      expect(controller.activeTypeFilters, {QuoteType.thought});
+      expect(controller.sortMode, QuoteSortMode.oldest);
+      expect(controller.filteredQuotes.map((quote) => quote.id), ['q1']);
     });
   });
 

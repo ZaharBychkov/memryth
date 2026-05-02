@@ -62,6 +62,17 @@ class AppStrings {
   String get selectEntries => isRu ? 'Выбрать записи' : 'Select entries';
   String selectedEntries(int count) =>
       isRu ? 'Выбрано: $count' : '$count selected';
+  String get saveCurrentView =>
+      isRu ? 'Сохранить текущий вид' : 'Save current view';
+  String get savedViewName => isRu ? 'Название' : 'Name';
+  String get savedViewSaved => isRu ? 'Вид сохранен' : 'View saved';
+  String get savedViewApplied =>
+      isRu ? 'Сохраненный вид применен' : 'Saved view applied';
+  String get removeSavedViewTitle =>
+      isRu ? 'Удалить сохраненный вид?' : 'Delete saved view?';
+  String removeSavedViewBody(String name) => isRu
+      ? 'Сохраненный вид "$name" будет удален. Записи останутся на месте.'
+      : 'Saved view "$name" will be deleted. Entries will stay in place.';
   String get exportSelected =>
       isRu ? 'Экспортировать выбранные' : 'Export selected';
   String get exportSelectedShareSubject =>
