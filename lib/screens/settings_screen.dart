@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
 import '../services/export_import_service.dart';
+import '../services/pin_lock_service.dart';
 import '../settings/app_settings.dart';
 import '../settings/app_settings_controller.dart';
 import '../settings/app_strings.dart';
@@ -409,12 +411,223 @@ class PrivacySettingsScreen extends StatelessWidget {
               icon: Icons.fingerprint_rounded,
               title: text.appLock,
               subtitle: text.appLockSubtitle,
-              onTap: () => _showNextStep(context, text),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => AppLockSettingsScreen(controller: controller),
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+class AppLockSettingsScreen extends StatelessWidget {
+  const AppLockSettingsScreen({super.key, required this.controller});
+
+  final AppSettingsController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final text = _SettingsText(controller.settings.language);
+        final enabled = controller.settings.appLockEnabled;
+
+        return Scaffold(
+          appBar: AppBar(title: Text(text.appLock)),
+          body: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: [
+                _InfoPanel(
+                  icon: Icons.pin_rounded,
+                  title: enabled ? text.pinLockOn : text.pinLockOff,
+                  body: text.pinLockBody,
+                ),
+                const SizedBox(height: 16),
+                _ActionRow(
+                  icon: Icons.password_rounded,
+                  title: enabled ? text.changePin : text.enablePinLock,
+                  subtitle: enabled
+                      ? text.changePinSubtitle
+                      : text.enablePinLockSubtitle,
+                  onTap: () => _setPin(context, text),
+                ),
+                if (enabled)
+                  _ActionRow(
+                    icon: Icons.lock_open_rounded,
+                    title: text.disablePinLock,
+                    subtitle: text.disablePinLockSubtitle,
+                    onTap: () => _disablePin(context, text),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _setPin(BuildContext context, _SettingsText text) async {
+    final pin = await showDialog<String>(
+      context: context,
+      builder: (context) => _PinSetupDialog(text: text),
+    );
+    if (pin == null) {
+      return;
+    }
+
+    await controller.setPinLock(pin);
+    if (!context.mounted) {
+      return;
+    }
+    _showSnack(context, text.pinLockSaved);
+  }
+
+  Future<void> _disablePin(BuildContext context, _SettingsText text) async {
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(text.disablePinLock),
+          content: Text(text.disablePinWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(text.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(text.disable),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (approved != true) {
+      return;
+    }
+    await controller.disablePinLock();
+    if (!context.mounted) {
+      return;
+    }
+    _showSnack(context, text.pinLockDisabled);
+  }
+
+  void _showSnack(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _PinSetupDialog extends StatefulWidget {
+  const _PinSetupDialog({required this.text});
+
+  final _SettingsText text;
+
+  @override
+  State<_PinSetupDialog> createState() => _PinSetupDialogState();
+}
+
+class _PinSetupDialogState extends State<_PinSetupDialog> {
+  final TextEditingController _pinController = TextEditingController();
+  final TextEditingController _repeatController = TextEditingController();
+  String _error = '';
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    _repeatController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = widget.text;
+
+    return AlertDialog(
+      title: Text(text.setPinTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(text.setPinBody),
+          const SizedBox(height: 14),
+          _pinField(
+            controller: _pinController,
+            label: text.pin,
+            autofocus: true,
+          ),
+          const SizedBox(height: 10),
+          _pinField(
+            controller: _repeatController,
+            label: text.repeatPin,
+            onSubmitted: (_) => _submit(),
+          ),
+          if (_error.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              _error,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(text.cancel),
+        ),
+        FilledButton(onPressed: _submit, child: Text(text.save)),
+      ],
+    );
+  }
+
+  Widget _pinField({
+    required TextEditingController controller,
+    required String label,
+    bool autofocus = false,
+    ValueChanged<String>? onSubmitted,
+  }) {
+    return TextField(
+      controller: controller,
+      autofocus: autofocus,
+      obscureText: true,
+      keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.done,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(PinLockService.maxPinLength),
+      ],
+      onSubmitted: onSubmitted,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    );
+  }
+
+  void _submit() {
+    final pin = _pinController.text;
+    final repeat = _repeatController.text;
+    final text = widget.text;
+
+    if (!PinLockService.isValidPin(pin)) {
+      setState(() => _error = text.pinFormatError);
+      return;
+    }
+
+    if (pin != repeat) {
+      setState(() => _error = text.pinMismatch);
+      return;
+    }
+
+    Navigator.of(context).pop(pin);
   }
 }
 
@@ -971,6 +1184,8 @@ class _SettingsText {
       ? 'Записи, темы и заметки не будут удалены. Сбросятся только настройки внешнего вида и чтения.'
       : 'Entries, topics and notes will not be deleted. Only appearance and reading settings will be reset.';
   String get cancel => isRu ? 'Отмена' : 'Cancel';
+  String get save => isRu ? 'Сохранить' : 'Save';
+  String get disable => isRu ? 'Отключить' : 'Disable';
   String get previewTitle => isRu ? 'Предпросмотр' : 'Preview';
   String get previewBody => isRu
       ? 'Сохраненный фрагмент должен читаться спокойно и без лишнего шума.'
@@ -1033,8 +1248,41 @@ class _SettingsText {
       ? 'Экспорт и импорт резервной копии'
       : 'Export and import backup files';
   String get appLock => isRu ? 'PIN / биометрия' : 'PIN / biometrics';
-  String get appLockSubtitle =>
-      isRu ? 'Будущая Pro-функция защиты входа' : 'Future Pro app-lock feature';
+  String get appLockSubtitle => isRu
+      ? 'PIN-защита входа, биометрия позже'
+      : 'PIN app lock, biometrics later';
+  String get pinLockOn => isRu ? 'PIN-защита включена' : 'PIN lock is on';
+  String get pinLockOff => isRu ? 'PIN-защита выключена' : 'PIN lock is off';
+  String get pinLockBody => isRu
+      ? 'PIN блокирует вход в приложение после запуска. Это не шифрование базы данных, но снижает риск случайного доступа к личной библиотеке.'
+      : 'PIN locks the app after launch. This is not database encryption, but it reduces casual access to your private library.';
+  String get enablePinLock => isRu ? 'Включить PIN-защиту' : 'Enable PIN lock';
+  String get enablePinLockSubtitle =>
+      isRu ? 'Создать PIN из 4-8 цифр' : 'Create a 4-8 digit PIN';
+  String get changePin => isRu ? 'Изменить PIN' : 'Change PIN';
+  String get changePinSubtitle => isRu
+      ? 'Заменить текущий PIN новым'
+      : 'Replace the current PIN with a new one';
+  String get disablePinLock =>
+      isRu ? 'Отключить PIN-защиту' : 'Disable PIN lock';
+  String get disablePinLockSubtitle =>
+      isRu ? 'Открывать приложение без PIN' : 'Open the app without a PIN';
+  String get disablePinWarning => isRu
+      ? 'Приложение перестанет запрашивать PIN при запуске. Записи и backup-файлы не будут удалены.'
+      : 'The app will stop asking for a PIN on launch. Entries and backup files will not be deleted.';
+  String get setPinTitle => isRu ? 'Настроить PIN' : 'Set PIN';
+  String get setPinBody => isRu
+      ? 'Введите PIN из 4-8 цифр и повторите его.'
+      : 'Enter a 4-8 digit PIN and repeat it.';
+  String get pin => isRu ? 'PIN' : 'PIN';
+  String get repeatPin => isRu ? 'Повторите PIN' : 'Repeat PIN';
+  String get pinFormatError => isRu
+      ? 'PIN должен содержать от 4 до 8 цифр.'
+      : 'PIN must contain 4 to 8 digits.';
+  String get pinMismatch => isRu ? 'PIN не совпадает.' : 'PIN does not match.';
+  String get pinLockSaved => isRu ? 'PIN-защита включена' : 'PIN lock enabled';
+  String get pinLockDisabled =>
+      isRu ? 'PIN-защита отключена' : 'PIN lock disabled';
   String get privacyPolicyIntroTitle =>
       isRu ? 'Локально и без аккаунта' : 'Local and account-free';
   String get privacyPolicyIntroBody => isRu

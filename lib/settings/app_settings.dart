@@ -52,6 +52,8 @@ class AppSettings {
     required this.showNotePreview,
     required this.showMetaPreview,
     required this.hasCompletedOnboarding,
+    required this.appLockEnabled,
+    required this.appLockConfigured,
   });
 
   final AppThemeMode themeMode;
@@ -61,6 +63,8 @@ class AppSettings {
   final bool showNotePreview;
   final bool showMetaPreview;
   final bool hasCompletedOnboarding;
+  final bool appLockEnabled;
+  final bool appLockConfigured;
 
   bool get isDarkMode => themeMode == AppThemeMode.dark;
   double get uiTextScale => 1;
@@ -80,6 +84,8 @@ class AppSettings {
     bool? showNotePreview,
     bool? showMetaPreview,
     bool? hasCompletedOnboarding,
+    bool? appLockEnabled,
+    bool? appLockConfigured,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -90,6 +96,8 @@ class AppSettings {
       showMetaPreview: showMetaPreview ?? this.showMetaPreview,
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
+      appLockEnabled: appLockEnabled ?? this.appLockEnabled,
+      appLockConfigured: appLockConfigured ?? this.appLockConfigured,
     );
   }
 
@@ -101,5 +109,7 @@ class AppSettings {
     showNotePreview: true,
     showMetaPreview: true,
     hasCompletedOnboarding: false,
+    appLockEnabled: false,
+    appLockConfigured: false,
   );
 }

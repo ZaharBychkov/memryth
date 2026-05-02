@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
+import '../services/pin_lock_service.dart';
 import 'app_settings.dart';
 
 class AppSettingsController extends ChangeNotifier {
@@ -17,11 +18,16 @@ class AppSettingsController extends ChangeNotifier {
 
   final Box _box;
   AppSettings _settings;
+  String _pinSalt = '';
+  String _pinHash = '';
 
   AppSettings get settings => _settings;
 
   static Future<AppSettingsController> create() async {
     final box = Hive.box(_boxName);
+    final pinSalt = (box.get('appLockPinSalt') as String?) ?? '';
+    final pinHash = (box.get('appLockPinHash') as String?) ?? '';
+    final appLockConfigured = pinSalt.isNotEmpty && pinHash.isNotEmpty;
     final settings = AppSettings(
       themeMode: AppThemeMode.fromKey(box.get('themeMode') as String?),
       language: AppLanguage.fromKey(box.get('language') as String?),
@@ -36,9 +42,14 @@ class AppSettingsController extends ChangeNotifier {
       hasCompletedOnboarding:
           (box.get('hasCompletedOnboarding') as bool?) ??
           AppSettings.defaults.hasCompletedOnboarding,
+      appLockEnabled:
+          ((box.get('appLockEnabled') as bool?) ?? false) && appLockConfigured,
+      appLockConfigured: appLockConfigured,
     );
     await box.deleteAll(_obsoleteKeys);
-    return AppSettingsController._(box, settings);
+    return AppSettingsController._(box, settings)
+      .._pinSalt = pinSalt
+      .._pinHash = pinHash;
   }
 
   Future<void> setThemeMode(AppThemeMode value) =>
@@ -81,9 +92,51 @@ class AppSettingsController extends ChangeNotifier {
     true,
   );
 
+  Future<void> setPinLock(String pin) async {
+    if (!PinLockService.isValidPin(pin)) {
+      throw ArgumentError('PIN must contain 4 to 8 digits.');
+    }
+
+    final salt = PinLockService.generateSalt();
+    final hash = PinLockService.hashPin(pin, salt);
+    _pinSalt = salt;
+    _pinHash = hash;
+    _settings = _settings.copyWith(
+      appLockEnabled: true,
+      appLockConfigured: true,
+    );
+    notifyListeners();
+    await _box.putAll({
+      'appLockEnabled': true,
+      'appLockPinSalt': salt,
+      'appLockPinHash': hash,
+    });
+  }
+
+  Future<void> disablePinLock() async {
+    _pinSalt = '';
+    _pinHash = '';
+    _settings = _settings.copyWith(
+      appLockEnabled: false,
+      appLockConfigured: false,
+    );
+    notifyListeners();
+    await _box.putAll({
+      'appLockEnabled': false,
+      'appLockPinSalt': '',
+      'appLockPinHash': '',
+    });
+  }
+
+  bool verifyPin(String pin) {
+    return PinLockService.verifyPin(pin: pin, salt: _pinSalt, hash: _pinHash);
+  }
+
   Future<void> resetSettings() async {
     _settings = AppSettings.defaults.copyWith(
       hasCompletedOnboarding: _settings.hasCompletedOnboarding,
+      appLockEnabled: _settings.appLockEnabled,
+      appLockConfigured: _settings.appLockConfigured,
     );
     notifyListeners();
     await _box.putAll({
@@ -94,6 +147,7 @@ class AppSettingsController extends ChangeNotifier {
       'showNotePreview': _settings.showNotePreview,
       'showMetaPreview': _settings.showMetaPreview,
       'hasCompletedOnboarding': _settings.hasCompletedOnboarding,
+      'appLockEnabled': _settings.appLockEnabled,
     });
     await _box.deleteAll(_obsoleteKeys);
   }
