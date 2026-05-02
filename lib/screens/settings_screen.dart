@@ -386,10 +386,78 @@ class PrivacySettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _ActionRow(
+              icon: Icons.policy_rounded,
+              title: text.privacyPolicy,
+              subtitle: text.privacyPolicySubtitle,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => PrivacyPolicyScreen(controller: controller),
+                ),
+              ),
+            ),
+            _ActionRow(
+              icon: Icons.backup_rounded,
+              title: text.localBackup,
+              subtitle: text.localBackupSubtitle,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => DataSettingsScreen(controller: controller),
+                ),
+              ),
+            ),
+            _ActionRow(
               icon: Icons.fingerprint_rounded,
               title: text.appLock,
               subtitle: text.appLockSubtitle,
               onTap: () => _showNextStep(context, text),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PrivacyPolicyScreen extends StatelessWidget {
+  const PrivacyPolicyScreen({super.key, required this.controller});
+
+  final AppSettingsController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = _SettingsText(controller.settings.language);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(text.privacyPolicy)),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          children: [
+            _InfoPanel(
+              icon: Icons.lock_rounded,
+              title: text.privacyPolicyIntroTitle,
+              body: text.privacyPolicyIntroBody,
+            ),
+            const SizedBox(height: 16),
+            _PolicySection(
+              title: text.dataStoredTitle,
+              body: text.dataStoredBody,
+            ),
+            _PolicySection(
+              title: text.localStorageTitle,
+              body: text.localStorageBody,
+            ),
+            _PolicySection(
+              title: text.exportImportTitle,
+              body: text.exportImportBody,
+            ),
+            _PolicySection(
+              title: text.noNetworkTitle,
+              body: text.noNetworkBody,
+            ),
+            _PolicySection(
+              title: text.dataDeletionTitle,
+              body: text.dataDeletionBody,
             ),
           ],
         ),
@@ -832,6 +900,31 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
+class _PolicySection extends StatelessWidget {
+  const _PolicySection({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 6),
+          Text(body, style: const TextStyle(height: 1.42)),
+        ],
+      ),
+    );
+  }
+}
+
 void _showNextStep(BuildContext context, _SettingsText text) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -928,11 +1021,47 @@ class _SettingsText {
 
   String get offlineFirst => isRu ? 'Offline-first' : 'Offline-first';
   String get offlineFirstBody => isRu
-      ? 'MEMRYTH работает без обязательного аккаунта. Защита приложения и политика конфиденциальности будут вынесены сюда.'
-      : 'MEMRYTH works without a required account. App lock and privacy policy will live here.';
+      ? 'MEMRYTH работает без обязательного аккаунта. Библиотека хранится локально на устройстве.'
+      : 'MEMRYTH works without a required account. Your library is stored locally on this device.';
+  String get privacyPolicy =>
+      isRu ? 'Политика конфиденциальности' : 'Privacy policy';
+  String get privacyPolicySubtitle => isRu
+      ? 'Что хранится локально и что не отправляется'
+      : 'What is stored locally and what is not sent';
+  String get localBackup => isRu ? 'Локальный backup' : 'Local backup';
+  String get localBackupSubtitle => isRu
+      ? 'Экспорт и импорт резервной копии'
+      : 'Export and import backup files';
   String get appLock => isRu ? 'PIN / биометрия' : 'PIN / biometrics';
   String get appLockSubtitle =>
       isRu ? 'Будущая Pro-функция защиты входа' : 'Future Pro app-lock feature';
+  String get privacyPolicyIntroTitle =>
+      isRu ? 'Локально и без аккаунта' : 'Local and account-free';
+  String get privacyPolicyIntroBody => isRu
+      ? 'MEMRYTH предназначен для личной офлайн-библиотеки. В текущей версии нет облачной синхронизации, аналитики, рекламы или AI-обработки.'
+      : 'MEMRYTH is built as a private offline library. The current version has no cloud sync, analytics, ads, or AI processing.';
+  String get dataStoredTitle => isRu ? 'Какие данные хранятся' : 'Data stored';
+  String get dataStoredBody => isRu
+      ? 'На устройстве сохраняются записи, темы, авторы, источники, заметки, избранное, даты записей, настройки чтения и факт завершения первого запуска.'
+      : 'The app stores entries, topics, authors, sources, notes, favorites, entry dates, reading settings, and onboarding completion on your device.';
+  String get localStorageTitle => isRu ? 'Локальное хранение' : 'Local storage';
+  String get localStorageBody => isRu
+      ? 'Библиотека хранится в локальном хранилище приложения. MEMRYTH не требует аккаунта и не управляет сервером с вашими записями.'
+      : 'Your library is kept in local app storage. MEMRYTH does not require an account and does not operate a server for your entries.';
+  String get exportImportTitle =>
+      isRu ? 'Экспорт и импорт' : 'Export and import';
+  String get exportImportBody => isRu
+      ? 'Вы можете экспортировать библиотеку в JSON-файл и импортировать backup обратно. После сохранения или отправки файла через системный Android sheet контроль над этим файлом находится у вас.'
+      : 'You can export your library to a JSON file and import a backup back into the app. After saving or sharing the file through the Android system sheet, you control that file.';
+  String get noNetworkTitle =>
+      isRu ? 'Сеть и третьи стороны' : 'Network and third parties';
+  String get noNetworkBody => isRu
+      ? 'В текущем релизе нет облачного backup, синхронизации, рекламы, аналитики или передачи библиотеки разработчику.'
+      : 'The current release has no cloud backup, sync, ads, analytics, or library transfer to the developer.';
+  String get dataDeletionTitle => isRu ? 'Удаление данных' : 'Data deletion';
+  String get dataDeletionBody => isRu
+      ? 'Отдельные записи можно удалить в приложении. Удаление приложения удаляет локальные данные по правилам Android, кроме backup-файлов, которые вы экспортировали самостоятельно.'
+      : 'You can delete individual entries in the app. Uninstalling the app removes local app data according to Android behavior, except backup files you exported yourself.';
   String get noAccountRequired =>
       isRu ? 'Аккаунт не обязателен' : 'No account required';
   String get noAccountRequiredBody => isRu
