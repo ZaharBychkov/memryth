@@ -12,6 +12,7 @@ import '../services/pin_lock_service.dart';
 import '../settings/app_settings.dart';
 import '../settings/app_settings_controller.dart';
 import '../settings/app_strings.dart';
+import 'pro_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.controller});
@@ -57,6 +58,13 @@ class SettingsScreen extends StatelessWidget {
                     context,
                     PrivacySettingsScreen(controller: controller),
                   ),
+                ),
+                _SettingsTile(
+                  icon: Icons.workspace_premium_rounded,
+                  title: text.pro,
+                  subtitle: text.proSubtitle,
+                  onTap: () =>
+                      _push(context, ProScreen(controller: controller)),
                 ),
                 _SettingsTile(
                   icon: Icons.person_rounded,
@@ -1176,6 +1184,10 @@ class _SettingsText {
       ? 'Локальное хранение, защита и политика'
       : 'Local storage, protection and policy';
   String get account => isRu ? 'Аккаунт' : 'Account';
+  String get pro => isRu ? 'MEMRYTH Pro' : 'MEMRYTH Pro';
+  String get proSubtitle => isRu
+      ? 'Будущие расширенные функции без подписки'
+      : 'Future advanced features without subscription';
   String get accountSubtitle => isRu
       ? 'Опциональная синхронизация в будущем'
       : 'Optional sync in the future';
