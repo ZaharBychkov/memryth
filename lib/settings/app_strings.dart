@@ -58,6 +58,25 @@ class AppStrings {
   String get open => isRu ? 'Открыть' : 'Open';
   String get edit => isRu ? 'Редактировать' : 'Edit';
   String get copy => isRu ? 'Копировать' : 'Copy';
+  String get select => isRu ? 'Выбрать' : 'Select';
+  String get selectEntries => isRu ? 'Выбрать записи' : 'Select entries';
+  String selectedEntries(int count) =>
+      isRu ? 'Выбрано: $count' : '$count selected';
+  String get markSelectedFavorite =>
+      isRu ? 'Добавить выбранные в избранное' : 'Favorite selected';
+  String get unmarkSelectedFavorite =>
+      isRu ? 'Убрать выбранные из избранного' : 'Unfavorite selected';
+  String selectedFavoriteUpdated(int count, bool isFavorite) {
+    if (isFavorite) {
+      return isRu
+          ? 'Добавлено в избранное: $count'
+          : 'Added to favorites: $count';
+    }
+    return isRu
+        ? 'Убрано из избранного: $count'
+        : 'Removed from favorites: $count';
+  }
+
   String get searchHint => isRu
       ? 'Поиск по тексту, автору, источнику, заметке и темам (#семья)'
       : 'Search text, author, source, note and topics (#family)';

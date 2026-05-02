@@ -190,6 +190,18 @@ class QuoteController extends ChangeNotifier {
     );
   }
 
+  Future<void> setFavorites(Iterable<Quote> quotes, bool isFavorite) async {
+    final now = DateTime.now();
+    for (final quote in quotes) {
+      if (quote.isFavorite == isFavorite) {
+        continue;
+      }
+      await _quoteRepository.save(
+        quote.copyWith(isFavorite: isFavorite, updatedAt: now),
+      );
+    }
+  }
+
   bool _matches(Quote quote) {
     if (_favoritesOnly && !quote.isFavorite) {
       return false;

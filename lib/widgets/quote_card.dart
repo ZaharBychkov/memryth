@@ -16,6 +16,8 @@ class QuoteCard extends StatefulWidget {
     required this.onTagTap,
     required this.onTap,
     required this.onFavoriteToggle,
+    this.selectionMode = false,
+    this.selected = false,
     this.onLongPressStart,
   });
 
@@ -26,6 +28,8 @@ class QuoteCard extends StatefulWidget {
   final ValueChanged<String> onTagTap;
   final VoidCallback onTap;
   final VoidCallback onFavoriteToggle;
+  final bool selectionMode;
+  final bool selected;
   final GestureLongPressStartCallback? onLongPressStart;
 
   @override
@@ -80,11 +84,17 @@ class _QuoteCardState extends State<QuoteCard> {
               width: double.infinity,
               padding: EdgeInsets.all(padding),
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
+                color: widget.selected
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.primary.withAlpha(isDark ? 42 : 24)
+                    : Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Theme.of(context).dividerColor,
-                  width: 1.5,
+                  color: widget.selected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).dividerColor,
+                  width: widget.selected ? 2.0 : 1.5,
                 ),
               ),
               child: Column(
@@ -93,13 +103,19 @@ class _QuoteCardState extends State<QuoteCard> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (widget.selectionMode) ...[
+                        _SelectionIndicator(selected: widget.selected),
+                        const SizedBox(width: 8),
+                      ],
                       _TypeBadge(
                         type: widget.quote.type,
                         label: strings.quoteTypeLabel(widget.quote.type),
                       ),
                       const Spacer(),
                       IconButton(
-                        onPressed: widget.onFavoriteToggle,
+                        onPressed: widget.selectionMode
+                            ? null
+                            : widget.onFavoriteToggle,
                         visualDensity: VisualDensity.compact,
                         splashRadius: 20,
                         icon: Icon(
@@ -313,6 +329,35 @@ class _QuoteCardState extends State<QuoteCard> {
     }
 
     return spans;
+  }
+}
+
+class _SelectionIndicator extends StatelessWidget {
+  const _SelectionIndicator({required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: selected ? primary : Colors.transparent,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: selected
+              ? primary
+              : (isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74)),
+          width: 2,
+        ),
+      ),
+      child: selected
+          ? const Icon(Icons.check_rounded, size: 18, color: Colors.white)
+          : null,
+    );
   }
 }
 

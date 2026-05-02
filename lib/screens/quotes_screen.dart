@@ -38,6 +38,8 @@ class _QuotesScreenState extends State<QuotesScreen> {
   QuoteListViewModel? _controller;
   StreamSubscription<dynamic>? _quotesSub;
   StreamSubscription<dynamic>? _tagsSub;
+  bool _selectionMode = false;
+  final Set<String> _selectedQuoteIds = <String>{};
 
   @override
   void initState() {
@@ -94,109 +96,124 @@ class _QuotesScreenState extends State<QuotesScreen> {
         final filtered = controller.filteredQuotes;
 
         return Scaffold(
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: _openCreate,
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
-            icon: const Icon(Icons.add),
-            label: Text(strings.newEntry),
-          ),
-          appBar: AppBar(
-            centerTitle: true,
-            leadingWidth: 104,
-            leading: Row(
-              children: [
-                const SizedBox(width: 8),
-                PopupMenuButton<QuoteSortMode>(
-                  tooltip: strings.sortTooltip,
-                  initialValue: controller.sortMode,
-                  onSelected: controller.setSortMode,
-                  color: isDark
-                      ? const Color(0xFF232830)
-                      : const Color(0xFFF5EEE7),
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 10,
-                  position: PopupMenuPosition.under,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    side: BorderSide(
-                      color: Theme.of(context).dividerColor,
-                      width: 1.2,
-                    ),
-                  ),
-                  itemBuilder: (context) => [
-                    for (final mode in QuoteSortMode.values)
-                      PopupMenuItem(
-                        value: mode,
-                        child: _SortMenuItem(
-                          label: strings.sortModeLabel(mode),
-                          selected: mode == controller.sortMode,
+          floatingActionButton: _selectionMode
+              ? null
+              : FloatingActionButton.extended(
+                  onPressed: _openCreate,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  icon: const Icon(Icons.add),
+                  label: Text(strings.newEntry),
+                ),
+          appBar: _selectionMode
+              ? _buildSelectionAppBar(controller, strings)
+              : AppBar(
+                  centerTitle: true,
+                  leadingWidth: 104,
+                  leading: Row(
+                    children: [
+                      const SizedBox(width: 8),
+                      PopupMenuButton<QuoteSortMode>(
+                        tooltip: strings.sortTooltip,
+                        initialValue: controller.sortMode,
+                        onSelected: controller.setSortMode,
+                        color: isDark
+                            ? const Color(0xFF232830)
+                            : const Color(0xFFF5EEE7),
+                        surfaceTintColor: Colors.transparent,
+                        elevation: 10,
+                        position: PopupMenuPosition.under,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          side: BorderSide(
+                            color: Theme.of(context).dividerColor,
+                            width: 1.2,
+                          ),
+                        ),
+                        itemBuilder: (context) => [
+                          for (final mode in QuoteSortMode.values)
+                            PopupMenuItem(
+                              value: mode,
+                              child: _SortMenuItem(
+                                label: strings.sortModeLabel(mode),
+                                selected: mode == controller.sortMode,
+                              ),
+                            ),
+                        ],
+                        child: _HeaderIconShell(
+                          child: Icon(
+                            Icons.sort_rounded,
+                            color: isDark
+                                ? const Color(0xFFEAE4DB)
+                                : const Color(0xFF2C2C2C),
+                          ),
                         ),
                       ),
-                  ],
-                  child: _HeaderIconShell(
-                    child: Icon(
-                      Icons.sort_rounded,
-                      color: isDark
-                          ? const Color(0xFFEAE4DB)
-                          : const Color(0xFF2C2C2C),
+                      const SizedBox(width: 8),
+                      _HeaderIconButton(
+                        onPressed: settingsController.toggleTheme,
+                        child: Icon(
+                          settingsController.settings.isDarkMode
+                              ? Icons.light_mode_rounded
+                              : Icons.dark_mode_rounded,
+                          color: isDark
+                              ? const Color(0xFFEAE4DB)
+                              : const Color(0xFF2C2C2C),
+                        ),
+                      ),
+                    ],
+                  ),
+                  title: Text(
+                    strings.appTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                _HeaderIconButton(
-                  onPressed: settingsController.toggleTheme,
-                  child: Icon(
-                    settingsController.settings.isDarkMode
-                        ? Icons.light_mode_rounded
-                        : Icons.dark_mode_rounded,
-                    color: isDark
-                        ? const Color(0xFFEAE4DB)
-                        : const Color(0xFF2C2C2C),
-                  ),
-                ),
-              ],
-            ),
-            title: Text(
-              strings.appTitle,
-              style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.8,
-              ),
-            ),
-            actions: [
-              SizedBox(
-                width: 104,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    _HeaderIconButton(
-                      tooltip: strings.topicsTooltip,
-                      onPressed: () => _openTopics(controller, strings),
-                      child: Icon(
-                        Icons.account_tree_rounded,
-                        color: isDark
-                            ? const Color(0xFFEAE4DB)
-                            : const Color(0xFF2C2C2C),
+                  actions: [
+                    SizedBox(
+                      width: 154,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          _HeaderIconButton(
+                            tooltip: strings.selectEntries,
+                            onPressed: () => _enterSelectionMode(),
+                            child: Icon(
+                              Icons.checklist_rounded,
+                              color: isDark
+                                  ? const Color(0xFFEAE4DB)
+                                  : const Color(0xFF2C2C2C),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _HeaderIconButton(
+                            tooltip: strings.topicsTooltip,
+                            onPressed: () => _openTopics(controller, strings),
+                            child: Icon(
+                              Icons.account_tree_rounded,
+                              color: isDark
+                                  ? const Color(0xFFEAE4DB)
+                                  : const Color(0xFF2C2C2C),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _HeaderIconButton(
+                            tooltip: strings.settings,
+                            onPressed: () => _openSettings(settingsController),
+                            child: Icon(
+                              Icons.tune_rounded,
+                              color: isDark
+                                  ? const Color(0xFFEAE4DB)
+                                  : const Color(0xFF2C2C2C),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    _HeaderIconButton(
-                      tooltip: strings.settings,
-                      onPressed: () => _openSettings(settingsController),
-                      child: Icon(
-                        Icons.tune_rounded,
-                        color: isDark
-                            ? const Color(0xFFEAE4DB)
-                            : const Color(0xFF2C2C2C),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                   ],
                 ),
-              ),
-            ],
-          ),
           body: SafeArea(
             child: Column(
               children: [
@@ -245,11 +262,23 @@ class _QuotesScreenState extends State<QuotesScreen> {
                                   query: controller.searchQuery,
                                   activeTagFilters: controller.activeTagFilters,
                                   onTagTap: controller.toggleTagFilter,
-                                  onTap: () => _openDetails(quote),
-                                  onFavoriteToggle: () =>
-                                      controller.toggleFavorite(quote),
-                                  onLongPressStart: (details) =>
-                                      _showQuoteMenu(quote, details, strings),
+                                  selectionMode: _selectionMode,
+                                  selected: _selectedQuoteIds.contains(
+                                    quote.id,
+                                  ),
+                                  onTap: () => _selectionMode
+                                      ? _toggleQuoteSelection(quote)
+                                      : _openDetails(quote),
+                                  onFavoriteToggle: () => _selectionMode
+                                      ? _toggleQuoteSelection(quote)
+                                      : controller.toggleFavorite(quote),
+                                  onLongPressStart: (details) {
+                                    if (_selectionMode) {
+                                      _toggleQuoteSelection(quote);
+                                      return;
+                                    }
+                                    _showQuoteMenu(quote, details, strings);
+                                  },
                                 ),
                               ),
                             );
@@ -261,6 +290,46 @@ class _QuotesScreenState extends State<QuotesScreen> {
           ),
         );
       },
+    );
+  }
+
+  PreferredSizeWidget _buildSelectionAppBar(
+    QuoteController controller,
+    AppStrings strings,
+  ) {
+    final selectedCount = _selectedQuotes(controller).length;
+    final hasSelection = selectedCount > 0;
+
+    return AppBar(
+      centerTitle: false,
+      leading: IconButton(
+        tooltip: strings.cancel,
+        onPressed: _exitSelectionMode,
+        icon: const Icon(Icons.close_rounded),
+      ),
+      title: Text(
+        strings.selectedEntries(selectedCount),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w800),
+      ),
+      actions: [
+        IconButton(
+          tooltip: strings.markSelectedFavorite,
+          onPressed: hasSelection
+              ? () => _setSelectedFavorites(controller, true, strings)
+              : null,
+          icon: const Icon(Icons.star_rounded),
+        ),
+        IconButton(
+          tooltip: strings.unmarkSelectedFavorite,
+          onPressed: hasSelection
+              ? () => _setSelectedFavorites(controller, false, strings)
+              : null,
+          icon: const Icon(Icons.star_border_rounded),
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 
@@ -402,9 +471,73 @@ class _QuotesScreenState extends State<QuotesScreen> {
       await _copyQuoteToClipboard(quote, strings);
       return;
     }
+    if (action == 'select') {
+      _enterSelectionMode(quote);
+      return;
+    }
     if (action == 'delete') {
       await _deleteQuote(quote.id, strings);
     }
+  }
+
+  void _enterSelectionMode([Quote? quote]) {
+    setState(() {
+      _selectionMode = true;
+      if (quote != null) {
+        _selectedQuoteIds.add(quote.id);
+      }
+    });
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _selectionMode = false;
+      _selectedQuoteIds.clear();
+    });
+  }
+
+  void _toggleQuoteSelection(Quote quote) {
+    setState(() {
+      if (_selectedQuoteIds.contains(quote.id)) {
+        _selectedQuoteIds.remove(quote.id);
+      } else {
+        _selectedQuoteIds.add(quote.id);
+      }
+    });
+  }
+
+  List<Quote> _selectedQuotes(QuoteController controller) {
+    return controller.allQuotes
+        .where((quote) => _selectedQuoteIds.contains(quote.id))
+        .toList(growable: false);
+  }
+
+  Future<void> _setSelectedFavorites(
+    QuoteController controller,
+    bool isFavorite,
+    AppStrings strings,
+  ) async {
+    final selected = _selectedQuotes(controller);
+    if (selected.isEmpty) {
+      return;
+    }
+
+    await controller.setFavorites(selected, isFavorite);
+    if (!mounted) {
+      return;
+    }
+
+    _exitSelectionMode();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            strings.selectedFavoriteUpdated(selected.length, isFavorite),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
   }
 
   Future<void> _copyQuoteToClipboard(Quote quote, AppStrings strings) async {
@@ -541,7 +674,18 @@ class _QuotesScreenState extends State<QuotesScreen> {
   }
 
   void _onStorageChanged() {
-    _controller?.refreshFromStorage();
+    final controller = _controller;
+    controller?.refreshFromStorage();
+    if (controller == null || !_selectionMode) {
+      return;
+    }
+
+    final currentIds = controller.allQuotes.map((quote) => quote.id).toSet();
+    final beforeCount = _selectedQuoteIds.length;
+    _selectedQuoteIds.removeWhere((id) => !currentIds.contains(id));
+    if (mounted && beforeCount != _selectedQuoteIds.length) {
+      setState(() {});
+    }
   }
 
   Future<void> _openSettings(AppSettingsController settingsController) async {
@@ -1053,7 +1197,7 @@ class _QuoteActionMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final screen = MediaQuery.sizeOf(context);
     const menuWidth = 220.0;
-    const menuHeight = 208.0;
+    const menuHeight = 260.0;
     const margin = 12.0;
     const gapToAnchor = 14.0;
     const arrowSize = 12.0;
@@ -1134,6 +1278,11 @@ class _QuoteActionMenu extends StatelessWidget {
                   _MenuItem(
                     label: strings.copy,
                     onTap: () => Navigator.of(context).pop('copy'),
+                  ),
+                  const _DividerLine(),
+                  _MenuItem(
+                    label: strings.select,
+                    onTap: () => Navigator.of(context).pop('select'),
                   ),
                   const _DividerLine(),
                   _MenuItem(

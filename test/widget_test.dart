@@ -150,6 +150,29 @@ void main() {
       expect(repository.getAll().single.isFavorite, isTrue);
       expect(controller.filteredQuotes.single.isFavorite, isTrue);
     });
+
+    test('setFavorites updates selected entries only', () async {
+      final repository = _MemoryQuoteRepository([
+        _quote(id: 'q1', text: 'First', tagIds: const []),
+        _quote(id: 'q2', text: 'Second', tagIds: const []),
+        _quote(id: 'q3', text: 'Third', tagIds: const []),
+      ]);
+      final controller = QuoteController(
+        quoteRepository: repository,
+        tagRepository: _MemoryTagRepository(const []),
+      )..loadInitial();
+
+      await controller.setFavorites(
+        controller.filteredQuotes.where((quote) => quote.id != 'q2'),
+        true,
+      );
+      controller.refreshFromStorage();
+
+      final byId = {for (final quote in repository.getAll()) quote.id: quote};
+      expect(byId['q1']?.isFavorite, isTrue);
+      expect(byId['q2']?.isFavorite, isFalse);
+      expect(byId['q3']?.isFavorite, isTrue);
+    });
   });
 
   group('topic index', () {
