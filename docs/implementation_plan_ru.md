@@ -17,13 +17,14 @@
 - share-to-app, quick add shortcut;
 - PIN lock и biometric unlock;
 - обзорный экран MEMRYTH Pro;
+- каркас Google Play Billing / Pro entitlement через `in_app_purchase`;
 - batch selection, batch favorite/unfavorite и batch topic assignment;
 - export selected через тот же совместимый JSON backup-формат;
 - saved filters для сохранения текущего поиска, фильтров и сортировки.
 
 Осталось после текущего прохода:
 
-- реальные Google Play Billing / Pro entitlement;
+- создать реальный managed product в Play Console и проверить purchase/restore;
 - Android widgets;
 - saved collections / resurfacing;
 - расширенные batch actions, кроме удаления, если появится понятный сценарий;
@@ -304,10 +305,11 @@ Pro:
 Блок "Данные" закрыт. Следующий практический порядок:
 
 1. Google Play Billing / Pro entitlement:
-   - добавить `in_app_purchase`;
-   - завести локальное состояние Pro unlock;
+   - `in_app_purchase` добавлен;
+   - локальное состояние Pro unlock заведено;
    - не ломать текущие Pro-функции, пока нет реального product id из Play Console;
-   - экран Pro должен честно показывать, если покупка еще недоступна.
+   - экран Pro честно показывает, если покупка еще недоступна;
+   - дальше создать managed product `memryth_pro` в Play Console и проверить restore.
 2. Android widgets:
    - сначала простой widget для quick add или случайной избранной записи;
    - не начинать с синхронизации/облака.

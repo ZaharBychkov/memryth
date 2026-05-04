@@ -58,6 +58,8 @@ class AppSettings {
     required this.biometricUnlockEnabled,
     required this.lastFullExportAt,
     required this.savedFilters,
+    required this.proUnlocked,
+    required this.proUnlockedAt,
   });
 
   final AppThemeMode themeMode;
@@ -72,6 +74,8 @@ class AppSettings {
   final bool biometricUnlockEnabled;
   final DateTime? lastFullExportAt;
   final List<SavedFilter> savedFilters;
+  final bool proUnlocked;
+  final DateTime? proUnlockedAt;
 
   bool get isDarkMode => themeMode == AppThemeMode.dark;
   double get uiTextScale => 1;
@@ -96,6 +100,8 @@ class AppSettings {
     bool? biometricUnlockEnabled,
     DateTime? lastFullExportAt,
     List<SavedFilter>? savedFilters,
+    bool? proUnlocked,
+    DateTime? proUnlockedAt,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -112,6 +118,8 @@ class AppSettings {
           biometricUnlockEnabled ?? this.biometricUnlockEnabled,
       lastFullExportAt: lastFullExportAt ?? this.lastFullExportAt,
       savedFilters: savedFilters ?? this.savedFilters,
+      proUnlocked: proUnlocked ?? this.proUnlocked,
+      proUnlockedAt: proUnlockedAt ?? this.proUnlockedAt,
     );
   }
 
@@ -128,5 +136,7 @@ class AppSettings {
     biometricUnlockEnabled: false,
     lastFullExportAt: null,
     savedFilters: [],
+    proUnlocked: false,
+    proUnlockedAt: null,
   );
 }

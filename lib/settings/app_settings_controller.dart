@@ -51,6 +51,9 @@ class AppSettingsController extends ChangeNotifier {
           appLockConfigured,
       lastFullExportAt: _readDateTime(box.get('lastFullExportAt')),
       savedFilters: _readSavedFilters(box.get('savedFilters')),
+      proUnlocked:
+          (box.get('proUnlocked') as bool?) ?? AppSettings.defaults.proUnlocked,
+      proUnlockedAt: _readDateTime(box.get('proUnlockedAt')),
     );
     await box.deleteAll(_obsoleteKeys);
     return AppSettingsController._(box, settings)
@@ -154,6 +157,16 @@ class AppSettingsController extends ChangeNotifier {
     );
   }
 
+  Future<void> markProUnlocked(DateTime unlockedAt) async {
+    final value = unlockedAt.toUtc();
+    _settings = _settings.copyWith(proUnlocked: true, proUnlockedAt: value);
+    notifyListeners();
+    await _box.putAll({
+      'proUnlocked': true,
+      'proUnlockedAt': value.toIso8601String(),
+    });
+  }
+
   Future<void> saveFilter(SavedFilter filter) async {
     final filters = [
       for (final existing in _settings.savedFilters)
@@ -183,6 +196,8 @@ class AppSettingsController extends ChangeNotifier {
       biometricUnlockEnabled: _settings.biometricUnlockEnabled,
       lastFullExportAt: _settings.lastFullExportAt,
       savedFilters: _settings.savedFilters,
+      proUnlocked: _settings.proUnlocked,
+      proUnlockedAt: _settings.proUnlockedAt,
     );
     notifyListeners();
     final values = <String, Object>{
@@ -195,10 +210,15 @@ class AppSettingsController extends ChangeNotifier {
       'hasCompletedOnboarding': _settings.hasCompletedOnboarding,
       'appLockEnabled': _settings.appLockEnabled,
       'biometricUnlockEnabled': _settings.biometricUnlockEnabled,
+      'proUnlocked': _settings.proUnlocked,
     };
     final lastFullExportAt = _settings.lastFullExportAt;
     if (lastFullExportAt != null) {
       values['lastFullExportAt'] = lastFullExportAt.toIso8601String();
+    }
+    final proUnlockedAt = _settings.proUnlockedAt;
+    if (proUnlockedAt != null) {
+      values['proUnlockedAt'] = proUnlockedAt.toIso8601String();
     }
     values['savedFilters'] = [
       for (final filter in _settings.savedFilters) filter.toJson(),
