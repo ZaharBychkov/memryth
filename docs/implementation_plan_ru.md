@@ -18,6 +18,7 @@
 - PIN lock и biometric unlock;
 - обзорный экран MEMRYTH Pro;
 - каркас Google Play Billing / Pro entitlement через `in_app_purchase`;
+- Android home widget для quick add;
 - batch selection, batch favorite/unfavorite и batch topic assignment;
 - export selected через тот же совместимый JSON backup-формат;
 - saved filters для сохранения текущего поиска, фильтров и сортировки.
@@ -25,7 +26,7 @@
 Осталось после текущего прохода:
 
 - создать реальный managed product в Play Console и проверить purchase/restore;
-- Android widgets;
+- расширить Android widgets: случайная избранная запись / resurfacing;
 - saved collections / resurfacing;
 - расширенные batch actions, кроме удаления, если появится понятный сценарий;
 - store screenshots и финальная ручная проверка релизного APK/AAB.
@@ -311,7 +312,8 @@ Pro:
    - экран Pro честно показывает, если покупка еще недоступна;
    - дальше создать managed product `memryth_pro` в Play Console и проверить restore.
 2. Android widgets:
-   - сначала простой widget для quick add или случайной избранной записи;
+   - простой widget для quick add добавлен;
+   - дальше можно добавить widget для случайной избранной записи;
    - не начинать с синхронизации/облака.
 3. Saved collections / resurfacing:
    - saved filters уже закрыты как named view для search + topic/type/favorite filters;

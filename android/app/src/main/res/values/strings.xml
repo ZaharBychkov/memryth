@@ -3,4 +3,7 @@
     <string name="app_name">MEMRYTH</string>
     <string name="shortcut_new_entry_short">New entry</string>
     <string name="shortcut_new_entry_long">Create a new MEMRYTH entry</string>
+    <string name="widget_quick_add_label">Quick add</string>
+    <string name="widget_quick_add_title">MEMRYTH</string>
+    <string name="widget_quick_add_body">Save a thought, quote, or excerpt</string>
 </resources>
