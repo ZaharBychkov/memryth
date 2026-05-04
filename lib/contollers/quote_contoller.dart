@@ -246,6 +246,29 @@ class QuoteController extends ChangeNotifier {
     }
   }
 
+  Future<void> removeTagsFromQuotes(
+    Iterable<Quote> quotes,
+    Iterable<String> tagIds,
+  ) async {
+    final tagsToRemove = tagIds.where((id) => id.trim().isNotEmpty).toSet();
+    if (tagsToRemove.isEmpty) {
+      return;
+    }
+
+    final now = DateTime.now();
+    for (final quote in quotes) {
+      final nextTagIds = quote.tagIds
+          .where((id) => !tagsToRemove.contains(id))
+          .toList(growable: false);
+      if (nextTagIds.length == quote.tagIds.length) {
+        continue;
+      }
+      await _quoteRepository.save(
+        quote.copyWith(tagIds: nextTagIds, updatedAt: now),
+      );
+    }
+  }
+
   bool _matches(Quote quote) {
     if (_favoritesOnly && !quote.isFavorite) {
       return false;

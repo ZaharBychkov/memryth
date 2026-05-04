@@ -250,6 +250,13 @@ class _QuotesScreenState extends State<QuotesScreen> {
           icon: const Icon(Icons.label_rounded),
         ),
         IconButton(
+          tooltip: strings.removeTopicsFromSelected,
+          onPressed: actionsEnabled
+              ? () => _removeTagsFromSelected(controller, strings)
+              : null,
+          icon: const Icon(Icons.label_off_rounded),
+        ),
+        IconButton(
           tooltip: strings.markSelectedFavorite,
           onPressed: actionsEnabled
               ? () => _setSelectedFavorites(controller, true, strings)
@@ -353,6 +360,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
             label: strings.bulkActions,
             tooltip: strings.selectEntries,
             isDark: isDark,
+            enabled: controller.totalCount > 0,
             onTap: _enterSelectionMode,
           ),
         ),
@@ -731,24 +739,88 @@ class _QuotesScreenState extends State<QuotesScreen> {
       );
   }
 
-  Future<Set<String>?> _askTagsToAssign(
+  Future<void> _removeTagsFromSelected(
     QuoteController controller,
     AppStrings strings,
   ) async {
+    if (_selectionBusy) {
+      return;
+    }
+
+    final selected = _selectedQuotes(controller);
+    if (selected.isEmpty) {
+      return;
+    }
+
+    final tagIdsInSelection = selected
+        .expand((quote) => quote.tagIds)
+        .toSet()
+        .where((id) => controller.allTagsSorted.any((tag) => tag.id == id))
+        .toSet();
+    if (tagIdsInSelection.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(strings.noTopicsToAssign),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      return;
+    }
+
+    final tagIds = await _askTagsToAssign(
+      controller,
+      strings,
+      title: strings.removeTopicsFromSelected,
+      actionLabel: strings.removeTopicsFromSelected,
+      allowedTagIds: tagIdsInSelection,
+    );
+    if (tagIds == null || tagIds.isEmpty) {
+      return;
+    }
+
+    setState(() => _selectionBusy = true);
+    await controller.removeTagsFromQuotes(selected, tagIds);
+    if (!mounted) {
+      return;
+    }
+
+    _exitSelectionMode();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(strings.topicsRemovedFromSelected(selected.length)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+  }
+
+  Future<Set<String>?> _askTagsToAssign(
+    QuoteController controller,
+    AppStrings strings, {
+    String? title,
+    String? actionLabel,
+    Set<String>? allowedTagIds,
+  }) async {
     final selectedTagIds = <String>{};
+    final availableTags = controller.allTagsSorted
+        .where((tag) => allowedTagIds == null || allowedTagIds.contains(tag.id))
+        .toList(growable: false);
     return showDialog<Set<String>>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text(strings.chooseTopics),
+              title: Text(title ?? strings.chooseTopics),
               content: SingleChildScrollView(
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (final tag in controller.allTagsSorted)
+                    for (final tag in availableTags)
                       FilterChip(
                         label: Text(tag.name),
                         selected: selectedTagIds.contains(tag.id),
@@ -774,7 +846,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
                   onPressed: selectedTagIds.isEmpty
                       ? null
                       : () => Navigator.of(context).pop({...selectedTagIds}),
-                  child: Text(strings.add),
+                  child: Text(actionLabel ?? strings.add),
                 ),
               ],
             );
@@ -1116,6 +1188,7 @@ class _ActionStripButton extends StatelessWidget {
     required this.label,
     required this.isDark,
     required this.onTap,
+    this.enabled = true,
     this.tooltip,
   });
 
@@ -1123,14 +1196,18 @@ class _ActionStripButton extends StatelessWidget {
   final String label;
   final bool isDark;
   final VoidCallback onTap;
+  final bool enabled;
   final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
     final button = InkWell(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(14),
-      child: _ActionStripItem(icon: icon, label: label, isDark: isDark),
+      child: Opacity(
+        opacity: enabled ? 1 : 0.45,
+        child: _ActionStripItem(icon: icon, label: label, isDark: isDark),
+      ),
     );
     if (tooltip == null) {
       return button;

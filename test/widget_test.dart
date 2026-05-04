@@ -199,6 +199,29 @@ void main() {
       },
     );
 
+    test('removeTagsFromQuotes removes selected tags only', () async {
+      final repository = _MemoryQuoteRepository([
+        _quote(id: 'q1', text: 'First', tagIds: const ['keep', 'remove']),
+        _quote(id: 'q2', text: 'Second', tagIds: const ['remove']),
+        _quote(id: 'q3', text: 'Third', tagIds: const ['keep']),
+      ]);
+      final controller = QuoteController(
+        quoteRepository: repository,
+        tagRepository: _MemoryTagRepository(const []),
+      )..loadInitial();
+
+      await controller.removeTagsFromQuotes(
+        controller.filteredQuotes.where((quote) => quote.id != 'q3'),
+        ['remove'],
+      );
+      controller.refreshFromStorage();
+
+      final byId = {for (final quote in repository.getAll()) quote.id: quote};
+      expect(byId['q1']?.tagIds, ['keep']);
+      expect(byId['q2']?.tagIds, isEmpty);
+      expect(byId['q3']?.tagIds, ['keep']);
+    });
+
     test('applySavedFilter restores query, filters and sort mode', () {
       final controller = _controller(
         quotes: [
