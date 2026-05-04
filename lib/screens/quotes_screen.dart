@@ -224,6 +224,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
 
     return AppBar(
       centerTitle: false,
+      titleSpacing: 0,
       leading: IconButton(
         tooltip: strings.cancel,
         onPressed: _exitSelectionMode,
@@ -236,44 +237,86 @@ class _QuotesScreenState extends State<QuotesScreen> {
         style: const TextStyle(fontWeight: FontWeight.w800),
       ),
       actions: [
-        IconButton(
-          tooltip: strings.exportSelected,
-          onPressed: actionsEnabled
-              ? () => _exportSelected(controller, strings)
-              : null,
-          icon: const Icon(Icons.ios_share_rounded),
-        ),
-        IconButton(
-          tooltip: strings.addTopicsToSelected,
-          onPressed: actionsEnabled
-              ? () => _addTagsToSelected(controller, strings)
-              : null,
-          icon: const Icon(Icons.label_rounded),
-        ),
-        IconButton(
-          tooltip: strings.removeTopicsFromSelected,
-          onPressed: actionsEnabled
-              ? () => _removeTagsFromSelected(controller, strings)
-              : null,
-          icon: const Icon(Icons.label_off_rounded),
-        ),
-        IconButton(
-          tooltip: strings.markSelectedFavorite,
-          onPressed: actionsEnabled
-              ? () => _setSelectedFavorites(controller, true, strings)
-              : null,
-          icon: const Icon(Icons.star_rounded),
-        ),
-        IconButton(
-          tooltip: strings.unmarkSelectedFavorite,
-          onPressed: actionsEnabled
-              ? () => _setSelectedFavorites(controller, false, strings)
-              : null,
-          icon: const Icon(Icons.star_border_rounded),
-        ),
+        if (_selectionBusy)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
+        else
+          PopupMenuButton<_SelectionAction>(
+            tooltip: strings.bulkActions,
+            enabled: actionsEnabled,
+            icon: const Icon(Icons.more_vert_rounded),
+            onSelected: (action) =>
+                _handleSelectionAction(action, controller, strings),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _SelectionAction.export,
+                child: _SelectionMenuItem(
+                  icon: Icons.ios_share_rounded,
+                  label: strings.exportSelected,
+                ),
+              ),
+              PopupMenuItem(
+                value: _SelectionAction.addTopics,
+                child: _SelectionMenuItem(
+                  icon: Icons.label_rounded,
+                  label: strings.addTopicsToSelected,
+                ),
+              ),
+              PopupMenuItem(
+                value: _SelectionAction.removeTopics,
+                child: _SelectionMenuItem(
+                  icon: Icons.label_off_rounded,
+                  label: strings.removeTopicsFromSelected,
+                ),
+              ),
+              PopupMenuItem(
+                value: _SelectionAction.favorite,
+                child: _SelectionMenuItem(
+                  icon: Icons.star_rounded,
+                  label: strings.markSelectedFavorite,
+                ),
+              ),
+              PopupMenuItem(
+                value: _SelectionAction.unfavorite,
+                child: _SelectionMenuItem(
+                  icon: Icons.star_border_rounded,
+                  label: strings.unmarkSelectedFavorite,
+                ),
+              ),
+            ],
+          ),
         const SizedBox(width: 8),
       ],
     );
+  }
+
+  void _handleSelectionAction(
+    _SelectionAction action,
+    QuoteController controller,
+    AppStrings strings,
+  ) {
+    switch (action) {
+      case _SelectionAction.export:
+        _exportSelected(controller, strings);
+        break;
+      case _SelectionAction.addTopics:
+        _addTagsToSelected(controller, strings);
+        break;
+      case _SelectionAction.removeTopics:
+        _removeTagsFromSelected(controller, strings);
+        break;
+      case _SelectionAction.favorite:
+        _setSelectedFavorites(controller, true, strings);
+        break;
+      case _SelectionAction.unfavorite:
+        _setSelectedFavorites(controller, false, strings);
+        break;
+    }
   }
 
   Widget _buildTypeFiltersRow(
@@ -710,7 +753,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
       controller,
       strings,
       title: strings.addTopicsToSelected,
-      actionLabel: strings.addSelectedTopicsToEntries,
+      actionLabel: strings.save,
       allowNewTopic: true,
     );
     if (request == null || !request.hasSelection) {
@@ -1794,6 +1837,26 @@ class _QuoteActionMenu extends StatelessWidget {
   }
 }
 
+enum _SelectionAction { export, addTopics, removeTopics, favorite, unfavorite }
+
+class _SelectionMenuItem extends StatelessWidget {
+  const _SelectionMenuItem({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 12),
+        Flexible(child: Text(label)),
+      ],
+    );
+  }
+}
+
 class _BulkTopicRequest {
   const _BulkTopicRequest({required this.tagIds, required this.newTagNames});
 
@@ -1906,45 +1969,30 @@ class _BulkTopicDialogState extends State<_BulkTopicDialog> {
                     ),
                     const SizedBox(height: 12),
                   ],
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _newTopicController,
-                          onChanged: (_) => setState(() {}),
-                          onSubmitted: (_) => _addTopicFromInput(),
-                          decoration: _inputDecoration(
-                            context: context,
-                            border: border,
-                            fillColor: fillColor,
-                            labelText: widget.strings.newTag,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        height: 56,
-                        child: FilledButton(
-                          onPressed: _newTopicController.text.trim().isNotEmpty
-                              ? _addTopicFromInput
-                              : null,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF4A6FA5),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Text(widget.strings.addTopic),
-                        ),
-                      ),
-                    ],
+                  TextField(
+                    controller: _newTopicController,
+                    onChanged: (_) => setState(() {}),
+                    onSubmitted: (_) => _addTopicFromInput(),
+                    decoration: _inputDecoration(
+                      context: context,
+                      border: border,
+                      fillColor: fillColor,
+                      labelText: widget.strings.newTag,
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    widget.strings.topicHelp,
-                    style: TextStyle(
-                      color: Theme.of(context).hintColor,
-                      fontSize: 13,
-                      height: 1.35,
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: FilledButton(
+                      onPressed: _newTopicController.text.trim().isNotEmpty
+                          ? _addTopicFromInput
+                          : null,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF4A6FA5),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text(widget.strings.addTopic),
                     ),
                   ),
                   const SizedBox(height: 18),

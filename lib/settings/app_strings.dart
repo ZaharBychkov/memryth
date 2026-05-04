@@ -119,9 +119,7 @@ class AppStrings {
         : 'Removed from favorites: $count';
   }
 
-  String get searchHint => isRu
-      ? 'Поиск. Введите #тема, чтобы искать только по темам'
-      : 'Search. Type #topic to search topics only';
+  String get searchHint => isRu ? 'Поиск или #тема' : 'Search or #topic';
   String get tagNone => isRu ? 'Темы не добавлены' : 'No topics yet';
   String get hideTags => isRu ? 'Скрыть темы' : 'Hide topics';
   String showAllTags(int count) =>
