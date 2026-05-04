@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../contollers/quote_contoller.dart';
 import '../models/quote.dart';
 import '../models/saved_filter.dart';
+import '../models/tag.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
 import '../services/export_import_service.dart';
@@ -803,98 +804,19 @@ class _QuotesScreenState extends State<QuotesScreen> {
     Set<String>? allowedTagIds,
     bool allowNewTopic = false,
   }) async {
-    final selectedTagIds = <String>{};
-    final newTopicController = TextEditingController();
     final availableTags = controller.allTagsSorted
         .where((tag) => allowedTagIds == null || allowedTagIds.contains(tag.id))
         .toList(growable: false);
-    final result = await showDialog<_BulkTopicRequest>(
+    return showDialog<_BulkTopicRequest>(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final newTopicName = newTopicController.text.trim();
-            final canSubmit =
-                selectedTagIds.isNotEmpty ||
-                (allowNewTopic && newTopicName.isNotEmpty);
-            return AlertDialog(
-              title: Text(title ?? strings.chooseTopics),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (allowNewTopic) ...[
-                        TextField(
-                          controller: newTopicController,
-                          onChanged: (_) => setDialogState(() {}),
-                          decoration: InputDecoration(
-                            labelText: strings.newTopicForSelected,
-                            border: const OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      if (availableTags.isNotEmpty) ...[
-                        Text(
-                          strings.existingTopics,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final tag in availableTags)
-                              FilterChip(
-                                label: Text(tag.name),
-                                selected: selectedTagIds.contains(tag.id),
-                                onSelected: (selected) {
-                                  setDialogState(() {
-                                    if (selected) {
-                                      selectedTagIds.add(tag.id);
-                                    } else {
-                                      selectedTagIds.remove(tag.id);
-                                    }
-                                  });
-                                },
-                              ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(strings.cancel),
-                ),
-                FilledButton(
-                  onPressed: canSubmit
-                      ? () => Navigator.of(context).pop(
-                          _BulkTopicRequest(
-                            tagIds: {...selectedTagIds},
-                            newTagNames:
-                                allowNewTopic && newTopicName.isNotEmpty
-                                ? {newTopicName}
-                                : const <String>{},
-                          ),
-                        )
-                      : null,
-                  child: Text(actionLabel ?? strings.add),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (_) => _BulkTopicDialog(
+        strings: strings,
+        title: title ?? strings.chooseTopics,
+        actionLabel: actionLabel ?? strings.add,
+        availableTags: availableTags,
+        allowNewTopic: allowNewTopic,
+      ),
     );
-    newTopicController.dispose();
-    return result;
   }
 
   Future<void> _saveCurrentFilter(
@@ -1879,6 +1801,268 @@ class _BulkTopicRequest {
   final Set<String> newTagNames;
 
   bool get hasSelection => tagIds.isNotEmpty || newTagNames.isNotEmpty;
+}
+
+class _BulkTopicDialog extends StatefulWidget {
+  const _BulkTopicDialog({
+    required this.strings,
+    required this.title,
+    required this.actionLabel,
+    required this.availableTags,
+    required this.allowNewTopic,
+  });
+
+  final AppStrings strings;
+  final String title;
+  final String actionLabel;
+  final List<Tag> availableTags;
+  final bool allowNewTopic;
+
+  @override
+  State<_BulkTopicDialog> createState() => _BulkTopicDialogState();
+}
+
+class _BulkTopicDialogState extends State<_BulkTopicDialog> {
+  final TextEditingController _newTopicController = TextEditingController();
+  final Set<String> _selectedTagIds = <String>{};
+  final Set<String> _newTopicNames = <String>{};
+
+  Map<String, Tag> get _tagsByName => {
+    for (final tag in widget.availableTags) tag.name.trim().toLowerCase(): tag,
+  };
+
+  bool get _canSubmit => _requestFromState().hasSelection;
+
+  @override
+  void dispose() {
+    _newTopicController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fillColor = isDark ? const Color(0xFF262B33) : Colors.white;
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
+    );
+    final selectedExistingTags = widget.availableTags
+        .where((tag) => _selectedTagIds.contains(tag.id))
+        .toList(growable: false);
+
+    return AlertDialog(
+      title: Text(widget.title),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.62,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.allowNewTopic) ...[
+                  if (selectedExistingTags.isNotEmpty ||
+                      _newTopicNames.isNotEmpty) ...[
+                    Text(
+                      widget.strings.tags,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final tag in selectedExistingTags)
+                          InputChip(
+                            label: Text(tag.name),
+                            side: BorderSide(
+                              color: Theme.of(context).dividerColor,
+                              width: 1.2,
+                            ),
+                            backgroundColor: isDark
+                                ? const Color(0xFF262B33)
+                                : const Color(0xFFF5EEE7),
+                            onDeleted: () =>
+                                setState(() => _selectedTagIds.remove(tag.id)),
+                          ),
+                        for (final name in _newTopicNames)
+                          InputChip(
+                            label: Text(name),
+                            side: BorderSide(
+                              color: Theme.of(context).dividerColor,
+                              width: 1.2,
+                            ),
+                            backgroundColor: isDark
+                                ? const Color(0xFF262B33)
+                                : const Color(0xFFF5EEE7),
+                            onDeleted: () =>
+                                setState(() => _newTopicNames.remove(name)),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _newTopicController,
+                          onChanged: (_) => setState(() {}),
+                          onSubmitted: (_) => _addTopicFromInput(),
+                          decoration: _inputDecoration(
+                            context: context,
+                            border: border,
+                            fillColor: fillColor,
+                            labelText: widget.strings.newTag,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        height: 56,
+                        child: FilledButton(
+                          onPressed: _newTopicController.text.trim().isNotEmpty
+                              ? _addTopicFromInput
+                              : null,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF4A6FA5),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text(widget.strings.addTopic),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.strings.topicHelp,
+                    style: TextStyle(
+                      color: Theme.of(context).hintColor,
+                      fontSize: 13,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+                if (widget.availableTags.isNotEmpty) ...[
+                  Text(
+                    widget.allowNewTopic
+                        ? widget.strings.quickAddTags
+                        : widget.strings.existingTopics,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final tag in widget.availableTags)
+                        FilterChip(
+                          label: Text(tag.name),
+                          selected: _selectedTagIds.contains(tag.id),
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedTagIds.add(tag.id);
+                              } else {
+                                _selectedTagIds.remove(tag.id);
+                              }
+                            });
+                          },
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(widget.strings.cancel),
+        ),
+        FilledButton(
+          onPressed: _canSubmit ? _submit : null,
+          child: Text(widget.actionLabel),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required BuildContext context,
+    required OutlineInputBorder border,
+    required Color fillColor,
+    required String labelText,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InputDecoration(
+      labelText: labelText,
+      labelStyle: TextStyle(
+        color: isDark ? const Color(0xFFB8AEA2) : const Color(0xFF8B7E74),
+      ),
+      fillColor: fillColor,
+      filled: true,
+      border: border,
+      enabledBorder: border,
+      focusedBorder: border.copyWith(
+        borderSide: BorderSide(
+          color: Theme.of(context).colorScheme.primary,
+          width: 1.6,
+        ),
+      ),
+    );
+  }
+
+  void _addTopicFromInput() {
+    final name = _newTopicController.text.trim();
+    if (name.isEmpty) {
+      return;
+    }
+
+    final normalized = name.toLowerCase();
+    final existingTag = _tagsByName[normalized];
+    setState(() {
+      if (existingTag != null) {
+        _selectedTagIds.add(existingTag.id);
+      } else if (!_newTopicNames.any(
+        (topic) => topic.toLowerCase() == normalized,
+      )) {
+        _newTopicNames.add(name);
+      }
+      _newTopicController.clear();
+    });
+  }
+
+  _BulkTopicRequest _requestFromState() {
+    final tagIds = {..._selectedTagIds};
+    final tagNames = {..._newTopicNames};
+    final inputName = _newTopicController.text.trim();
+
+    if (widget.allowNewTopic && inputName.isNotEmpty) {
+      final normalized = inputName.toLowerCase();
+      final existingTag = _tagsByName[normalized];
+      if (existingTag != null) {
+        tagIds.add(existingTag.id);
+      } else if (!tagNames.any((topic) => topic.toLowerCase() == normalized)) {
+        tagNames.add(inputName);
+      }
+    }
+
+    return _BulkTopicRequest(tagIds: tagIds, newTagNames: tagNames);
+  }
+
+  void _submit() {
+    FocusScope.of(context).unfocus();
+    Navigator.of(context).pop(_requestFromState());
+  }
 }
 
 class _MenuItem extends StatelessWidget {
