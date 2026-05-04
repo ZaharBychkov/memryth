@@ -123,13 +123,17 @@ MEMRYTH должен стать не просто списком цитат, а 
 
 ### Этап 4. Релизная подготовка
 
-Сделать:
+Уже сделано:
 
-- заменить `com.example.memryth_dart_project` на реальный package id;
-- заменить Android namespace;
-- настроить release signing;
-- проверить release build;
-- подготовить privacy policy, screenshots, feature graphic и описание Google Play.
+- реальный package id и Android namespace: `app.memryth.android`;
+- release signing с fallback на debug key для локальной сборки;
+- release APK/AAB build;
+- privacy policy и черновик Google Play listing.
+
+Еще сделать:
+
+- финальные store screenshots / feature graphic;
+- ручная проверка release APK на устройстве перед загрузкой.
 
 Результат: приложение технически готово к публикации.
 
