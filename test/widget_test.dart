@@ -199,6 +199,39 @@ void main() {
       },
     );
 
+    test('addTagIdsAndNamesToQuotes creates new topics once', () async {
+      final repository = _MemoryQuoteRepository([
+        _quote(id: 'q1', text: 'First', tagIds: const ['keep']),
+        _quote(id: 'q2', text: 'Second', tagIds: const []),
+      ]);
+      final tagRepository = _MemoryTagRepository([
+        Tag(id: 'existing', name: 'Работа'),
+      ]);
+      final controller = QuoteController(
+        quoteRepository: repository,
+        tagRepository: tagRepository,
+      )..loadInitial();
+
+      await controller.addTagIdsAndNamesToQuotes(
+        controller.filteredQuotes,
+        tagIds: ['existing'],
+        tagNames: [' Новая тема ', 'работа'],
+      );
+      controller.refreshFromStorage();
+
+      final newTag = tagRepository.getAll().singleWhere(
+        (tag) => tag.name == 'Новая тема',
+      );
+      expect(tagRepository.getAll().map((tag) => tag.name), [
+        'Работа',
+        'Новая тема',
+      ]);
+
+      final byId = {for (final quote in repository.getAll()) quote.id: quote};
+      expect(byId['q1']?.tagIds, ['keep', 'existing', newTag.id]);
+      expect(byId['q2']?.tagIds, ['existing', newTag.id]);
+    });
+
     test('removeTagsFromQuotes removes selected tags only', () async {
       final repository = _MemoryQuoteRepository([
         _quote(id: 'q1', text: 'First', tagIds: const ['keep', 'remove']),

@@ -246,6 +246,57 @@ class QuoteController extends ChangeNotifier {
     }
   }
 
+  Future<void> addTagNamesToQuotes(
+    Iterable<Quote> quotes,
+    Iterable<String> tagNames,
+  ) async {
+    await addTagIdsAndNamesToQuotes(quotes, tagNames: tagNames);
+  }
+
+  Future<void> addTagIdsAndNamesToQuotes(
+    Iterable<Quote> quotes, {
+    Iterable<String> tagIds = const <String>[],
+    Iterable<String> tagNames = const <String>[],
+  }) async {
+    final resolvedTagIds = {
+      ...tagIds.where((id) => id.trim().isNotEmpty),
+      ...await _ensureTagIdsByName(tagNames),
+    };
+    await addTagsToQuotes(quotes, resolvedTagIds);
+  }
+
+  Future<Set<String>> _ensureTagIdsByName(Iterable<String> tagNames) async {
+    final names = tagNames
+        .map((name) => name.trim())
+        .where((name) => name.isNotEmpty)
+        .toSet();
+    if (names.isEmpty) {
+      return const <String>{};
+    }
+
+    final existingByName = {
+      for (final tag in _tagRepository.getAll())
+        tag.name.trim().toLowerCase(): tag,
+    };
+    final tagIds = <String>{};
+
+    for (final name in names) {
+      final normalized = name.toLowerCase();
+      final existing = existingByName[normalized];
+      if (existing != null) {
+        tagIds.add(existing.id);
+        continue;
+      }
+
+      final tag = Tag(id: _genId(), name: name);
+      await _tagRepository.save(tag);
+      existingByName[normalized] = tag;
+      tagIds.add(tag.id);
+    }
+
+    return tagIds;
+  }
+
   Future<void> removeTagsFromQuotes(
     Iterable<Quote> quotes,
     Iterable<String> tagIds,
@@ -360,5 +411,11 @@ class QuoteController extends ChangeNotifier {
     if (length == 0) return 0;
     final mod = value % length;
     return mod < 0 ? mod + length : mod;
+  }
+
+  String _genId() {
+    final now = DateTime.now().microsecondsSinceEpoch;
+    final suffix = _random.nextInt(1 << 32);
+    return '$now$suffix';
   }
 }

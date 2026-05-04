@@ -705,25 +705,23 @@ class _QuotesScreenState extends State<QuotesScreen> {
     if (selected.isEmpty) {
       return;
     }
-    if (controller.allTagsSorted.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(strings.noTopicsToAssign),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      return;
-    }
-
-    final tagIds = await _askTagsToAssign(controller, strings);
-    if (tagIds == null || tagIds.isEmpty) {
+    final request = await _askTagsToAssign(
+      controller,
+      strings,
+      title: strings.addTopicsToSelected,
+      actionLabel: strings.addSelectedTopicsToEntries,
+      allowNewTopic: true,
+    );
+    if (request == null || !request.hasSelection) {
       return;
     }
 
     setState(() => _selectionBusy = true);
-    await controller.addTagsToQuotes(selected, tagIds);
+    await controller.addTagIdsAndNamesToQuotes(
+      selected,
+      tagIds: request.tagIds,
+      tagNames: request.newTagNames,
+    );
     if (!mounted) {
       return;
     }
@@ -769,19 +767,19 @@ class _QuotesScreenState extends State<QuotesScreen> {
       return;
     }
 
-    final tagIds = await _askTagsToAssign(
+    final request = await _askTagsToAssign(
       controller,
       strings,
       title: strings.removeTopicsFromSelected,
       actionLabel: strings.removeTopicsFromSelected,
       allowedTagIds: tagIdsInSelection,
     );
-    if (tagIds == null || tagIds.isEmpty) {
+    if (request == null || request.tagIds.isEmpty) {
       return;
     }
 
     setState(() => _selectionBusy = true);
-    await controller.removeTagsFromQuotes(selected, tagIds);
+    await controller.removeTagsFromQuotes(selected, request.tagIds);
     if (!mounted) {
       return;
     }
@@ -797,44 +795,77 @@ class _QuotesScreenState extends State<QuotesScreen> {
       );
   }
 
-  Future<Set<String>?> _askTagsToAssign(
+  Future<_BulkTopicRequest?> _askTagsToAssign(
     QuoteController controller,
     AppStrings strings, {
     String? title,
     String? actionLabel,
     Set<String>? allowedTagIds,
+    bool allowNewTopic = false,
   }) async {
     final selectedTagIds = <String>{};
+    final newTopicController = TextEditingController();
     final availableTags = controller.allTagsSorted
         .where((tag) => allowedTagIds == null || allowedTagIds.contains(tag.id))
         .toList(growable: false);
-    return showDialog<Set<String>>(
+    final result = await showDialog<_BulkTopicRequest>(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final newTopicName = newTopicController.text.trim();
+            final canSubmit =
+                selectedTagIds.isNotEmpty ||
+                (allowNewTopic && newTopicName.isNotEmpty);
             return AlertDialog(
               title: Text(title ?? strings.chooseTopics),
-              content: SingleChildScrollView(
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final tag in availableTags)
-                      FilterChip(
-                        label: Text(tag.name),
-                        selected: selectedTagIds.contains(tag.id),
-                        onSelected: (selected) {
-                          setDialogState(() {
-                            if (selected) {
-                              selectedTagIds.add(tag.id);
-                            } else {
-                              selectedTagIds.remove(tag.id);
-                            }
-                          });
-                        },
-                      ),
-                  ],
+              content: SizedBox(
+                width: double.maxFinite,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (allowNewTopic) ...[
+                        TextField(
+                          controller: newTopicController,
+                          onChanged: (_) => setDialogState(() {}),
+                          decoration: InputDecoration(
+                            labelText: strings.newTopicForSelected,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (availableTags.isNotEmpty) ...[
+                        Text(
+                          strings.existingTopics,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final tag in availableTags)
+                              FilterChip(
+                                label: Text(tag.name),
+                                selected: selectedTagIds.contains(tag.id),
+                                onSelected: (selected) {
+                                  setDialogState(() {
+                                    if (selected) {
+                                      selectedTagIds.add(tag.id);
+                                    } else {
+                                      selectedTagIds.remove(tag.id);
+                                    }
+                                  });
+                                },
+                              ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
               actions: [
@@ -843,9 +874,17 @@ class _QuotesScreenState extends State<QuotesScreen> {
                   child: Text(strings.cancel),
                 ),
                 FilledButton(
-                  onPressed: selectedTagIds.isEmpty
-                      ? null
-                      : () => Navigator.of(context).pop({...selectedTagIds}),
+                  onPressed: canSubmit
+                      ? () => Navigator.of(context).pop(
+                          _BulkTopicRequest(
+                            tagIds: {...selectedTagIds},
+                            newTagNames:
+                                allowNewTopic && newTopicName.isNotEmpty
+                                ? {newTopicName}
+                                : const <String>{},
+                          ),
+                        )
+                      : null,
                   child: Text(actionLabel ?? strings.add),
                 ),
               ],
@@ -854,6 +893,8 @@ class _QuotesScreenState extends State<QuotesScreen> {
         );
       },
     );
+    newTopicController.dispose();
+    return result;
   }
 
   Future<void> _saveCurrentFilter(
@@ -1829,6 +1870,15 @@ class _QuoteActionMenu extends StatelessWidget {
       ),
     );
   }
+}
+
+class _BulkTopicRequest {
+  const _BulkTopicRequest({required this.tagIds, required this.newTagNames});
+
+  final Set<String> tagIds;
+  final Set<String> newTagNames;
+
+  bool get hasSelection => tagIds.isNotEmpty || newTagNames.isNotEmpty;
 }
 
 class _MenuItem extends StatelessWidget {
