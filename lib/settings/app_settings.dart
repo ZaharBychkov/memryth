@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
 import '../contollers/quote_contoller.dart';
-import '../models/saved_filter.dart';
 
 enum AppThemeMode {
   light,
@@ -57,7 +56,6 @@ class AppSettings {
     required this.appLockConfigured,
     required this.biometricUnlockEnabled,
     required this.lastFullExportAt,
-    required this.savedFilters,
     required this.proUnlocked,
     required this.proUnlockedAt,
   });
@@ -73,7 +71,6 @@ class AppSettings {
   final bool appLockConfigured;
   final bool biometricUnlockEnabled;
   final DateTime? lastFullExportAt;
-  final List<SavedFilter> savedFilters;
   final bool proUnlocked;
   final DateTime? proUnlockedAt;
 
@@ -99,7 +96,6 @@ class AppSettings {
     bool? appLockConfigured,
     bool? biometricUnlockEnabled,
     DateTime? lastFullExportAt,
-    List<SavedFilter>? savedFilters,
     bool? proUnlocked,
     DateTime? proUnlockedAt,
   }) {
@@ -117,7 +113,6 @@ class AppSettings {
       biometricUnlockEnabled:
           biometricUnlockEnabled ?? this.biometricUnlockEnabled,
       lastFullExportAt: lastFullExportAt ?? this.lastFullExportAt,
-      savedFilters: savedFilters ?? this.savedFilters,
       proUnlocked: proUnlocked ?? this.proUnlocked,
       proUnlockedAt: proUnlockedAt ?? this.proUnlockedAt,
     );
@@ -135,7 +130,6 @@ class AppSettings {
     appLockConfigured: false,
     biometricUnlockEnabled: false,
     lastFullExportAt: null,
-    savedFilters: [],
     proUnlocked: false,
     proUnlockedAt: null,
   );

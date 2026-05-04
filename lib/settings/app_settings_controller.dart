@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
-import '../models/saved_filter.dart';
 import '../services/pin_lock_service.dart';
 import 'app_settings.dart';
 
@@ -15,6 +14,7 @@ class AppSettingsController extends ChangeNotifier {
     'tagPreviewSize',
     'collapsedLines',
     'defaultSortMode',
+    'savedFilters',
   ];
 
   final Box _box;
@@ -50,7 +50,6 @@ class AppSettingsController extends ChangeNotifier {
           ((box.get('biometricUnlockEnabled') as bool?) ?? false) &&
           appLockConfigured,
       lastFullExportAt: _readDateTime(box.get('lastFullExportAt')),
-      savedFilters: _readSavedFilters(box.get('savedFilters')),
       proUnlocked:
           (box.get('proUnlocked') as bool?) ?? AppSettings.defaults.proUnlocked,
       proUnlockedAt: _readDateTime(box.get('proUnlockedAt')),
@@ -167,23 +166,6 @@ class AppSettingsController extends ChangeNotifier {
     });
   }
 
-  Future<void> saveFilter(SavedFilter filter) async {
-    final filters = [
-      for (final existing in _settings.savedFilters)
-        if (existing.id != filter.id) existing,
-      filter,
-    ];
-    await _updateSavedFilters(filters);
-  }
-
-  Future<void> removeSavedFilter(String id) async {
-    final filters = [
-      for (final filter in _settings.savedFilters)
-        if (filter.id != id) filter,
-    ];
-    await _updateSavedFilters(filters);
-  }
-
   bool verifyPin(String pin) {
     return PinLockService.verifyPin(pin: pin, salt: _pinSalt, hash: _pinHash);
   }
@@ -195,7 +177,6 @@ class AppSettingsController extends ChangeNotifier {
       appLockConfigured: _settings.appLockConfigured,
       biometricUnlockEnabled: _settings.biometricUnlockEnabled,
       lastFullExportAt: _settings.lastFullExportAt,
-      savedFilters: _settings.savedFilters,
       proUnlocked: _settings.proUnlocked,
       proUnlockedAt: _settings.proUnlockedAt,
     );
@@ -220,19 +201,8 @@ class AppSettingsController extends ChangeNotifier {
     if (proUnlockedAt != null) {
       values['proUnlockedAt'] = proUnlockedAt.toIso8601String();
     }
-    values['savedFilters'] = [
-      for (final filter in _settings.savedFilters) filter.toJson(),
-    ];
     await _box.putAll(values);
     await _box.deleteAll(_obsoleteKeys);
-  }
-
-  Future<void> _updateSavedFilters(List<SavedFilter> filters) async {
-    _settings = _settings.copyWith(savedFilters: List.unmodifiable(filters));
-    notifyListeners();
-    await _box.put('savedFilters', [
-      for (final filter in filters) filter.toJson(),
-    ]);
   }
 
   Future<void> _update(AppSettings next, String key, Object value) async {
@@ -279,19 +249,5 @@ class AppSettingsController extends ChangeNotifier {
       return DateTime.tryParse(value)?.toUtc();
     }
     return null;
-  }
-
-  static List<SavedFilter> _readSavedFilters(Object? value) {
-    if (value is! List) {
-      return const [];
-    }
-    return [
-      for (final item in value)
-        if (item is Map)
-          SavedFilter.fromJson({
-            for (final entry in item.entries)
-              if (entry.key is String) entry.key as String: entry.value,
-          }),
-    ];
   }
 }
