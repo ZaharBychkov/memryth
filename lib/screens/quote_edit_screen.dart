@@ -77,19 +77,6 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
               title: Text(
                 _viewModel.isEditing ? strings.editTitle : strings.createTitle,
               ),
-              actions: [
-                FilledButton(
-                  onPressed: _save,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A6FA5),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(
-                    _viewModel.isEditing ? strings.save : strings.add,
-                  ),
-                ),
-                const SizedBox(width: 12),
-              ],
             ),
             body: SafeArea(
               child: SingleChildScrollView(
@@ -263,10 +250,37 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                               backgroundColor: const Color(0xFF4A6FA5),
                               foregroundColor: Colors.white,
                             ),
-                            child: Text(strings.add),
+                            child: Text(strings.addTopic),
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      strings.topicHelp,
+                      style: TextStyle(
+                        color: Theme.of(context).hintColor,
+                        fontSize: 13,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: FilledButton.icon(
+                        onPressed: _save,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF4A6FA5),
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.check_rounded),
+                        label: Text(
+                          _viewModel.isEditing
+                              ? strings.saveChanges
+                              : strings.saveEntry(_viewModel.selectedType),
+                        ),
+                      ),
                     ),
                   ],
                 ),

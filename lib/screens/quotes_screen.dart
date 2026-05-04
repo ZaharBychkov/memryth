@@ -175,47 +175,28 @@ class _QuotesScreenState extends State<QuotesScreen> {
                     ),
                   ),
                   actions: [
-                    SizedBox(
-                      width: 154,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          _HeaderIconButton(
-                            tooltip: strings.selectEntries,
-                            onPressed: () => _enterSelectionMode(),
-                            child: Icon(
-                              Icons.checklist_rounded,
-                              color: isDark
-                                  ? const Color(0xFFEAE4DB)
-                                  : const Color(0xFF2C2C2C),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          _HeaderIconButton(
-                            tooltip: strings.topicsTooltip,
-                            onPressed: () => _openTopics(controller, strings),
-                            child: Icon(
-                              Icons.account_tree_rounded,
-                              color: isDark
-                                  ? const Color(0xFFEAE4DB)
-                                  : const Color(0xFF2C2C2C),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          _HeaderIconButton(
-                            tooltip: strings.settings,
-                            onPressed: () => _openSettings(settingsController),
-                            child: Icon(
-                              Icons.tune_rounded,
-                              color: isDark
-                                  ? const Color(0xFFEAE4DB)
-                                  : const Color(0xFF2C2C2C),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
+                    _HeaderIconButton(
+                      tooltip: strings.topicsTooltip,
+                      onPressed: () => _openTopics(controller, strings),
+                      child: Icon(
+                        Icons.account_tree_rounded,
+                        color: isDark
+                            ? const Color(0xFFEAE4DB)
+                            : const Color(0xFF2C2C2C),
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    _HeaderIconButton(
+                      tooltip: strings.settings,
+                      onPressed: () => _openSettings(settingsController),
+                      child: Icon(
+                        Icons.tune_rounded,
+                        color: isDark
+                            ? const Color(0xFFEAE4DB)
+                            : const Color(0xFF2C2C2C),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                   ],
                 ),
           body: SafeArea(

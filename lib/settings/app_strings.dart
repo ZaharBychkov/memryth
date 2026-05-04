@@ -16,8 +16,8 @@ class AppStrings {
   String get topicsTitle => isRu ? 'Темы' : 'Topics';
   String get topicsTooltip => isRu ? 'Индекс тем' : 'Topic index';
   String get topicsEmpty => isRu
-      ? 'Темы появятся после добавления записей'
-      : 'Topics appear after you add entries';
+      ? 'Темы появятся после добавления записей. Добавляйте темы в форме записи, а потом нажимайте на них здесь, чтобы быстро фильтровать библиотеку.'
+      : 'Topics appear after you add entries. Add topics in the entry form, then tap them here to filter your library.';
   String get topicSortAlphabetic => isRu ? 'А-Я' : 'A-Z';
   String get topicSortFrequency => isRu ? 'Популярные' : 'Popular';
   String get settingsSubtitle =>
@@ -108,8 +108,8 @@ class AppStrings {
   }
 
   String get searchHint => isRu
-      ? 'Поиск по тексту, автору, источнику, заметке и темам (#семья)'
-      : 'Search text, author, source, note and topics (#family)';
+      ? 'Поиск. Введите #тема, чтобы искать только по темам'
+      : 'Search. Type #topic to search topics only';
   String get tagNone => isRu ? 'Темы не добавлены' : 'No topics yet';
   String get hideTags => isRu ? 'Скрыть темы' : 'Hide topics';
   String showAllTags(int count) =>
@@ -149,6 +149,10 @@ class AppStrings {
       ? 'Почему вы сохранили эту запись и как хотите ее использовать'
       : 'Why you saved this entry and how you want to use it';
   String get add => isRu ? 'Добавить' : 'Add';
+  String get addTopic => isRu ? 'Добавить тему' : 'Add topic';
+  String get topicHelp => isRu
+      ? 'Темы помогают группировать записи. Позже ищите #тема или откройте индекс тем сверху, чтобы увидеть все темы и счетчики записей.'
+      : 'Topics group entries. Later, search #topic or open the topic index above to see all topics and entry counts.';
   String get newTag => isRu ? 'Новая тема' : 'New topic';
   String get quickAddTags => isRu
       ? 'Быстро добавить из существующих тем'
@@ -156,6 +160,18 @@ class AppStrings {
   String get editTitle => isRu ? 'Редактирование' : 'Edit entry';
   String get createTitle => isRu ? 'Новая запись' : 'New entry';
   String get save => isRu ? 'Сохранить' : 'Save';
+  String get saveChanges => isRu ? 'Сохранить изменения' : 'Save changes';
+  String saveEntry(QuoteType type) {
+    return switch ((type, language)) {
+      (QuoteType.quote, AppLanguage.ru) => 'Сохранить цитату',
+      (QuoteType.thought, AppLanguage.ru) => 'Сохранить мысль',
+      (QuoteType.excerpt, AppLanguage.ru) => 'Сохранить фрагмент',
+      (QuoteType.quote, AppLanguage.en) => 'Save quote',
+      (QuoteType.thought, AppLanguage.en) => 'Save thought',
+      (QuoteType.excerpt, AppLanguage.en) => 'Save excerpt',
+    };
+  }
+
   String get exitWithoutSaving =>
       isRu ? 'Выйти без сохранения?' : 'Exit without saving?';
   String get changesLost => isRu
