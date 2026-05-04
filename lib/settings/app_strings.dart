@@ -15,6 +15,8 @@ class AppStrings {
   String get settings => isRu ? 'Настройки' : 'Settings';
   String get topicsTitle => isRu ? 'Темы' : 'Topics';
   String get topicsTooltip => isRu ? 'Индекс тем' : 'Topic index';
+  String get themeAction => isRu ? 'Тема' : 'Theme';
+  String get bulkActions => isRu ? 'Массовые' : 'Bulk';
   String get topicsEmpty => isRu
       ? 'Темы появятся после добавления записей. Добавляйте темы в форме записи, а потом нажимайте на них здесь, чтобы быстро фильтровать библиотеку.'
       : 'Topics appear after you add entries. Add topics in the entry form, then tap them here to filter your library.';

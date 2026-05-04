@@ -113,60 +113,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
               ? _buildSelectionAppBar(controller, strings)
               : AppBar(
                   centerTitle: true,
-                  leadingWidth: 104,
-                  leading: Row(
-                    children: [
-                      const SizedBox(width: 8),
-                      PopupMenuButton<QuoteSortMode>(
-                        tooltip: strings.sortTooltip,
-                        initialValue: controller.sortMode,
-                        onSelected: controller.setSortMode,
-                        color: isDark
-                            ? const Color(0xFF232830)
-                            : const Color(0xFFF5EEE7),
-                        surfaceTintColor: Colors.transparent,
-                        elevation: 10,
-                        position: PopupMenuPosition.under,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                          side: BorderSide(
-                            color: Theme.of(context).dividerColor,
-                            width: 1.2,
-                          ),
-                        ),
-                        itemBuilder: (context) => [
-                          for (final mode in QuoteSortMode.values)
-                            PopupMenuItem(
-                              value: mode,
-                              child: _SortMenuItem(
-                                label: strings.sortModeLabel(mode),
-                                selected: mode == controller.sortMode,
-                              ),
-                            ),
-                        ],
-                        child: _HeaderIconShell(
-                          child: Icon(
-                            Icons.sort_rounded,
-                            color: isDark
-                                ? const Color(0xFFEAE4DB)
-                                : const Color(0xFF2C2C2C),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _HeaderIconButton(
-                        onPressed: settingsController.toggleTheme,
-                        child: Icon(
-                          settingsController.settings.isDarkMode
-                              ? Icons.light_mode_rounded
-                              : Icons.dark_mode_rounded,
-                          color: isDark
-                              ? const Color(0xFFEAE4DB)
-                              : const Color(0xFF2C2C2C),
-                        ),
-                      ),
-                    ],
-                  ),
                   title: Text(
                     strings.appTitle,
                     style: const TextStyle(
@@ -174,30 +120,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
                       letterSpacing: 0.8,
                     ),
                   ),
-                  actions: [
-                    _HeaderIconButton(
-                      tooltip: strings.topicsTooltip,
-                      onPressed: () => _openTopics(controller, strings),
-                      child: Icon(
-                        Icons.account_tree_rounded,
-                        color: isDark
-                            ? const Color(0xFFEAE4DB)
-                            : const Color(0xFF2C2C2C),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _HeaderIconButton(
-                      tooltip: strings.settings,
-                      onPressed: () => _openSettings(settingsController),
-                      child: Icon(
-                        Icons.tune_rounded,
-                        color: isDark
-                            ? const Color(0xFFEAE4DB)
-                            : const Color(0xFF2C2C2C),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
                 ),
           body: SafeArea(
             child: Column(
@@ -208,6 +130,13 @@ class _QuotesScreenState extends State<QuotesScreen> {
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
                   child: Column(
                     children: [
+                      _buildActionStrip(
+                        controller,
+                        settingsController,
+                        strings,
+                        isDark,
+                      ),
+                      const SizedBox(height: 10),
                       QuoteSearchBar(
                         controller: _searchController,
                         hintText: strings.searchHint,
@@ -371,6 +300,91 @@ class _QuotesScreenState extends State<QuotesScreen> {
           selected: controller.favoritesOnly,
           onTap: controller.toggleFavoritesOnly,
           isDark: isDark,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionStrip(
+    QuoteController controller,
+    AppSettingsController settingsController,
+    AppStrings strings,
+    bool isDark,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: PopupMenuButton<QuoteSortMode>(
+            tooltip: strings.sortTooltip,
+            initialValue: controller.sortMode,
+            onSelected: controller.setSortMode,
+            color: isDark ? const Color(0xFF232830) : const Color(0xFFF5EEE7),
+            surfaceTintColor: Colors.transparent,
+            elevation: 10,
+            position: PopupMenuPosition.under,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide(
+                color: Theme.of(context).dividerColor,
+                width: 1.2,
+              ),
+            ),
+            itemBuilder: (context) => [
+              for (final mode in QuoteSortMode.values)
+                PopupMenuItem(
+                  value: mode,
+                  child: _SortMenuItem(
+                    label: strings.sortModeLabel(mode),
+                    selected: mode == controller.sortMode,
+                  ),
+                ),
+            ],
+            child: _ActionStripItem(
+              icon: Icons.sort_rounded,
+              label: strings.sortTooltip,
+              isDark: isDark,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _ActionStripButton(
+            icon: Icons.checklist_rounded,
+            label: strings.bulkActions,
+            tooltip: strings.selectEntries,
+            isDark: isDark,
+            onTap: _enterSelectionMode,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _ActionStripButton(
+            icon: Icons.account_tree_rounded,
+            label: strings.topicsTitle,
+            tooltip: strings.topicsTooltip,
+            isDark: isDark,
+            onTap: () => _openTopics(controller, strings),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _ActionStripButton(
+            icon: settingsController.settings.isDarkMode
+                ? Icons.light_mode_rounded
+                : Icons.dark_mode_rounded,
+            label: strings.themeAction,
+            isDark: isDark,
+            onTap: settingsController.toggleTheme,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _ActionStripButton(
+            icon: Icons.tune_rounded,
+            label: strings.settings,
+            isDark: isDark,
+            onTap: () => _openSettings(settingsController),
+          ),
         ),
       ],
     );
@@ -1096,23 +1110,27 @@ class _QuotesScreenState extends State<QuotesScreen> {
   }
 }
 
-class _HeaderIconButton extends StatelessWidget {
-  const _HeaderIconButton({
-    required this.onPressed,
-    required this.child,
+class _ActionStripButton extends StatelessWidget {
+  const _ActionStripButton({
+    required this.icon,
+    required this.label,
+    required this.isDark,
+    required this.onTap,
     this.tooltip,
   });
 
-  final VoidCallback onPressed;
-  final Widget child;
+  final IconData icon;
+  final String label;
+  final bool isDark;
+  final VoidCallback onTap;
   final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
     final button = InkWell(
-      onTap: onPressed,
+      onTap: onTap,
       borderRadius: BorderRadius.circular(14),
-      child: _HeaderIconShell(child: child),
+      child: _ActionStripItem(icon: icon, label: label, isDark: isDark),
     );
     if (tooltip == null) {
       return button;
@@ -1121,20 +1139,47 @@ class _HeaderIconButton extends StatelessWidget {
   }
 }
 
-class _HeaderIconShell extends StatelessWidget {
-  const _HeaderIconShell({required this.child});
+class _ActionStripItem extends StatelessWidget {
+  const _ActionStripItem({
+    required this.icon,
+    required this.label,
+    required this.isDark,
+  });
 
-  final Widget child;
+  final IconData icon;
+  final String label;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = isDark
+        ? const Color(0xFFEAE4DB)
+        : const Color(0xFF4E4035);
     return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF262B33) : const Color(0xFFF5EEE7),
+        color: isDark ? const Color(0xFF262B33) : Colors.white,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
-      child: SizedBox(width: 42, height: 42, child: Center(child: child)),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 19, color: foreground),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
