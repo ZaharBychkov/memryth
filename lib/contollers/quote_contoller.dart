@@ -176,6 +176,17 @@ class QuoteController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearTypeAndFavoriteFilters() {
+    if (_activeTypeFilters.isEmpty && !_favoritesOnly) {
+      return;
+    }
+    _activeTypeFilters.clear();
+    _favoritesOnly = false;
+    _recomputeFilteredQuotes();
+    _currentIndex = 0;
+    notifyListeners();
+  }
+
   void setSortMode(QuoteSortMode value) {
     if (_sortMode == value) return;
     _sortMode = value;
@@ -331,18 +342,12 @@ class QuoteController extends ChangeNotifier {
     final inText = quote.text.toLowerCase().contains(query);
     final inAuthor = quote.author.toLowerCase().contains(query);
     final inSourceTitle = quote.sourceTitle.toLowerCase().contains(query);
-    final inSourceDetails = quote.sourceDetails.toLowerCase().contains(query);
     final inNote = quote.note.toLowerCase().contains(query);
     final inTags = quoteTags.any(
       (tag) => tag.name.toLowerCase().contains(query),
     );
 
-    return inText ||
-        inAuthor ||
-        inSourceTitle ||
-        inSourceDetails ||
-        inNote ||
-        inTags;
+    return inText || inAuthor || inSourceTitle || inNote || inTags;
   }
 
   List<Quote> _sortQuotes(List<Quote> items) {

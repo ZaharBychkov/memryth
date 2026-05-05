@@ -217,12 +217,6 @@ class _DetailsBlock extends StatelessWidget {
         children: [
           if (quote.sourceTitle.trim().isNotEmpty)
             _InfoLine(title: strings.source, value: quote.sourceTitle.trim()),
-          if (quote.sourceDetails.trim().isNotEmpty)
-            _InfoLine(
-              title: strings.sourceDetails,
-              value: quote.sourceDetails.trim(),
-              topSpacing: 10,
-            ),
           if (quote.note.trim().isNotEmpty) ...[
             const SizedBox(height: 14),
             Text(
@@ -299,47 +293,38 @@ class _DetailsBlock extends StatelessWidget {
 }
 
 class _InfoLine extends StatelessWidget {
-  const _InfoLine({
-    required this.title,
-    required this.value,
-    this.topSpacing = 0,
-    this.trailing,
-  });
+  const _InfoLine({required this.title, required this.value, this.trailing});
 
   final String title;
   final String value;
-  final double topSpacing;
   final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
 
-    return Padding(
-      padding: EdgeInsets.only(top: topSpacing),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(height: 4),
-                Text(value, style: TextStyle(color: textColor, height: 1.4)),
-              ],
-            ),
+              ),
+              const SizedBox(height: 4),
+              Text(value, style: TextStyle(color: textColor, height: 1.4)),
+            ],
           ),
-          // ignore: use_null_aware_elements
-          if (trailing != null) trailing!,
-        ],
-      ),
+        ),
+        // ignore: use_null_aware_elements
+        if (trailing != null) trailing!,
+      ],
     );
   }
 }

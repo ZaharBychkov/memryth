@@ -253,7 +253,6 @@ class _QuoteCardState extends State<QuoteCard> {
   String _metaLine(AppStrings strings) {
     final author = widget.quote.author.trim();
     final source = widget.quote.sourceTitle.trim();
-    final details = widget.quote.sourceDetails.trim();
 
     final parts = <String>[];
     if (author.isNotEmpty && source.isNotEmpty) {
@@ -265,9 +264,6 @@ class _QuoteCardState extends State<QuoteCard> {
       if (source.isNotEmpty) {
         parts.add(source);
       }
-    }
-    if (details.isNotEmpty) {
-      parts.add(details);
     }
     return parts.join(', ');
   }

@@ -8,14 +8,14 @@ Private offline library for thoughts, quotes, excerpts, notes, sources, and topi
 
 MEMRYTH is a private offline library for meaningful text fragments.
 
-Save quotes, personal thoughts, and longer excerpts in one place. Add context with topics, author, source, source details, and your own note, then return to what matters through search, filters, favorites, and sorting.
+Save quotes, personal thoughts, and longer excerpts in one place. Add context with topics, author, source, and your own note, then return to what matters through search, filters, favorites, and sorting.
 
 MEMRYTH is built for a personal text memory space, not a public social feed and not a cloud note service.
 
 Core features:
 
 - save quotes, thoughts, and excerpts;
-- add topics, source details, author, and personal notes;
+- add topics, author, source, and personal notes;
 - mark important entries as favorites;
 - search by text, author, source, note, and topics;
 - filter by entry type, topic, and favorites;

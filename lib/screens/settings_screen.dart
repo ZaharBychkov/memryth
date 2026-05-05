@@ -67,15 +67,6 @@ class SettingsScreen extends StatelessWidget {
                       _push(context, ProScreen(controller: controller)),
                 ),
                 _SettingsTile(
-                  icon: Icons.person_rounded,
-                  title: text.account,
-                  subtitle: text.accountSubtitle,
-                  onTap: () => _push(
-                    context,
-                    AccountSettingsScreen(controller: controller),
-                  ),
-                ),
-                _SettingsTile(
                   icon: Icons.info_rounded,
                   title: text.about,
                   subtitle: text.aboutSubtitle,
@@ -702,40 +693,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
   }
 }
 
-class AccountSettingsScreen extends StatelessWidget {
-  const AccountSettingsScreen({super.key, required this.controller});
-
-  final AppSettingsController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = _SettingsText(controller.settings.language);
-
-    return Scaffold(
-      appBar: AppBar(title: Text(text.account)),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          children: [
-            _InfoPanel(
-              icon: Icons.person_outline_rounded,
-              title: text.noAccountRequired,
-              body: text.noAccountRequiredBody,
-            ),
-            const SizedBox(height: 16),
-            _ActionRow(
-              icon: Icons.cloud_sync_rounded,
-              title: text.syncAccount,
-              subtitle: text.syncAccountSubtitle,
-              onTap: () => _showNextStep(context, text),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class AboutSettingsScreen extends StatelessWidget {
   const AboutSettingsScreen({super.key, required this.controller});
 
@@ -1161,12 +1118,6 @@ class _PolicySection extends StatelessWidget {
   }
 }
 
-void _showNextStep(BuildContext context, _SettingsText text) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(text.nextStep)));
-}
-
 class _SettingsText {
   const _SettingsText(this.language);
 
@@ -1189,14 +1140,10 @@ class _SettingsText {
   String get privacySubtitle => isRu
       ? 'Локальное хранение, защита и политика'
       : 'Local storage, protection and policy';
-  String get account => isRu ? 'Аккаунт' : 'Account';
   String get pro => isRu ? 'MEMRYTH Pro' : 'MEMRYTH Pro';
   String get proSubtitle => isRu
       ? 'Будущие расширенные функции без подписки'
       : 'Future advanced features without subscription';
-  String get accountSubtitle => isRu
-      ? 'Опциональная синхронизация в будущем'
-      : 'Optional sync in the future';
   String get about => isRu ? 'О приложении' : 'About';
   String get aboutSubtitle => isRu
       ? 'Версия, идея продукта и справка'
@@ -1353,21 +1300,9 @@ class _SettingsText {
   String get dataDeletionBody => isRu
       ? 'Отдельные записи можно удалить в приложении. Удаление приложения удаляет локальные данные по правилам Android, кроме backup-файлов, которые вы экспортировали самостоятельно.'
       : 'You can delete individual entries in the app. Uninstalling the app removes local app data according to Android behavior, except backup files you exported yourself.';
-  String get noAccountRequired =>
-      isRu ? 'Аккаунт не обязателен' : 'No account required';
-  String get noAccountRequiredBody => isRu
-      ? 'Базовое приложение остается локальным. Аккаунт нужен только для будущей синхронизации и облачного backup.'
-      : 'The core app stays local. An account is only for future sync and cloud backup.';
-  String get syncAccount => isRu ? 'Синхронизация' : 'Sync';
-  String get syncAccountSubtitle => isRu
-      ? 'Будущий слой для нескольких устройств'
-      : 'Future layer for multiple devices';
   String get aboutBody => isRu
       ? 'Личная офлайн-библиотека мыслей, цитат и фрагментов.'
       : 'A private offline library for thoughts, quotes and excerpts.';
-  String get nextStep => isRu
-      ? 'Этот раздел будет реализован следующим блоком.'
-      : 'This section will be implemented next.';
 
   String _formatDateTime(DateTime value) {
     final local = value.toLocal();

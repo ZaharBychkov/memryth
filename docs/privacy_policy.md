@@ -10,7 +10,7 @@ MEMRYTH stores the following data locally on your device:
 
 - entries you create;
 - topics/tags attached to entries;
-- authors, sources, source details, and personal notes you add;
+- authors, sources, and personal notes you add;
 - favorites and entry dates;
 - reading and interface settings;
 - onboarding completion state.

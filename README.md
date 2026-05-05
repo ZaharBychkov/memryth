@@ -34,8 +34,7 @@ Each entry may contain:
 
 - main text
 - author or speaker
-- source title
-- source details such as chapter, page, or timestamp
+- source title, page, timestamp, or link
 - private note
 - tags
 - favorite state

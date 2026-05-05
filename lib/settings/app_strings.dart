@@ -42,9 +42,12 @@ class AppStrings {
   String get showMeta => isRu ? 'Автора и источник' : 'Author and source';
   String get sourcePrefix => isRu ? 'в' : 'in';
   String get favorites => isRu ? 'Избранное' : 'Favorites';
-  String get emptyList => isRu
-      ? 'Здесь будет ваша личная библиотека мыслей, цитат и фрагментов.'
-      : 'Your private library of thoughts, quotes and excerpts will live here.';
+  String get emptyLibraryTitle =>
+      isRu ? 'Ваша библиотека пока пуста' : 'Your library is empty';
+  String get emptyLibraryBody => isRu
+      ? 'Сохраните первую мысль, цитату или фрагмент.'
+      : 'Save your first thought, quote, or excerpt.';
+  String get importBackup => isRu ? 'Импортировать backup' : 'Import backup';
   String get createFirstEntry =>
       isRu ? 'Создать первую запись' : 'Create first entry';
   String get emptyFilter => isRu
@@ -121,13 +124,21 @@ class AppStrings {
   String get changeDate => isRu ? 'Изменить дату' : 'Change date';
   String get details => isRu ? 'Подробнее' : 'Details';
   String get tags => isRu ? 'Темы' : 'Topics';
+  String get allEntriesFilter => isRu ? 'Все' : 'All';
   String get addToFavorites => isRu ? 'В избранное' : 'Favorite';
   String get favoriteHint => isRu
       ? 'Быстрый доступ к самым важным записям'
       : 'Quick access to the most important entries';
   String get typeEntry => isRu ? 'Тип записи' : 'Entry type';
-  String get entryTextThought => isRu ? 'Текст мысли' : 'Thought text';
-  String get entryText => isRu ? 'Текст записи' : 'Entry text';
+  String get contextSection => isRu ? 'Контекст' : 'Context';
+  String entryTextLabel(QuoteType type) => switch ((type, language)) {
+    (QuoteType.quote, AppLanguage.ru) => 'Текст цитаты',
+    (QuoteType.thought, AppLanguage.ru) => 'Текст мысли',
+    (QuoteType.excerpt, AppLanguage.ru) => 'Текст фрагмента',
+    (QuoteType.quote, AppLanguage.en) => 'Quote text',
+    (QuoteType.thought, AppLanguage.en) => 'Thought text',
+    (QuoteType.excerpt, AppLanguage.en) => 'Excerpt text',
+  };
   String get hintExcerpt =>
       isRu ? 'Вставьте полный фрагмент текста' : 'Paste the full excerpt';
   String get hintEntry => isRu
@@ -138,11 +149,9 @@ class AppStrings {
       : 'Author / speaker (optional)';
   String get author => isRu ? 'Автор' : 'Author';
   String get source => isRu ? 'Источник' : 'Source';
-  String get sourceHint =>
-      isRu ? 'Книга, статья, видео, лекция' : 'Book, article, video, lecture';
-  String get sourceDetails => isRu ? 'Детали источника' : 'Source details';
-  String get sourceDetailsHint =>
-      isRu ? 'Глава, страница, таймкод' : 'Chapter, page, timestamp';
+  String get sourceHint => isRu
+      ? 'Книга, видео, статья, страница или ссылка'
+      : 'Book, video, article, page, or link';
   String get note => isRu ? 'Моя заметка' : 'My note';
   String get noteHint => isRu
       ? 'Почему вы сохранили эту запись и как хотите ее использовать'
@@ -187,6 +196,15 @@ class AppStrings {
     (QuoteType.quote, AppLanguage.en) => 'Quote',
     (QuoteType.thought, AppLanguage.en) => 'Thought',
     (QuoteType.excerpt, AppLanguage.en) => 'Excerpt',
+  };
+
+  String quoteTypeFilterLabel(QuoteType type) => switch ((type, language)) {
+    (QuoteType.quote, AppLanguage.ru) => 'Цитаты',
+    (QuoteType.thought, AppLanguage.ru) => 'Мысли',
+    (QuoteType.excerpt, AppLanguage.ru) => 'Фрагменты',
+    (QuoteType.quote, AppLanguage.en) => 'Quotes',
+    (QuoteType.thought, AppLanguage.en) => 'Thoughts',
+    (QuoteType.excerpt, AppLanguage.en) => 'Excerpts',
   };
 
   String sortModeLabel(QuoteSortMode mode) => switch ((mode, language)) {

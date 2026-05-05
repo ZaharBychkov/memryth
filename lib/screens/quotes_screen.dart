@@ -98,9 +98,10 @@ class _QuotesScreenState extends State<QuotesScreen> {
       animation: Listenable.merge([controller, settingsController]),
       builder: (context, _) {
         final filtered = controller.filteredQuotes;
+        final hasAnyQuotes = controller.totalCount > 0;
 
         return Scaffold(
-          floatingActionButton: _selectionMode
+          floatingActionButton: _selectionMode || !hasAnyQuotes
               ? null
               : FloatingActionButton.extended(
                   onPressed: _openCreate,
@@ -120,40 +121,53 @@ class _QuotesScreenState extends State<QuotesScreen> {
                       letterSpacing: 0.8,
                     ),
                   ),
+                  actions: [
+                    if (!hasAnyQuotes)
+                      IconButton(
+                        tooltip: strings.settings,
+                        onPressed: () => _openSettings(settingsController),
+                        icon: const Icon(Icons.tune_rounded),
+                      ),
+                  ],
                 ),
           body: SafeArea(
             child: Column(
               children: [
-                Container(
-                  width: double.infinity,
-                  color: headerBg,
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                  child: Column(
-                    children: [
-                      _buildActionStrip(
-                        controller,
-                        settingsController,
-                        strings,
-                        isDark,
-                      ),
-                      const SizedBox(height: 10),
-                      QuoteSearchBar(
-                        controller: _searchController,
-                        hintText: strings.searchHint,
-                        onChanged: controller.setSearchQuery,
-                        onClear: () {
-                          _searchController.clear();
-                          controller.setSearchQuery('');
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _buildTypeFiltersRow(controller, strings, isDark),
-                    ],
+                if (hasAnyQuotes)
+                  Container(
+                    width: double.infinity,
+                    color: headerBg,
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                    child: Column(
+                      children: [
+                        _buildActionStrip(
+                          controller,
+                          settingsController,
+                          strings,
+                          isDark,
+                        ),
+                        const SizedBox(height: 10),
+                        QuoteSearchBar(
+                          controller: _searchController,
+                          hintText: strings.searchHint,
+                          onChanged: controller.setSearchQuery,
+                          onClear: () {
+                            _searchController.clear();
+                            controller.setSearchQuery('');
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        _buildTypeFiltersRow(controller, strings),
+                      ],
+                    ),
                   ),
-                ),
                 Expanded(
                   child: filtered.isEmpty
-                      ? _buildEmptyState(controller, strings)
+                      ? _buildEmptyState(
+                          controller,
+                          strings,
+                          settingsController,
+                        )
                       : ListView.builder(
                           controller: _scrollController,
                           physics: const ClampingScrollPhysics(),
@@ -325,38 +339,35 @@ class _QuotesScreenState extends State<QuotesScreen> {
     }
   }
 
-  Widget _buildTypeFiltersRow(
-    QuoteController controller,
-    AppStrings strings,
-    bool isDark,
-  ) {
+  Widget _buildTypeFiltersRow(QuoteController controller, AppStrings strings) {
     return Row(
       children: [
         Expanded(
-          child: Row(
-            children: [
-              for (var index = 0; index < QuoteType.values.length; index++) ...[
-                Expanded(
-                  child: _TypeFilterButton(
-                    label: strings.quoteTypeLabel(QuoteType.values[index]),
-                    selected: controller.activeTypeFilters.contains(
-                      QuoteType.values[index],
-                    ),
-                    onTap: () =>
-                        controller.toggleTypeFilter(QuoteType.values[index]),
-                  ),
-                ),
-                if (index < QuoteType.values.length - 1)
-                  const SizedBox(width: 8),
-              ],
-            ],
+          child: _TypeFilterButton(
+            label: strings.allEntriesFilter,
+            selected:
+                controller.activeTypeFilters.isEmpty &&
+                !controller.favoritesOnly,
+            onTap: controller.clearTypeAndFavoriteFilters,
           ),
         ),
         const SizedBox(width: 8),
-        _FavoriteFilterButton(
-          selected: controller.favoritesOnly,
-          onTap: controller.toggleFavoritesOnly,
-          isDark: isDark,
+        for (final type in QuoteType.values) ...[
+          Expanded(
+            child: _TypeFilterButton(
+              label: strings.quoteTypeFilterLabel(type),
+              selected: controller.activeTypeFilters.contains(type),
+              onTap: () => controller.toggleTypeFilter(type),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+        Expanded(
+          child: _TypeFilterButton(
+            label: '★',
+            selected: controller.favoritesOnly,
+            onTap: controller.toggleFavoritesOnly,
+          ),
         ),
       ],
     );
@@ -448,7 +459,11 @@ class _QuotesScreenState extends State<QuotesScreen> {
     );
   }
 
-  Widget _buildEmptyState(QuoteController controller, AppStrings strings) {
+  Widget _buildEmptyState(
+    QuoteController controller,
+    AppStrings strings,
+    AppSettingsController settingsController,
+  ) {
     if (controller.totalCount == 0) {
       return Center(
         child: Padding(
@@ -463,19 +478,41 @@ class _QuotesScreenState extends State<QuotesScreen> {
               ),
               const SizedBox(height: 14),
               Text(
-                strings.emptyList,
+                strings.emptyLibraryTitle,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                strings.emptyLibraryBody,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Theme.of(context).hintColor,
+                  fontSize: 15,
                   height: 1.35,
                 ),
               ),
               const SizedBox(height: 18),
-              FilledButton.icon(
-                onPressed: _openCreate,
-                icon: const Icon(Icons.add_rounded),
-                label: Text(strings.createFirstEntry),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _openCreate,
+                  icon: const Icon(Icons.add_rounded),
+                  label: Text(strings.createFirstEntry),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _openDataSettings(settingsController),
+                  icon: const Icon(Icons.file_download_rounded),
+                  label: Text(strings.importBackup),
+                ),
               ),
             ],
           ),
@@ -821,9 +858,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
     if (quote.sourceTitle.trim().isNotEmpty) {
       buffer.write('\n${quote.sourceTitle.trim()}');
     }
-    if (quote.sourceDetails.trim().isNotEmpty) {
-      buffer.write('\n${quote.sourceDetails.trim()}');
-    }
 
     await Clipboard.setData(ClipboardData(text: buffer.toString()));
     if (!mounted) {
@@ -965,6 +999,16 @@ class _QuotesScreenState extends State<QuotesScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => SettingsScreen(controller: settingsController),
+      ),
+    );
+  }
+
+  Future<void> _openDataSettings(
+    AppSettingsController settingsController,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DataSettingsScreen(controller: settingsController),
       ),
     );
   }
@@ -1448,48 +1492,6 @@ class _TypeFilterButton extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FavoriteFilterButton extends StatelessWidget {
-  const _FavoriteFilterButton({
-    required this.selected,
-    required this.onTap,
-    required this.isDark,
-  });
-
-  final bool selected;
-  final VoidCallback onTap;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final inactiveColor = isDark
-        ? const Color(0xFFD7CEC3)
-        : const Color(0xFF6E6258);
-    final activeColor = isDark
-        ? const Color(0xFFEAE4DB)
-        : const Color(0xFF4E4035);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF262B33) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? activeColor : Theme.of(context).dividerColor,
-          ),
-        ),
-        child: Icon(
-          selected ? Icons.star_rounded : Icons.star_border_rounded,
-          size: 20,
-          color: selected ? activeColor : inactiveColor,
         ),
       ),
     );

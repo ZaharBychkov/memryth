@@ -139,16 +139,21 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                         context: context,
                         border: border,
                         fillColor: fillColor,
-                        labelText: _viewModel.selectedType == QuoteType.thought
-                            ? strings.entryTextThought
-                            : strings.entryText,
+                        labelText: strings.entryTextLabel(
+                          _viewModel.selectedType,
+                        ),
                         hintText: _viewModel.selectedType == QuoteType.excerpt
                             ? strings.hintExcerpt
                             : strings.hintEntry,
                         alignLabelWithHint: true,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
+                    Text(
+                      strings.contextSection,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _viewModel.authorController,
                       decoration: _inputDecoration(
@@ -169,17 +174,6 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                         fillColor: fillColor,
                         labelText: strings.source,
                         hintText: strings.sourceHint,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _viewModel.sourceDetailsController,
-                      decoration: _inputDecoration(
-                        context: context,
-                        border: border,
-                        fillColor: fillColor,
-                        labelText: strings.sourceDetails,
-                        hintText: strings.sourceDetailsHint,
                       ),
                     ),
                     const SizedBox(height: 16),
