@@ -151,7 +151,6 @@ Quote _quote({
     updatedAt: date,
     isFavorite: true,
     sourceTitle: 'Source',
-    sourceDetails: 'Page 1',
     note: 'Note',
   );
 }
@@ -171,7 +170,6 @@ Map<String, Object?> _quoteJson({
     'updatedAt': '2026-02-02T00:00:00.000Z',
     'isFavorite': false,
     'sourceTitle': '',
-    'sourceDetails': '',
     'note': '',
   };
 }

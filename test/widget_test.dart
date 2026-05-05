@@ -42,24 +42,6 @@ void main() {
 
       expect(controller.filteredQuotes.map((quote) => quote.id), ['q1']);
     });
-
-    test('does not search hidden source details', () {
-      final controller = _controller(
-        quotes: [
-          _quote(
-            id: 'q1',
-            text: 'Visible text',
-            tagIds: const [],
-            sourceDetails: 'Hidden page note',
-          ),
-        ],
-        tags: const [],
-      );
-
-      controller.setSearchQuery('hidden page');
-
-      expect(controller.filteredQuotes, isEmpty);
-    });
   });
 
   group('QuoteController filters and sorting', () {
@@ -333,7 +315,6 @@ Quote _quote({
   required String text,
   required List<String> tagIds,
   String typeKey = 'quote',
-  String sourceDetails = '',
   DateTime? createdAt,
   DateTime? updatedAt,
   bool isFavorite = false,
@@ -343,7 +324,6 @@ Quote _quote({
     id: id,
     text: text,
     author: '',
-    sourceDetails: sourceDetails,
     tagIds: tagIds,
     typeKey: typeKey,
     createdAt: createdAt ?? date,

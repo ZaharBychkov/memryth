@@ -148,7 +148,6 @@ class ExportImportService {
           updatedAt: quote.updatedAt,
           isFavorite: quote.isFavorite,
           sourceTitle: quote.sourceTitle,
-          sourceDetails: quote.sourceDetails,
           note: quote.note,
         ),
       );
@@ -180,7 +179,6 @@ class ExportImportService {
       'updatedAt': quote.updatedAt.toUtc().toIso8601String(),
       'isFavorite': quote.isFavorite,
       'sourceTitle': quote.sourceTitle,
-      'sourceDetails': quote.sourceDetails,
       'note': quote.note,
     };
   }
@@ -375,7 +373,6 @@ class _ImportedQuote {
     required this.updatedAt,
     required this.isFavorite,
     required this.sourceTitle,
-    required this.sourceDetails,
     required this.note,
   });
 
@@ -390,7 +387,6 @@ class _ImportedQuote {
       updatedAt: ExportImportService._readDate(json['updatedAt'], 'updatedAt'),
       isFavorite: ExportImportService._readBool(json, 'isFavorite'),
       sourceTitle: ExportImportService._readString(json, 'sourceTitle'),
-      sourceDetails: ExportImportService._readString(json, 'sourceDetails'),
       note: ExportImportService._readString(json, 'note'),
     );
   }
@@ -404,6 +400,5 @@ class _ImportedQuote {
   final DateTime updatedAt;
   final bool isFavorite;
   final String sourceTitle;
-  final String sourceDetails;
   final String note;
 }

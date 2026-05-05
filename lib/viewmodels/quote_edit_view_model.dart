@@ -20,7 +20,6 @@ class QuoteEditViewModel extends ChangeNotifier {
       textController.text = quote.text;
       authorController.text = quote.author;
       sourceTitleController.text = quote.sourceTitle;
-      sourceDetailsController.text = quote.sourceDetails;
       noteController.text = quote.note;
       _selectedType = quote.type;
       _createdAt = quote.createdAt;
@@ -50,7 +49,6 @@ class QuoteEditViewModel extends ChangeNotifier {
   final textController = TextEditingController();
   final authorController = TextEditingController();
   final sourceTitleController = TextEditingController();
-  final sourceDetailsController = TextEditingController();
   final noteController = TextEditingController();
   final tagController = TextEditingController();
 
@@ -109,7 +107,6 @@ class QuoteEditViewModel extends ChangeNotifier {
 
     final author = authorController.text.trim();
     final sourceTitle = sourceTitleController.text.trim();
-    final sourceDetails = sourceDetailsController.text.trim();
     final note = noteController.text.trim();
 
     final existingTags = {
@@ -150,7 +147,6 @@ class QuoteEditViewModel extends ChangeNotifier {
             updatedAt: now,
             isFavorite: _isFavorite,
             sourceTitle: sourceTitle,
-            sourceDetails: sourceDetails,
             note: note,
           )
         : _quote.copyWith(
@@ -162,7 +158,6 @@ class QuoteEditViewModel extends ChangeNotifier {
             updatedAt: now,
             isFavorite: _isFavorite,
             sourceTitle: sourceTitle,
-            sourceDetails: sourceDetails,
             note: note,
           );
 
@@ -181,7 +176,6 @@ class QuoteEditViewModel extends ChangeNotifier {
       textController.text.trim(),
       authorController.text.trim(),
       sourceTitleController.text.trim(),
-      sourceDetailsController.text.trim(),
       noteController.text.trim(),
       _createdAt.toIso8601String(),
       tagController.text.trim(),
@@ -210,7 +204,6 @@ class QuoteEditViewModel extends ChangeNotifier {
     textController.dispose();
     authorController.dispose();
     sourceTitleController.dispose();
-    sourceDetailsController.dispose();
     noteController.dispose();
     tagController.dispose();
     super.dispose();

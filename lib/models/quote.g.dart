@@ -29,7 +29,6 @@ class QuoteAdapter extends TypeAdapter<Quote> {
           (fields[6] as DateTime?) ?? (fields[5] as DateTime?) ?? fallbackDate,
       isFavorite: (fields[7] as bool?) ?? false,
       sourceTitle: (fields[8] as String?) ?? '',
-      sourceDetails: (fields[9] as String?) ?? '',
       note: (fields[10] as String?) ?? '',
     );
   }
@@ -37,7 +36,7 @@ class QuoteAdapter extends TypeAdapter<Quote> {
   @override
   void write(BinaryWriter writer, Quote obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -56,8 +55,6 @@ class QuoteAdapter extends TypeAdapter<Quote> {
       ..write(obj.isFavorite)
       ..writeByte(8)
       ..write(obj.sourceTitle)
-      ..writeByte(9)
-      ..write(obj.sourceDetails)
       ..writeByte(10)
       ..write(obj.note);
   }

@@ -37,7 +37,6 @@ class DemoSeed {
         updatedAt: DateTime(2026, 3, 10, 19, 40),
         isFavorite: true,
         sourceTitle: 'The Knowledge Project',
-        sourceDetails: 'Конспект эпизода',
         note: 'Подходит как сильная цитата для главного экрана и избранного.',
       ),
       Quote(
@@ -51,7 +50,6 @@ class DemoSeed {
         updatedAt: DateTime(2026, 3, 8, 9, 12),
         isFavorite: true,
         sourceTitle: 'Вечерний обзор',
-        sourceDetails: 'Личные заметки',
         note: 'Хороший пример типа Мысль без заполненного автора.',
       ),
       Quote(
@@ -64,7 +62,6 @@ class DemoSeed {
         createdAt: DateTime(2025, 12, 2, 13, 15),
         updatedAt: DateTime(2026, 3, 6, 21, 44),
         sourceTitle: 'Заметки UX-воркшопа',
-        sourceDetails: 'Блок 3, страница 2',
         note: 'Удобный фрагмент для проверки длинного текста и метаданных.',
       ),
       Quote(
@@ -78,7 +75,6 @@ class DemoSeed {
         updatedAt: DateTime(2026, 2, 28, 7, 0),
         isFavorite: true,
         sourceTitle: 'Atomic Habits',
-        sourceDetails: 'Выделенный фрагмент',
         note: 'Короткая цитата для компактной карточки и скриншота списка.',
       ),
       Quote(
@@ -91,7 +87,6 @@ class DemoSeed {
         createdAt: DateTime(2026, 2, 9, 18, 22),
         updatedAt: DateTime(2026, 3, 9, 18, 22),
         sourceTitle: 'Дневник продукта',
-        sourceDetails: 'Итерация 4',
         note: 'Показывает, зачем в приложении есть поле личной заметки.',
       ),
       Quote(
@@ -104,8 +99,7 @@ class DemoSeed {
         createdAt: DateTime(2025, 11, 4, 11, 5),
         updatedAt: DateTime(2026, 3, 7, 16, 33),
         sourceTitle: 'Расшифровка воркшопа',
-        sourceDetails: 'Таймкод 14:22',
-        note: 'Полезно для проверки поиска по деталям источника.',
+        note: 'Полезно для проверки поиска по источнику и заметкам.',
       ),
       Quote(
         id: 'entry-007',
@@ -117,7 +111,6 @@ class DemoSeed {
         createdAt: DateTime(2026, 1, 3, 7, 50),
         updatedAt: DateTime(2026, 3, 3, 20, 15),
         sourceTitle: 'Квартальное планирование',
-        sourceDetails: 'Страница 1',
         note: 'Еще один пример личной мысли с сильным формулированием.',
       ),
       Quote(
@@ -130,7 +123,6 @@ class DemoSeed {
         createdAt: DateTime(2025, 8, 27, 9, 0),
         updatedAt: DateTime(2026, 3, 1, 12, 48),
         sourceTitle: 'Thinking in Bets',
-        sourceDetails: 'Глава 6',
         note: 'Подходит для показа автора, источника и нескольких тем.',
       ),
       Quote(
@@ -143,7 +135,6 @@ class DemoSeed {
         createdAt: DateTime(2025, 9, 15, 17, 10),
         updatedAt: DateTime(2026, 3, 5, 14, 9),
         sourceTitle: 'Итоги ретро',
-        sourceDetails: 'Экспорт доски',
         note: 'Удобный фрагмент для скриншота с типом Фрагмент.',
       ),
       Quote(
@@ -156,7 +147,6 @@ class DemoSeed {
         createdAt: DateTime(2026, 2, 20, 10, 40),
         updatedAt: DateTime(2026, 3, 11, 8, 2),
         sourceTitle: 'Концепция Memryth',
-        sourceDetails: 'Базовый принцип',
         note: 'Хорошо отражает основную идею приложения.',
       ),
     ];

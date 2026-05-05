@@ -50,9 +50,6 @@ class Quote extends HiveObject {
   @HiveField(8)
   final String sourceTitle;
 
-  @HiveField(9)
-  final String sourceDetails;
-
   @HiveField(10)
   final String note;
 
@@ -66,7 +63,6 @@ class Quote extends HiveObject {
     required this.updatedAt,
     this.isFavorite = false,
     this.sourceTitle = '',
-    this.sourceDetails = '',
     this.note = '',
   });
 
@@ -81,7 +77,6 @@ class Quote extends HiveObject {
     DateTime? updatedAt,
     bool? isFavorite,
     String? sourceTitle,
-    String? sourceDetails,
     String? note,
   }) {
     return Quote(
@@ -94,7 +89,6 @@ class Quote extends HiveObject {
       updatedAt: updatedAt ?? this.updatedAt,
       isFavorite: isFavorite ?? this.isFavorite,
       sourceTitle: sourceTitle ?? this.sourceTitle,
-      sourceDetails: sourceDetails ?? this.sourceDetails,
       note: note ?? this.note,
     );
   }
