@@ -55,12 +55,59 @@ npx -y socraticode
 ```
 
 - `npx autoskills` finds relevant skills and returns links/instructions.
-- `npx -y socraticode` indexes the project and gives the agent faster codebase
-  navigation/status context.
-- At the start of a new substantial task, run these commands when practical.
-- If either command is unavailable or network access is blocked, continue with
-  local code inspection, `flutter analyze`, `flutter test`, and relevant builds,
-  then report the blocker.
+- `npx -y socraticode` is the SocratiCode MCP server command. It is normally
+  configured in the MCP host, not used as a one-off terminal command.
+- For OpenAI Codex CLI, the expected MCP config is:
+
+```toml
+[mcp_servers.socraticode]
+command = "npx"
+args = ["-y", "socraticode"]
+```
+
+- This machine already has SocratiCode configured in
+  `C:\Users\msi\.codex\config.toml`.
+- Restart the agent/Codex session after adding or changing MCP config. A running
+  session may not see newly configured MCP tools until restart.
+- Once MCP tools are available, start with:
+  - `mcp__socraticode__.codebase_health`;
+  - `mcp__socraticode__.codebase_status`;
+  - `mcp__socraticode__.codebase_index` if the project is not indexed or is
+    stale.
+- Do not expect `npx -y socraticode` in a normal terminal to print a human
+  status report. It speaks MCP over stdio; if stdin closes, it can exit with code
+  0 and no output.
+- At the start of a new substantial task, run `npx autoskills` when practical and
+  use SocratiCode MCP tools when they are available. If either command/tool is
+  unavailable or network access is blocked, continue with local code inspection,
+  `flutter analyze`, `flutter test`, and relevant builds, then report the
+  blocker.
+
+## SocratiCode Local Services
+
+- SocratiCode is local/private by default and uses Docker-managed services.
+- Docker Desktop must be running before using SocratiCode.
+- On this machine, SocratiCode currently uses Docker containers:
+  - `socraticode-qdrant`;
+  - `socraticode-ollama`.
+- Current local service ports seen on this machine:
+  - Qdrant HTTP: `http://localhost:16333`;
+  - Qdrant gRPC: `localhost:16334`;
+  - Ollama API: `http://localhost:11435`.
+- The Docker Ollama container has the embedding model
+  `nomic-embed-text:latest`. The native Windows `ollama` CLI may be absent; that
+  is not a blocker while the Docker container is running.
+- Useful checks:
+
+```powershell
+docker ps -a
+docker images
+curl.exe -s http://localhost:16333/collections
+curl.exe -s http://localhost:11435/api/tags
+```
+
+- If Docker access fails with permission errors from a sandboxed shell, rerun the
+  Docker check with escalated sandbox permissions.
 
 ## Recommended Start Routine
 
@@ -75,7 +122,7 @@ For a new task in this repository:
    - `docs/app_logic_ru.md` when architecture or module ownership matters.
 4. Run or attempt the bootstrap commands:
    - `npx autoskills`;
-   - `npx -y socraticode`.
+   - SocratiCode MCP health/status tools if available.
 5. Verify factual project health with:
    - `flutter analyze`;
    - `flutter test`;
