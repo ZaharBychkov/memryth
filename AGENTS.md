@@ -69,6 +69,10 @@ args = ["-y", "socraticode"]
   `C:\Users\msi\.codex\config.toml`.
 - Restart the agent/Codex session after adding or changing MCP config. A running
   session may not see newly configured MCP tools until restart.
+- A running agent cannot attach a new MCP server to itself just by executing
+  `npx -y socraticode` in the terminal. If `mcp__socraticode__...` tools are not
+  visible in the tool list, the correct fix is to restart the agent/Codex
+  session after confirming the MCP config is present.
 - Once MCP tools are available, start with:
   - `mcp__socraticode__.codebase_health`;
   - `mcp__socraticode__.codebase_status`;
@@ -78,10 +82,10 @@ args = ["-y", "socraticode"]
   status report. It speaks MCP over stdio; if stdin closes, it can exit with code
   0 and no output.
 - At the start of a new substantial task, run `npx autoskills` when practical and
-  use SocratiCode MCP tools when they are available. If either command/tool is
-  unavailable or network access is blocked, continue with local code inspection,
-  `flutter analyze`, `flutter test`, and relevant builds, then report the
-  blocker.
+  use SocratiCode MCP tools when they are available. If SocratiCode MCP tools are
+  not visible, verify Docker/Qdrant/Ollama with the checks below, report that the
+  current session needs restart to expose MCP tools, and continue with local code
+  inspection, `flutter analyze`, `flutter test`, and relevant builds.
 
 ## SocratiCode Local Services
 
@@ -108,6 +112,10 @@ curl.exe -s http://localhost:11435/api/tags
 
 - If Docker access fails with permission errors from a sandboxed shell, rerun the
   Docker check with escalated sandbox permissions.
+- Treat successful Docker/Qdrant/Ollama checks as "SocratiCode backend services
+  are running", not as proof that the current agent can use MCP tools. MCP tool
+  availability is proven only when `mcp__socraticode__...` tools are present in
+  the session.
 
 ## Recommended Start Routine
 
