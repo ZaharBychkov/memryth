@@ -588,7 +588,7 @@ Widget tests:
 1. Архитектурная чистка:
    - `QuoteSortMode`;
    - `QuoteListViewModel`;
-   - `lib/contollers` -> `lib/controllers`.
+   - путь `lib/controllers` применен.
 2. Ручной beta-smoke на телефоне.
 3. Store assets:
    - screenshots;
@@ -647,7 +647,7 @@ MEMRYTH не позиционируется как:
 
 - `QuoteSortMode`
 - `QuoteListViewModel`
-- `contollers` -> `controllers`
+- путь `lib/controllers` применен
 
 ### Блок B: beta-smoke
 

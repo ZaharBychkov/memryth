@@ -162,15 +162,14 @@
 Зафиксированные code review findings:
 
 1. Архитектура сейчас скорее MVVM-lite, не Clean Architecture.
-   `QuoteListViewModel` просто наследует `QuoteController`. Нужно решить,
-   нужен ли отдельный ViewModel-слой или лучше переименовать/упростить.
+   `QuoteListViewModel` удален, потому что не добавлял экранной логики поверх `QuoteController`.
 
 2. `AppSettings` импортирует controller ради `QuoteSortMode`.
-   Лучше вынести `QuoteSortMode` в `models` или `domain`, чтобы settings не
+   `QuoteSortMode` вынесен в `models`, поэтому settings больше не
    зависел от controller-слоя.
 
-3. Папка `lib/contollers` содержит опечатку.
-   Код работает, но лучше переименовать в `lib/controllers` отдельным
+3. Папка переименована в `lib/controllers`.
+   Старый ошибочный путь больше не используется; это закрыто отдельным
    механическим коммитом с обновлением импортов и документации.
 
 4. Пункт `Аккаунт / Синхронизация` убран из настроек.
@@ -189,7 +188,7 @@
 1. Сделать архитектурную чистку:
    - `QuoteSortMode`;
    - `QuoteListViewModel`;
-   - `contollers` -> `controllers`.
+   - путь `lib/controllers` применен.
 2. Проверить beta-flow на телефоне:
    - пустой первый запуск;
    - импорт backup;

@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../contollers/quote_contoller.dart';
+import '../models/quote_sort_mode.dart';
 
 enum AppThemeMode {
   light,

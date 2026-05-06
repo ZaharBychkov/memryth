@@ -3,37 +3,10 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../models/quote.dart';
+import '../models/quote_sort_mode.dart';
 import '../models/tag.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
-
-enum QuoteSortMode {
-  newest,
-  updated,
-  oldest,
-  random;
-
-  String get key => switch (this) {
-    QuoteSortMode.newest => 'newest',
-    QuoteSortMode.updated => 'updated',
-    QuoteSortMode.oldest => 'oldest',
-    QuoteSortMode.random => 'random',
-  };
-
-  String get label => switch (this) {
-    QuoteSortMode.newest => 'Сначала новые',
-    QuoteSortMode.updated => 'Недавно измененные',
-    QuoteSortMode.oldest => 'Сначала старые',
-    QuoteSortMode.random => 'Случайный порядок',
-  };
-
-  static QuoteSortMode fromKey(String? value) {
-    return QuoteSortMode.values.firstWhere(
-      (mode) => mode.key == value,
-      orElse: () => QuoteSortMode.newest,
-    );
-  }
-}
 
 class QuoteController extends ChangeNotifier {
   QuoteController({

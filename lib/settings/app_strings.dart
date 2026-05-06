@@ -1,5 +1,5 @@
-import '../contollers/quote_contoller.dart';
 import '../models/quote.dart';
+import '../models/quote_sort_mode.dart';
 import 'app_settings.dart';
 
 class AppStrings {

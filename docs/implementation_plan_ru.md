@@ -36,9 +36,9 @@
 Осталось после текущего прохода:
 
 - создать реальный managed product в Play Console и проверить purchase/restore;
-- вынести `QuoteSortMode` из controller-слоя;
-- решить судьбу `QuoteListViewModel extends QuoteController`;
-- переименовать `lib/contollers` в `lib/controllers`;
+- `QuoteSortMode` вынесен в `lib/models/quote_sort_mode.dart`;
+- пустой `QuoteListViewModel` удален, `QuotesScreen` использует `QuoteController` напрямую;
+- `lib/controllers` уже используется вместо старого пути;
 - расширить Android widgets: случайная избранная запись / resurfacing;
 - saved collections / resurfacing;
 - будущий subscription-слой только при появлении sync/cloud/AI/web clipper;
@@ -99,7 +99,7 @@ MEMRYTH должен стать не просто списком цитат, а 
 1. Архитектурная чистка:
    - `QuoteSortMode`;
    - `QuoteListViewModel`;
-   - `lib/contollers`.
+   - `lib/controllers`.
 2. Реальный Play Console managed product `memryth_pro` и проверка
    purchase/restore.
 3. Widgets для resurfacing / случайной избранной записи.
@@ -112,10 +112,10 @@ MEMRYTH должен стать не просто списком цитат, а 
 
 Сделать следующим:
 
-- вынести `QuoteSortMode` из `lib/contollers/quote_contoller.dart`;
+- `QuoteSortMode` вынесен в `lib/models/quote_sort_mode.dart`;
 - убрать зависимость settings-слоя от controller-слоя;
-- решить, нужен ли `QuoteListViewModel extends QuoteController`;
-- переименовать `lib/contollers` в `lib/controllers`;
+- пустой `QuoteListViewModel` удален, `QuotesScreen` использует `QuoteController` напрямую;
+- `lib/controllers` уже используется вместо старого пути;
 - обновить импорты и docs;
 - прогнать `dart format lib test`, `flutter analyze`, `flutter test`,
   `flutter build apk --release`, `flutter build appbundle`.

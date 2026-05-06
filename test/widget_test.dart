@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:memryth_dart_project/contollers/quote_contoller.dart';
+import 'package:memryth_dart_project/controllers/quote_controller.dart';
 import 'package:memryth_dart_project/models/quote.dart';
+import 'package:memryth_dart_project/models/quote_sort_mode.dart';
 import 'package:memryth_dart_project/models/tag.dart';
 import 'package:memryth_dart_project/repositories/quote_repository.dart';
 import 'package:memryth_dart_project/repositories/tag_repository.dart';

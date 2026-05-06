@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../contollers/quote_contoller.dart';
+import '../controllers/quote_controller.dart';
 import '../models/quote.dart';
+import '../models/quote_sort_mode.dart';
 import '../models/tag.dart';
 import '../repositories/quote_repository.dart';
 import '../repositories/tag_repository.dart';
@@ -14,7 +15,6 @@ import '../settings/app_settings_controller.dart';
 import '../settings/app_settings_scope.dart';
 import '../settings/app_strings.dart';
 import '../viewmodels/topic_index.dart';
-import '../viewmodels/quote_list_view_model.dart';
 import '../widgets/quote_card.dart';
 import '../widgets/search_bar.dart';
 import 'quote_detail_screen.dart';
@@ -38,7 +38,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  QuoteListViewModel? _controller;
+  QuoteController? _controller;
   StreamSubscription<dynamic>? _quotesSub;
   StreamSubscription<dynamic>? _tagsSub;
   bool _selectionMode = false;
@@ -61,7 +61,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final settings = AppSettingsScope.of(context).settings;
-    _controller ??= QuoteListViewModel(
+    _controller ??= QuoteController(
       quoteRepository: _quoteRepository,
       tagRepository: _tagRepository,
       initialSortMode: settings.defaultSortMode,
