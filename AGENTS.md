@@ -124,6 +124,7 @@ For a new task in this repository:
 1. Read this `AGENTS.md`.
 2. Run `git status --short`.
 3. Read the relevant files in `docs/`, especially:
+   - `docs/next_steps_and_pro_strategy_ru.md`;
    - `docs/product_roadmap_ru.md`;
    - `docs/implementation_plan_ru.md`;
    - `docs/ux_next_steps_ru.md`;

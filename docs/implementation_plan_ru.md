@@ -42,7 +42,8 @@
 - расширить Android widgets: случайная избранная запись / resurfacing;
 - saved collections / resurfacing;
 - будущий subscription-слой только при появлении sync/cloud/AI/web clipper;
-- расширенные batch actions, кроме удаления, если появится понятный сценарий;
+- Pro v1 пересобран вокруг Review Mode, Smart Resurfacing, Collections,
+  красивого экспорта и Backup History; обычные batch actions остаются free.
 - ручной beta-smoke на телефоне выполнен, результаты перенесены в
   `docs/beta_smoke_findings_ru.md`;
 - store screenshots и финальная ручная проверка релизного APK/AAB.
@@ -100,8 +101,8 @@ MEMRYTH должен стать не просто списком цитат, а 
 
 1. Реальный Play Console managed product `memryth_pro` и проверка
    purchase/restore.
-2. Widgets для resurfacing / случайной избранной записи.
-3. Saved collections / resurfacing, если появится понятный сценарий возврата
+2. Review Mode / Smart Resurfacing после первых beta-сигналов.
+3. Collections / Projects, если появится понятный сценарий возврата
    к подборкам.
 
 ## 4. Ближайший порядок работ
@@ -312,22 +313,25 @@ MEMRYTH должен стать не просто списком цитат, а 
 
 - базовый export всей библиотеки;
 - базовый import/restore;
+- export selected;
+- обычные batch actions;
 - импорт только в безопасном режиме merge без перезаписи текущей библиотеки;
 - сброс настроек;
 - настройки чтения;
 - создание и поиск записей;
 - PIN/biometric lock;
+- quick add shortcut;
+- базовый quick-add widget;
 - пустой приватный старт без автоматических demo-записей.
 
 Pro:
 
-- export selected;
-- batch export;
-- автоматические backup reminders;
-- widgets;
-- batch actions;
-- saved collections;
-- resurfacing.
+- Review Mode;
+- Smart Resurfacing;
+- Collections / Projects;
+- Beautiful Export / Share Cards;
+- Backup History;
+- Premium Reading / Focus Modes.
 
 Причина: базовый export, import и PIN нельзя запирать за оплату.
 Для приватного локального продукта это вопрос доверия, а не premium-роскошь.
@@ -358,30 +362,34 @@ one-time Pro, не должен терять локальные Pro-функци
 
 ## 10. Следующий практический шаг
 
-Блок "Данные" закрыт. Следующий практический порядок:
+Блок "Данные" закрыт. Актуальный порядок после beta-smoke:
 
-1. Google Play Billing / Pro entitlement:
+1. Production-readiness:
+   - решить `android:allowBackup` и privacy policy;
+   - добавить лимит размера import JSON;
+   - переписать onboarding простым языком;
+   - подготовить screenshots / feature graphic / listing.
+2. Google Play Billing / Pro entitlement:
    - `in_app_purchase` добавлен;
    - локальное состояние Pro unlock заведено;
-   - не ломать текущие Pro-функции, пока нет реального product id из Play Console;
-   - экран Pro честно показывает, если покупка еще недоступна;
-   - дальше создать managed product `memryth_pro` в Play Console и проверить restore.
-2. Android widgets:
-   - простой widget для quick add добавлен;
-   - дальше можно добавить widget для случайной избранной записи;
-   - не начинать с синхронизации/облака.
-3. Saved collections / resurfacing:
-   - saved filters удалены из beta: пользовательский сценарий оказался
-     слишком сложным и пересекался с обычными фильтрами;
-   - дальше можно добавлять явные коллекции записей и повторное всплытие
-     старых записей;
-   - не добавлять batch delete до отдельного решения.
-4. Будущий subscription-слой:
+   - создать managed product `memryth_pro` в Play Console;
+   - проверить purchase/restore на internal testing track.
+3. Проверка спроса:
+   - beta на 20-50 пользователей;
+   - смотреть retention и реальные сохранения, а не только installs;
+   - потом маленький тест Google Ads App Campaign.
+4. Pro v1 после первых сигналов:
+   - Review Mode;
+   - Smart Resurfacing;
+   - Collections / Projects;
+   - Beautiful Export / Share Cards;
+   - Backup History.
+5. Будущий subscription-слой:
    - не делать до sync/cloud/AI/web clipper;
    - держать отдельно от локального one-time Pro.
-5. Финальная релизная проверка:
+6. Финальная релизная проверка:
    - `flutter analyze`;
    - `flutter test`;
    - `flutter build apk --release`;
    - `flutter build appbundle`;
-   - ручная проверка export/import, share-to-app, quick add, PIN/biometric.
+   - ручная проверка export/import, share-to-app, quick add.
