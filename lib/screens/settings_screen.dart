@@ -1344,8 +1344,8 @@ class _SettingsText {
   String get aboutEntriesTitle =>
       isRu ? 'Типы записей и карточки' : 'Entry types and cards';
   String get aboutEntriesBody => isRu
-      ? 'Сохраняйте цитаты, собственные мысли и длинные фрагменты. Нажатие на карточку открывает запись, звездочка добавляет ее в избранное, долгое нажатие включает массовый режим.'
-      : 'Save quotes, your own thoughts, and longer excerpts. Tap a card to open it, use the star for favorites, and long press to enter bulk mode.';
+      ? 'Сохраняйте цитаты, собственные мысли и длинные фрагменты. Нажатие на карточку открывает запись, звездочка добавляет ее в избранное, долгое нажатие открывает меню действий.'
+      : 'Save quotes, your own thoughts, and longer excerpts. Tap a card to open it, use the star for favorites, and long press to open item actions.';
   String get aboutTopicsTitle =>
       isRu ? 'Темы, вложенность и поиск' : 'Topics, nesting and search';
   String get aboutTopicsBody => isRu

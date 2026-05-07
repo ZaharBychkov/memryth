@@ -205,7 +205,7 @@ class _QuotesScreenState extends State<QuotesScreen> {
                                       _toggleQuoteSelection(quote);
                                       return;
                                     }
-                                    _enterSelectionMode(quote);
+                                    _showQuoteMenu(quote, details, strings);
                                   },
                                 ),
                               ),
@@ -444,17 +444,6 @@ class _QuotesScreenState extends State<QuotesScreen> {
         const SizedBox(width: 8),
         Expanded(
           child: _ActionStripButton(
-            icon: Icons.checklist_rounded,
-            label: strings.bulkActions,
-            tooltip: strings.selectEntries,
-            isDark: isDark,
-            enabled: controller.totalCount > 0,
-            onTap: _enterSelectionMode,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _ActionStripButton(
             icon: Icons.account_tree_rounded,
             label: strings.topicsTitle,
             tooltip: strings.topicsTooltip,
@@ -563,6 +552,63 @@ class _QuotesScreenState extends State<QuotesScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _showQuoteMenu(
+    Quote quote,
+    LongPressStartDetails details,
+    AppStrings strings,
+  ) async {
+    final action = await showGeneralDialog<String>(
+      context: context,
+      barrierLabel: 'quote-actions',
+      barrierDismissible: true,
+      barrierColor: const Color(0x22000000),
+      transitionDuration: const Duration(milliseconds: 140),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return _QuoteActionMenu(
+          anchor: details.globalPosition,
+          strings: strings,
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.95, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+
+    if (!mounted || action == null) {
+      return;
+    }
+    if (action == 'read') {
+      await _openDetails(quote);
+      return;
+    }
+    if (action == 'edit') {
+      await _openEdit(quote);
+      return;
+    }
+    if (action == 'copy') {
+      await _copyQuoteToClipboard(quote, strings);
+      return;
+    }
+    if (action == 'select') {
+      _enterSelectionMode(quote);
+      return;
+    }
+    if (action == 'delete') {
+      await _deleteQuote(quote.id, strings);
+    }
   }
 
   void _enterSelectionMode([Quote? quote]) {
@@ -880,6 +926,30 @@ class _QuotesScreenState extends State<QuotesScreen> {
     );
   }
 
+  Future<void> _copyQuoteToClipboard(Quote quote, AppStrings strings) async {
+    final buffer = StringBuffer(quote.text.trim());
+    if (quote.author.trim().isNotEmpty) {
+      buffer.write('\n- ${quote.author.trim()}');
+    }
+    if (quote.sourceTitle.trim().isNotEmpty) {
+      buffer.write('\n${quote.sourceTitle.trim()}');
+    }
+
+    await Clipboard.setData(ClipboardData(text: buffer.toString()));
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(strings.copied),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+  }
+
   Future<void> _openCreate({String initialText = ''}) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -931,6 +1001,18 @@ class _QuotesScreenState extends State<QuotesScreen> {
     await _openCreate(initialText: text);
   }
 
+  Future<void> _openEdit(Quote quote) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => QuoteEditScreen(
+          quoteRepository: _quoteRepository,
+          tagRepository: _tagRepository,
+          quote: quote,
+        ),
+      ),
+    );
+  }
+
   Future<void> _openDetails(Quote quote) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -942,6 +1024,37 @@ class _QuotesScreenState extends State<QuotesScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _deleteQuote(String quoteId, AppStrings strings) async {
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(strings.deleteEntry),
+          content: Text(strings.deleteWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFB84A3A),
+                foregroundColor: Colors.white,
+              ),
+              child: Text(strings.delete),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (approved == true) {
+      await _quoteRepository.deleteById(quoteId);
+      _controller?.refreshFromStorage();
+    }
   }
 
   void _onStorageChanged() {
@@ -1035,7 +1148,6 @@ class _ActionStripButton extends StatelessWidget {
     required this.label,
     required this.isDark,
     required this.onTap,
-    this.enabled = true,
     this.tooltip,
   });
 
@@ -1043,18 +1155,14 @@ class _ActionStripButton extends StatelessWidget {
   final String label;
   final bool isDark;
   final VoidCallback onTap;
-  final bool enabled;
   final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
     final button = InkWell(
-      onTap: enabled ? onTap : null,
+      onTap: onTap,
       borderRadius: BorderRadius.circular(14),
-      child: Opacity(
-        opacity: enabled ? 1 : 0.45,
-        child: _ActionStripItem(icon: icon, label: label, isDark: isDark),
-      ),
+      child: _ActionStripItem(icon: icon, label: label, isDark: isDark),
     );
     if (tooltip == null) {
       return button;
@@ -1462,6 +1570,120 @@ class _TypeFilterButton extends StatelessWidget {
   }
 }
 
+class _QuoteActionMenu extends StatelessWidget {
+  const _QuoteActionMenu({required this.anchor, required this.strings});
+
+  final Offset anchor;
+  final AppStrings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    final screen = MediaQuery.sizeOf(context);
+    const menuWidth = 220.0;
+    const menuHeight = 260.0;
+    const margin = 12.0;
+    const gapToAnchor = 14.0;
+    const arrowSize = 12.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final background = isDark
+        ? const Color(0xFF232830)
+        : const Color(0xFFF5EEE7);
+
+    final showOnRight = anchor.dx < (screen.width / 2);
+    var left = showOnRight
+        ? anchor.dx + gapToAnchor
+        : anchor.dx - menuWidth - gapToAnchor;
+    left = left.clamp(margin, screen.width - menuWidth - margin);
+
+    var top = anchor.dy - (menuHeight / 2);
+    top = top.clamp(margin, screen.height - menuHeight - margin);
+
+    var arrowTop = anchor.dy - top - (arrowSize / 2);
+    arrowTop = arrowTop.clamp(16.0, menuHeight - 16.0 - arrowSize);
+
+    final arrowLeft = showOnRight ? left - arrowSize + 1 : left + menuWidth - 1;
+
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              behavior: HitTestBehavior.opaque,
+            ),
+          ),
+          Positioned(
+            left: arrowLeft,
+            top: top + arrowTop,
+            child: CustomPaint(
+              size: const Size(12, 12),
+              painter: _MenuArrowPainter(
+                color: background,
+                pointLeft: !showOnRight,
+              ),
+            ),
+          ),
+          Positioned(
+            left: left,
+            top: top,
+            child: Container(
+              width: menuWidth,
+              height: menuHeight,
+              decoration: BoxDecoration(
+                color: background,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor,
+                  width: 1.2,
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x22000000),
+                    blurRadius: 16,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _MenuItem(
+                    label: strings.open,
+                    onTap: () => Navigator.of(context).pop('read'),
+                    isTop: true,
+                  ),
+                  const _DividerLine(),
+                  _MenuItem(
+                    label: strings.edit,
+                    onTap: () => Navigator.of(context).pop('edit'),
+                  ),
+                  const _DividerLine(),
+                  _MenuItem(
+                    label: strings.copy,
+                    onTap: () => Navigator.of(context).pop('copy'),
+                  ),
+                  const _DividerLine(),
+                  _MenuItem(
+                    label: strings.select,
+                    onTap: () => Navigator.of(context).pop('select'),
+                  ),
+                  const _DividerLine(),
+                  _MenuItem(
+                    label: strings.delete,
+                    onTap: () => Navigator.of(context).pop('delete'),
+                    isBottom: true,
+                    color: const Color(0xFFB84A3A),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 enum _SelectionAction {
   export,
   addTopics,
@@ -1753,6 +1975,57 @@ class _BulkTopicDialogState extends State<_BulkTopicDialog> {
   }
 }
 
+class _MenuItem extends StatelessWidget {
+  const _MenuItem({
+    required this.label,
+    required this.onTap,
+    this.color,
+    this.isTop = false,
+    this.isBottom = false,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+  final bool isTop;
+  final bool isBottom;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.vertical(
+          top: isTop ? const Radius.circular(16) : Radius.zero,
+          bottom: isBottom ? const Radius.circular(16) : Radius.zero,
+        ),
+        onTap: onTap,
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: color ?? Theme.of(context).textTheme.bodyLarge?.color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DividerLine extends StatelessWidget {
+  const _DividerLine();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 22),
+      color: Theme.of(context).dividerColor,
+    );
+  }
+}
+
 class _SortMenuItem extends StatelessWidget {
   const _SortMenuItem({required this.label, required this.selected});
 
@@ -1780,5 +2053,39 @@ class _SortMenuItem extends StatelessWidget {
           ),
       ],
     );
+  }
+}
+
+class _MenuArrowPainter extends CustomPainter {
+  _MenuArrowPainter({required this.color, required this.pointLeft});
+
+  final Color color;
+  final bool pointLeft;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final path = Path();
+
+    if (pointLeft) {
+      path
+        ..moveTo(size.width, 0)
+        ..lineTo(0, size.height / 2)
+        ..lineTo(size.width, size.height)
+        ..close();
+    } else {
+      path
+        ..moveTo(0, 0)
+        ..lineTo(size.width, size.height / 2)
+        ..lineTo(0, size.height)
+        ..close();
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MenuArrowPainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.pointLeft != pointLeft;
   }
 }
