@@ -151,18 +151,12 @@ class AppStrings {
   String get hintEntry => isRu
       ? 'Сохраните текст, к которому хотите вернуться'
       : 'Save text you want to return to';
-  String get authorOptional =>
-      isRu ? 'Автор, необязательно' : 'Author, optional';
   String get author => isRu ? 'Автор' : 'Author';
   String get source => isRu ? 'Источник' : 'Source';
-  String get sourceOptional =>
-      isRu ? 'Источник, необязательно' : 'Source, optional';
   String get sourceHint => isRu
       ? 'Книга, видео, статья, страница или ссылка'
       : 'Book, video, article, page, or link';
   String get note => isRu ? 'Моя заметка' : 'My note';
-  String get noteOptional =>
-      isRu ? 'Моя заметка, необязательно' : 'My note, optional';
   String get noteHint => isRu
       ? 'Почему вы сохранили эту запись и как хотите ее использовать'
       : 'Why you saved this entry and how you want to use it';
@@ -172,8 +166,7 @@ class AppStrings {
       ? 'Темы помогают группировать записи. Используйте / для вложенных тем, например книги/философия. Позже ищите #тема или откройте индекс тем сверху.'
       : 'Topics group entries. Use / for nested topics, for example books/philosophy. Later, search #topic or open the topic index above.';
   String get editTagsTitle => isRu ? 'Тема/тег' : 'Topic/tag';
-  String get editNewTag =>
-      isRu ? 'Тема/тег, необязательно' : 'Topic/tag, optional';
+  String get editNewTag => isRu ? 'Тема/тег' : 'Topic/tag';
   String get editAddTag => isRu ? 'Добавить' : 'Add';
   String get newTag => isRu ? 'Новая тема' : 'New topic';
   String get quickAddTags => isRu
