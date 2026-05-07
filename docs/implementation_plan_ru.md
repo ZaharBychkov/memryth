@@ -52,6 +52,12 @@
   - onboarding простым языком;
   - Google Play listing draft, screenshot plan, feature graphic brief и privacy
     policy обновлены под фактическое поведение приложения;
+- финальная UX-правка формы записи перед beta:
+  - обязательным явно считается только текст записи;
+  - кнопка сохранения disabled, пока текст пустой;
+  - `Текст цитаты *`, `Текст мысли *`, `Текст фрагмента *`;
+  - остальные поля без слова `необязательно`;
+  - секция темы упрощена до `Тема/тег` без длинного пояснения.
 - store screenshots и финальная ручная проверка релизного APK/AAB.
 
 ## 1. К чему стремимся
@@ -395,6 +401,6 @@ one-time Pro, не должен терять локальные Pro-функци
 6. Финальная релизная проверка:
    - `flutter analyze`;
    - `flutter test`;
-   - `flutter build apk --release`;
    - `flutter build appbundle`;
+   - загрузить в Play Console только свежий `app-release.aab`;
    - ручная проверка export/import, share-to-app, quick add.
