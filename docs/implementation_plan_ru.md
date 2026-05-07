@@ -46,6 +46,12 @@
   красивого экспорта и Backup History; обычные batch actions остаются free.
 - ручной beta-smoke на телефоне выполнен, результаты перенесены в
   `docs/beta_smoke_findings_ru.md`;
+- production-readiness:
+  - `android:allowBackup="false"`;
+  - лимит import backup-файла `10 MB`;
+  - onboarding простым языком;
+  - Google Play listing draft, screenshot plan, feature graphic brief и privacy
+    policy обновлены под фактическое поведение приложения;
 - store screenshots и финальная ручная проверка релизного APK/AAB.
 
 ## 1. К чему стремимся
@@ -365,10 +371,9 @@ one-time Pro, не должен терять локальные Pro-функци
 Блок "Данные" закрыт. Актуальный порядок после beta-smoke:
 
 1. Production-readiness:
-   - решить `android:allowBackup` и privacy policy;
-   - добавить лимит размера import JSON;
-   - переписать onboarding простым языком;
-   - подготовить screenshots / feature graphic / listing.
+   - статус: кодовая часть закрыта;
+   - остается снять реальные screenshots, создать feature graphic, опубликовать
+     privacy policy URL и добавить support email.
 2. Google Play Billing / Pro entitlement:
    - `in_app_purchase` добавлен;
    - локальное состояние Pro unlock заведено;

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -130,6 +131,41 @@ void main() {
           }),
         ),
         throwsA(isA<ImportFormatException>()),
+      );
+    });
+
+    test('rejects import files above configured size limit', () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'memryth-import-test-',
+      );
+      addTearDown(() async {
+        if (await directory.exists()) {
+          await directory.delete(recursive: true);
+        }
+      });
+      final file = File('${directory.path}/large-backup.json');
+      await file.writeAsString('x' * (1024 * 1024 + 1));
+      final service = ExportImportService(
+        quoteRepository: _MemoryQuoteRepository(const []),
+        tagRepository: _MemoryTagRepository(const []),
+        maxImportFileBytes: 1024 * 1024,
+      );
+
+      await expectLater(
+        service.readImportFile(file),
+        throwsA(
+          isA<ImportFormatException>()
+              .having(
+                (error) => error.maxFileMegabytes,
+                'maxFileMegabytes',
+                '1',
+              )
+              .having(
+                (error) => error.message,
+                'message',
+                contains('too large'),
+              ),
+        ),
       );
     });
   });

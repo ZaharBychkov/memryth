@@ -13,16 +13,19 @@ class ExportImportService {
     required QuoteRepository quoteRepository,
     required TagRepository tagRepository,
     DateTime Function()? now,
+    this.maxImportFileBytes = defaultMaxImportFileBytes,
   }) : _quoteRepository = quoteRepository,
        _tagRepository = tagRepository,
        _now = now ?? DateTime.now;
 
   static const appName = 'MEMRYTH';
   static const schemaVersion = 1;
+  static const defaultMaxImportFileBytes = 10 * 1024 * 1024;
 
   final QuoteRepository _quoteRepository;
   final TagRepository _tagRepository;
   final DateTime Function() _now;
+  final int maxImportFileBytes;
 
   Map<String, Object?> buildExportMap({Iterable<Quote>? quotes}) {
     final exportedAt = _now().toUtc();
@@ -66,6 +69,19 @@ class ExportImportService {
     return file.writeAsString(buildExportJson(quotes: quotes), flush: true);
   }
 
+  Future<String> readImportFile(File file) async {
+    final fileSize = await file.length();
+    if (fileSize > maxImportFileBytes) {
+      throw ImportFormatException(
+        'Backup file is too large. Maximum size is '
+        '${_formatMegabytes(maxImportFileBytes)} MB.',
+        null,
+        _formatMegabytes(maxImportFileBytes),
+      );
+    }
+    return file.readAsString();
+  }
+
   String get exportFileName => _exportFileName('memryth-backup');
 
   String _exportFileName(String prefix) {
@@ -74,6 +90,12 @@ class ExportImportService {
     return '$prefix-'
         '${local.year}-${two(local.month)}-${two(local.day)}-'
         '${two(local.hour)}-${two(local.minute)}.json';
+  }
+
+  static String _formatMegabytes(int bytes) {
+    final megabytes = bytes / (1024 * 1024);
+    final fractionDigits = megabytes.truncateToDouble() == megabytes ? 0 : 1;
+    return megabytes.toStringAsFixed(fractionDigits);
   }
 
   ImportPreview previewImportJson(String source) {
@@ -327,10 +349,15 @@ class ImportResult {
 }
 
 class ImportFormatException implements Exception {
-  const ImportFormatException(this.message, [this.cause]);
+  const ImportFormatException(
+    this.message, [
+    this.cause,
+    this.maxFileMegabytes,
+  ]);
 
   final String message;
   final Object? cause;
+  final String? maxFileMegabytes;
 
   @override
   String toString() => message;

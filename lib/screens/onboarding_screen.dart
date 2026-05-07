@@ -194,10 +194,16 @@ class _OnboardingText {
               'Поиск, #тема, типы записей, избранное и индекс тем помогают находить сохранённое без лишнего шума.',
         ),
         _OnboardingPageData(
-          icon: Icons.add_to_home_screen_rounded,
-          title: 'Сохраняйте без лишних шагов',
+          icon: Icons.backup_rounded,
+          title: 'Держите резервную копию под рукой',
           body:
-              'Android shortcut, widget и системное Поделиться открывают MEMRYTH сразу в форме новой записи.',
+              'Экспорт сохраняет библиотеку в файл. Потом этот файл можно импортировать обратно и восстановить записи.',
+        ),
+        _OnboardingPageData(
+          icon: Icons.add_to_home_screen_rounded,
+          title: 'Сохраняйте текст быстрее',
+          body:
+              'Добавьте кнопку или виджет MEMRYTH на главный экран телефона. Из другого приложения можно нажать «Поделиться» и отправить текст в MEMRYTH.',
         ),
       ];
     }
@@ -222,10 +228,16 @@ class _OnboardingText {
             'Search, #topic, entry types, favorites and the topic index help you find saved meaning fast.',
       ),
       _OnboardingPageData(
-        icon: Icons.add_to_home_screen_rounded,
-        title: 'Save without extra steps',
+        icon: Icons.backup_rounded,
+        title: 'Keep a backup file',
         body:
-            'The Android shortcut, widget and system Share action open MEMRYTH directly in a new entry form.',
+            'Export saves your library to a file. You can import that file later to restore your entries.',
+      ),
+      _OnboardingPageData(
+        icon: Icons.add_to_home_screen_rounded,
+        title: 'Save text faster',
+        body:
+            'Add the MEMRYTH button or widget to your phone home screen. From another app, tap Share and send text to MEMRYTH.',
       ),
     ];
   }

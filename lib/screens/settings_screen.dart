@@ -294,7 +294,7 @@ class _DataSettingsScreenState extends State<DataSettingsScreen> {
         return;
       }
 
-      final source = await File(path).readAsString();
+      final source = await _service.readImportFile(File(path));
       final preview = _service.previewImportJson(source);
       if (!mounted) {
         return;
@@ -326,7 +326,7 @@ class _DataSettingsScreenState extends State<DataSettingsScreen> {
       await action();
     } on ImportFormatException catch (error) {
       if (mounted) {
-        _showSnack(text.importFailed(error.message));
+        _showSnack(text.importFailed(error));
       }
     } on Object catch (error) {
       if (mounted) {
@@ -1249,8 +1249,17 @@ class _SettingsText {
         : 'Import complete: ${result.addedQuotes} entries added, ${result.addedTags} topics added, ${result.reusedTags} topics reused.';
   }
 
-  String importFailed(String message) {
-    return isRu ? 'Импорт не выполнен: $message' : 'Import failed: $message';
+  String importFailed(ImportFormatException error) {
+    final maxMegabytes = error.maxFileMegabytes;
+    if (maxMegabytes != null) {
+      return isRu
+          ? 'Импорт не выполнен: файл больше $maxMegabytes МБ.'
+          : 'Import failed: backup file is larger than $maxMegabytes MB.';
+    }
+
+    return isRu
+        ? 'Импорт не выполнен: ${error.message}'
+        : 'Import failed: ${error.message}';
   }
 
   String operationFailed(Object error) {
@@ -1332,8 +1341,8 @@ class _SettingsText {
   String get noNetworkTitle =>
       isRu ? 'Сеть и третьи стороны' : 'Network and third parties';
   String get noNetworkBody => isRu
-      ? 'В текущем релизе нет облачного backup, синхронизации, рекламы, аналитики или передачи библиотеки разработчику.'
-      : 'The current release has no cloud backup, sync, ads, analytics, or library transfer to the developer.';
+      ? 'В текущем релизе нет облачного backup, синхронизации, рекламы, аналитики или передачи библиотеки разработчику. Системный cloud backup Android для данных приложения отключен.'
+      : 'The current release has no cloud backup, sync, ads, analytics, or library transfer to the developer. Android system cloud backup is disabled for app data.';
   String get dataDeletionTitle => isRu ? 'Удаление данных' : 'Data deletion';
   String get dataDeletionBody => isRu
       ? 'Отдельные записи можно удалить в приложении. Удаление приложения удаляет локальные данные по правилам Android, кроме backup-файлов, которые вы экспортировали самостоятельно.'

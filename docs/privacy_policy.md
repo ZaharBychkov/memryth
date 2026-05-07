@@ -1,6 +1,6 @@
 # MEMRYTH Privacy Policy
 
-Effective date: 2026-05-02
+Effective date: 2026-05-07
 
 MEMRYTH is an offline-first Android app for saving personal text entries such as thoughts, quotes, and excerpts.
 
@@ -21,13 +21,15 @@ MEMRYTH does not require an account. Your library is stored on your device using
 
 ## Export and Import
 
-MEMRYTH lets you export your library to a JSON backup file and import a JSON backup file back into the app. Exported files are controlled by you after they are shared or saved through the Android system sheet.
+MEMRYTH lets you export your library to a backup file and import a backup file back into the app. The current backup format is JSON. Exported files are controlled by you after they are shared or saved through the Android system sheet.
 
 You are responsible for storing exported backup files safely.
 
 ## Network and Sync
 
 MEMRYTH does not currently provide cloud sync, cloud backup, analytics, advertising, or AI processing.
+
+MEMRYTH disables Android system cloud backup for app-private data in the release manifest. Manual backup files remain under your control after you save or share them.
 
 ## Third Parties
 
