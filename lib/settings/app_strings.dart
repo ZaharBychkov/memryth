@@ -139,25 +139,30 @@ class AppStrings {
   String get typeEntry => isRu ? 'Тип записи' : 'Entry type';
   String get contextSection => isRu ? 'Контекст' : 'Context';
   String entryTextLabel(QuoteType type) => switch ((type, language)) {
-    (QuoteType.quote, AppLanguage.ru) => 'Текст цитаты',
-    (QuoteType.thought, AppLanguage.ru) => 'Текст мысли',
-    (QuoteType.excerpt, AppLanguage.ru) => 'Текст фрагмента',
-    (QuoteType.quote, AppLanguage.en) => 'Quote text',
-    (QuoteType.thought, AppLanguage.en) => 'Thought text',
-    (QuoteType.excerpt, AppLanguage.en) => 'Excerpt text',
+    (QuoteType.quote, AppLanguage.ru) => 'Текст цитаты *',
+    (QuoteType.thought, AppLanguage.ru) => 'Текст мысли *',
+    (QuoteType.excerpt, AppLanguage.ru) => 'Текст фрагмента *',
+    (QuoteType.quote, AppLanguage.en) => 'Quote text *',
+    (QuoteType.thought, AppLanguage.en) => 'Thought text *',
+    (QuoteType.excerpt, AppLanguage.en) => 'Excerpt text *',
   };
   String get hintExcerpt =>
       isRu ? 'Вставьте полный фрагмент текста' : 'Paste the full excerpt';
   String get hintEntry => isRu
       ? 'Сохраните текст, к которому хотите вернуться'
       : 'Save text you want to return to';
-  String get authorOptional => isRu ? 'Автор' : 'Author';
+  String get authorOptional =>
+      isRu ? 'Автор, необязательно' : 'Author, optional';
   String get author => isRu ? 'Автор' : 'Author';
   String get source => isRu ? 'Источник' : 'Source';
+  String get sourceOptional =>
+      isRu ? 'Источник, необязательно' : 'Source, optional';
   String get sourceHint => isRu
       ? 'Книга, видео, статья, страница или ссылка'
       : 'Book, video, article, page, or link';
   String get note => isRu ? 'Моя заметка' : 'My note';
+  String get noteOptional =>
+      isRu ? 'Моя заметка, необязательно' : 'My note, optional';
   String get noteHint => isRu
       ? 'Почему вы сохранили эту запись и как хотите ее использовать'
       : 'Why you saved this entry and how you want to use it';
@@ -166,6 +171,10 @@ class AppStrings {
   String get topicHelp => isRu
       ? 'Темы помогают группировать записи. Используйте / для вложенных тем, например книги/философия. Позже ищите #тема или откройте индекс тем сверху.'
       : 'Topics group entries. Use / for nested topics, for example books/philosophy. Later, search #topic or open the topic index above.';
+  String get editTagsTitle => isRu ? 'Тема/тег' : 'Topic/tag';
+  String get editNewTag =>
+      isRu ? 'Тема/тег, необязательно' : 'Topic/tag, optional';
+  String get editAddTag => isRu ? 'Добавить' : 'Add';
   String get newTag => isRu ? 'Новая тема' : 'New topic';
   String get quickAddTags => isRu
       ? 'Быстро добавить из существующих тем'

@@ -39,6 +39,11 @@ class QuoteEditViewModel extends ChangeNotifier {
     }
 
     _initialSignature = buildFormSignature();
+    textController.addListener(_notifyFormChanged);
+    authorController.addListener(_notifyFormChanged);
+    sourceTitleController.addListener(_notifyFormChanged);
+    noteController.addListener(_notifyFormChanged);
+    tagController.addListener(_notifyFormChanged);
   }
 
   final QuoteRepository _quoteRepository;
@@ -63,6 +68,7 @@ class QuoteEditViewModel extends ChangeNotifier {
   DateTime get createdAt => _createdAt;
   bool get isFavorite => _isFavorite;
   List<DraftTag> get draftTags => List.unmodifiable(_draftTags);
+  bool get canSave => textController.text.trim().isNotEmpty;
   bool get hasUnsavedChanges => buildFormSignature() != _initialSignature;
 
   void setSelectedType(QuoteType value) {
@@ -199,8 +205,15 @@ class QuoteEditViewModel extends ChangeNotifier {
     return '$now$suffix';
   }
 
+  void _notifyFormChanged() => notifyListeners();
+
   @override
   void dispose() {
+    textController.removeListener(_notifyFormChanged);
+    authorController.removeListener(_notifyFormChanged);
+    sourceTitleController.removeListener(_notifyFormChanged);
+    noteController.removeListener(_notifyFormChanged);
+    tagController.removeListener(_notifyFormChanged);
     textController.dispose();
     authorController.dispose();
     sourceTitleController.dispose();

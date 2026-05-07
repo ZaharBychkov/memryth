@@ -162,9 +162,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                         context: context,
                         border: border,
                         fillColor: fillColor,
-                        labelText: _viewModel.selectedType == QuoteType.thought
-                            ? strings.authorOptional
-                            : strings.author,
+                        labelText: strings.authorOptional,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -174,7 +172,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                         context: context,
                         border: border,
                         fillColor: fillColor,
-                        labelText: strings.source,
+                        labelText: strings.sourceOptional,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -189,13 +187,13 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                         context: context,
                         border: border,
                         fillColor: fillColor,
-                        labelText: strings.note,
+                        labelText: strings.noteOptional,
                         alignLabelWithHint: true,
                       ),
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      strings.tags,
+                      strings.editTagsTitle,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 10),
@@ -233,7 +231,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                               context: context,
                               border: border,
                               fillColor: fillColor,
-                              labelText: strings.newTag,
+                              labelText: strings.editNewTag,
                             ),
                           ),
                         ),
@@ -246,29 +244,26 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                               backgroundColor: const Color(0xFF4A6FA5),
                               foregroundColor: Colors.white,
                             ),
-                            child: Text(strings.addTopic),
+                            child: Text(strings.editAddTag),
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      strings.topicHelp,
-                      style: TextStyle(
-                        color: Theme.of(context).hintColor,
-                        fontSize: 13,
-                        height: 1.35,
-                      ),
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       height: 52,
                       child: FilledButton.icon(
-                        onPressed: _save,
+                        onPressed: _viewModel.canSave ? _save : null,
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFF4A6FA5),
                           foregroundColor: Colors.white,
+                          disabledBackgroundColor: isDark
+                              ? const Color(0xFF3A3D42)
+                              : const Color(0xFFE0E0E0),
+                          disabledForegroundColor: isDark
+                              ? const Color(0xFF8F949B)
+                              : const Color(0xFF8A8A8A),
                         ),
                         icon: const Icon(Icons.check_rounded),
                         label: Text(
