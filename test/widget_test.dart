@@ -46,7 +46,7 @@ void main() {
   });
 
   group('QuoteController filters and sorting', () {
-    test('filters entries by type and favorites', () {
+    test('type and favorite filters are mutually exclusive', () {
       final controller = _controller(
         quotes: [
           _quote(
@@ -76,8 +76,12 @@ void main() {
       controller.toggleTypeFilter(QuoteType.excerpt);
       expect(controller.filteredQuotes.map((quote) => quote.id), ['q3']);
 
+      controller.toggleTypeFilter(QuoteType.thought);
+      expect(controller.filteredQuotes.map((quote) => quote.id), ['q2']);
+
       controller.toggleFavoritesOnly();
-      expect(controller.filteredQuotes.map((quote) => quote.id), ['q3']);
+      expect(controller.activeTypeFilters, isEmpty);
+      expect(controller.filteredQuotes.map((quote) => quote.id), ['q1', 'q3']);
 
       controller.clearFilters();
       expect(controller.filteredQuotes, hasLength(3));

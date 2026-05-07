@@ -55,7 +55,7 @@ lib/
   data/
   models/
   repositories/
-  contollers/
+  controllers/
   viewmodels/
   screens/
   widgets/

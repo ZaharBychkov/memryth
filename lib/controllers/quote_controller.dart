@@ -129,14 +129,13 @@ class QuoteController extends ChangeNotifier {
   }
 
   void toggleTypeFilter(QuoteType value) {
-    if (_activeTypeFilters.contains(value)) {
+    if (_activeTypeFilters.length == 1 && _activeTypeFilters.contains(value)) {
       _activeTypeFilters.remove(value);
     } else {
+      _activeTypeFilters.clear();
       _activeTypeFilters.add(value);
     }
-    if (_activeTypeFilters.length == QuoteType.values.length) {
-      _activeTypeFilters.clear();
-    }
+    _favoritesOnly = false;
     _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
@@ -144,6 +143,9 @@ class QuoteController extends ChangeNotifier {
 
   void toggleFavoritesOnly() {
     _favoritesOnly = !_favoritesOnly;
+    if (_favoritesOnly) {
+      _activeTypeFilters.clear();
+    }
     _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
@@ -161,8 +163,11 @@ class QuoteController extends ChangeNotifier {
   }
 
   void setSortMode(QuoteSortMode value) {
-    if (_sortMode == value) return;
+    if (_sortMode == value && value != QuoteSortMode.random) return;
     _sortMode = value;
+    if (value == QuoteSortMode.random) {
+      _rebuildRandomOrder(shuffleAll: true);
+    }
     _recomputeFilteredQuotes();
     _currentIndex = 0;
     notifyListeners();
@@ -345,8 +350,12 @@ class QuoteController extends ChangeNotifier {
     }
   }
 
-  void _rebuildRandomOrder() {
+  void _rebuildRandomOrder({bool shuffleAll = false}) {
     final currentIds = _allQuotes.map((quote) => quote.id).toSet();
+    if (shuffleAll) {
+      _randomOrderIds = currentIds.toList(growable: true)..shuffle(_random);
+      return;
+    }
     final kept = _randomOrderIds
         .where(currentIds.contains)
         .toList(growable: true);

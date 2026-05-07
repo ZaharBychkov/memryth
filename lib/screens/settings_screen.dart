@@ -412,16 +412,6 @@ class PrivacySettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            _ActionRow(
-              icon: Icons.fingerprint_rounded,
-              title: text.appLock,
-              subtitle: text.appLockSubtitle,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => AppLockSettingsScreen(controller: controller),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -713,6 +703,30 @@ class AboutSettingsScreen extends StatelessWidget {
               title: 'MEMRYTH',
               body: text.aboutBody,
             ),
+            const SizedBox(height: 12),
+            _InfoPanel(
+              icon: Icons.category_rounded,
+              title: text.aboutEntriesTitle,
+              body: text.aboutEntriesBody,
+            ),
+            const SizedBox(height: 12),
+            _InfoPanel(
+              icon: Icons.sell_rounded,
+              title: text.aboutTopicsTitle,
+              body: text.aboutTopicsBody,
+            ),
+            const SizedBox(height: 12),
+            _InfoPanel(
+              icon: Icons.add_to_home_screen_rounded,
+              title: text.aboutQuickAddTitle,
+              body: text.aboutQuickAddBody,
+            ),
+            const SizedBox(height: 12),
+            _InfoPanel(
+              icon: Icons.ios_share_rounded,
+              title: text.aboutShareTitle,
+              body: text.aboutShareBody,
+            ),
           ],
         ),
       ),
@@ -830,7 +844,7 @@ class _PreviewCard extends StatelessWidget {
   }
 }
 
-class _DoubleSlider extends StatelessWidget {
+class _DoubleSlider extends StatefulWidget {
   const _DoubleSlider({
     required this.title,
     required this.value,
@@ -848,8 +862,31 @@ class _DoubleSlider extends StatelessWidget {
   final Future<void> Function(double value) onChanged;
 
   @override
+  State<_DoubleSlider> createState() => _DoubleSliderState();
+}
+
+class _DoubleSliderState extends State<_DoubleSlider> {
+  late double _draftValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _draftValue = widget.value.clamp(widget.min, widget.max);
+  }
+
+  @override
+  void didUpdateWidget(covariant _DoubleSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value ||
+        oldWidget.min != widget.min ||
+        oldWidget.max != widget.max) {
+      _draftValue = widget.value.clamp(widget.min, widget.max);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final clamped = value.clamp(min, max);
+    final clamped = _draftValue.clamp(widget.min, widget.max);
 
     return Padding(
       padding: const EdgeInsets.only(top: 10),
@@ -860,12 +897,12 @@ class _DoubleSlider extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  title,
+                  widget.title,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
               Text(
-                valueLabel(clamped),
+                widget.valueLabel(clamped),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.w800,
@@ -874,11 +911,12 @@ class _DoubleSlider extends StatelessWidget {
             ],
           ),
           Slider(
-            min: min,
-            max: max,
+            min: widget.min,
+            max: widget.max,
             value: clamped,
-            label: valueLabel(clamped),
-            onChanged: onChanged,
+            label: widget.valueLabel(clamped),
+            onChanged: (value) => setState(() => _draftValue = value),
+            onChangeEnd: widget.onChanged,
           ),
         ],
       ),
@@ -1138,8 +1176,8 @@ class _SettingsText {
   String get privacy =>
       isRu ? 'Приватность и безопасность' : 'Privacy and security';
   String get privacySubtitle => isRu
-      ? 'Локальное хранение, защита и политика'
-      : 'Local storage, protection and policy';
+      ? 'Локальное хранение, backup и политика'
+      : 'Local storage, backup and policy';
   String get pro => isRu ? 'MEMRYTH Pro' : 'MEMRYTH Pro';
   String get proSubtitle => isRu
       ? 'Будущие расширенные функции без подписки'
@@ -1303,6 +1341,25 @@ class _SettingsText {
   String get aboutBody => isRu
       ? 'Личная офлайн-библиотека мыслей, цитат и фрагментов.'
       : 'A private offline library for thoughts, quotes and excerpts.';
+  String get aboutEntriesTitle =>
+      isRu ? 'Типы записей и карточки' : 'Entry types and cards';
+  String get aboutEntriesBody => isRu
+      ? 'Сохраняйте цитаты, собственные мысли и длинные фрагменты. Нажатие на карточку открывает запись, звездочка добавляет ее в избранное, долгое нажатие включает массовый режим.'
+      : 'Save quotes, your own thoughts, and longer excerpts. Tap a card to open it, use the star for favorites, and long press to enter bulk mode.';
+  String get aboutTopicsTitle =>
+      isRu ? 'Темы, вложенность и поиск' : 'Topics, nesting and search';
+  String get aboutTopicsBody => isRu
+      ? 'Темы группируют записи. Для вложенных тем используйте /, например книги/философия. В поиске введите #тема, чтобы искать именно по темам.'
+      : 'Topics group entries. Use / for nested topics, for example books/philosophy. Search #topic to search by topics only.';
+  String get aboutQuickAddTitle => isRu ? 'Быстрое добавление' : 'Quick add';
+  String get aboutQuickAddBody => isRu
+      ? 'Shortcut и Android widget MEMRYTH открывают форму быстрой записи. Это удобно для мысли, которую нужно сохранить сразу, не открывая библиотеку вручную.'
+      : 'The MEMRYTH shortcut and Android widget open quick entry. Use them when you want to save a thought without opening the library first.';
+  String get aboutShareTitle =>
+      isRu ? 'Поделиться в MEMRYTH' : 'Share to MEMRYTH';
+  String get aboutShareBody => isRu
+      ? 'Из другого приложения выберите системное действие Поделиться и отправьте текст в MEMRYTH. Приложение откроет форму новой записи с уже вставленным текстом.'
+      : 'From another app, use the system Share action and send text to MEMRYTH. The app opens a new entry form with that text inserted.';
 
   String _formatDateTime(DateTime value) {
     final local = value.toLocal();

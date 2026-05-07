@@ -100,6 +100,13 @@ class AppStrings {
       isRu ? 'Добавить выбранные в избранное' : 'Favorite selected';
   String get unmarkSelectedFavorite =>
       isRu ? 'Убрать выбранные из избранного' : 'Unfavorite selected';
+  String get deleteSelected => isRu ? 'Удалить выбранные' : 'Delete selected';
+  String deleteSelectedTitle(int count) =>
+      isRu ? 'Удалить $count записей?' : 'Delete $count entries?';
+  String get deleteSelectedWarning =>
+      isRu ? 'Это нельзя отменить.' : 'This cannot be undone.';
+  String selectedDeleted(int count) =>
+      isRu ? 'Удалено записей: $count' : 'Deleted entries: $count';
   String selectedFavoriteUpdated(int count, bool isFavorite) {
     if (isFavorite) {
       return isRu
@@ -144,9 +151,7 @@ class AppStrings {
   String get hintEntry => isRu
       ? 'Сохраните текст, к которому хотите вернуться'
       : 'Save text you want to return to';
-  String get authorOptional => isRu
-      ? 'Автор / собеседник (необязательно)'
-      : 'Author / speaker (optional)';
+  String get authorOptional => isRu ? 'Автор' : 'Author';
   String get author => isRu ? 'Автор' : 'Author';
   String get source => isRu ? 'Источник' : 'Source';
   String get sourceHint => isRu
@@ -159,8 +164,8 @@ class AppStrings {
   String get add => isRu ? 'Добавить' : 'Add';
   String get addTopic => isRu ? 'Добавить тему' : 'Add topic';
   String get topicHelp => isRu
-      ? 'Темы помогают группировать записи. Позже ищите #тема или откройте индекс тем сверху, чтобы увидеть все темы и счетчики записей.'
-      : 'Topics group entries. Later, search #topic or open the topic index above to see all topics and entry counts.';
+      ? 'Темы помогают группировать записи. Используйте / для вложенных тем, например книги/философия. Позже ищите #тема или откройте индекс тем сверху.'
+      : 'Topics group entries. Use / for nested topics, for example books/philosophy. Later, search #topic or open the topic index above.';
   String get newTag => isRu ? 'Новая тема' : 'New topic';
   String get quickAddTags => isRu
       ? 'Быстро добавить из существующих тем'

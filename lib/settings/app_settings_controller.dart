@@ -8,6 +8,7 @@ class AppSettingsController extends ChangeNotifier {
   AppSettingsController._(this._box, this._settings);
 
   static const _boxName = 'settings';
+  static const _appLockAvailableInBeta = false;
   static const _obsoleteKeys = <String>[
     'uiTextSize',
     'cardDensity',
@@ -29,6 +30,14 @@ class AppSettingsController extends ChangeNotifier {
     final pinSalt = (box.get('appLockPinSalt') as String?) ?? '';
     final pinHash = (box.get('appLockPinHash') as String?) ?? '';
     final appLockConfigured = pinSalt.isNotEmpty && pinHash.isNotEmpty;
+    final appLockEnabled =
+        _appLockAvailableInBeta &&
+        ((box.get('appLockEnabled') as bool?) ?? false) &&
+        appLockConfigured;
+    final biometricUnlockEnabled =
+        _appLockAvailableInBeta &&
+        ((box.get('biometricUnlockEnabled') as bool?) ?? false) &&
+        appLockConfigured;
     final settings = AppSettings(
       themeMode: AppThemeMode.fromKey(box.get('themeMode') as String?),
       language: AppLanguage.fromKey(box.get('language') as String?),
@@ -43,18 +52,21 @@ class AppSettingsController extends ChangeNotifier {
       hasCompletedOnboarding:
           (box.get('hasCompletedOnboarding') as bool?) ??
           AppSettings.defaults.hasCompletedOnboarding,
-      appLockEnabled:
-          ((box.get('appLockEnabled') as bool?) ?? false) && appLockConfigured,
+      appLockEnabled: appLockEnabled,
       appLockConfigured: appLockConfigured,
-      biometricUnlockEnabled:
-          ((box.get('biometricUnlockEnabled') as bool?) ?? false) &&
-          appLockConfigured,
+      biometricUnlockEnabled: biometricUnlockEnabled,
       lastFullExportAt: _readDateTime(box.get('lastFullExportAt')),
       proUnlocked:
           (box.get('proUnlocked') as bool?) ?? AppSettings.defaults.proUnlocked,
       proUnlockedAt: _readDateTime(box.get('proUnlockedAt')),
     );
     await box.deleteAll(_obsoleteKeys);
+    if (!_appLockAvailableInBeta) {
+      await box.putAll({
+        'appLockEnabled': false,
+        'biometricUnlockEnabled': false,
+      });
+    }
     return AppSettingsController._(box, settings)
       .._pinSalt = pinSalt
       .._pinHash = pinHash;

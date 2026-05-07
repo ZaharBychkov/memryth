@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MEMRYTH</string>
+    <string name="shortcut_new_entry_short">Новая запись</string>
+    <string name="shortcut_new_entry_long">Создать новую запись MEMRYTH</string>
+    <string name="widget_quick_add_label">Быстро добавить</string>
+    <string name="widget_quick_add_title">MEMRYTH</string>
+    <string name="widget_quick_add_body">Сохранить мысль, цитату или фрагмент</string>
+</resources>

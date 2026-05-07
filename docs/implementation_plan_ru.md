@@ -2,7 +2,7 @@
 
 Дата фиксации: 2026-05-01
 
-Обновление статуса: 2026-05-05
+Обновление статуса: 2026-05-07
 
 Закрыто после фиксации плана:
 
@@ -15,7 +15,7 @@
 - Android package id, namespace, release signing и release build;
 - privacy policy, Google Play draft и in-app privacy policy;
 - share-to-app, quick add shortcut;
-- PIN lock и biometric unlock;
+- PIN lock и biometric unlock скрыты из beta UI до recovery-модели;
 - обзорный экран MEMRYTH Pro;
 - каркас Google Play Billing / Pro entitlement через `in_app_purchase`;
 - Android home widget для quick add;
@@ -43,7 +43,8 @@
 - saved collections / resurfacing;
 - будущий subscription-слой только при появлении sync/cloud/AI/web clipper;
 - расширенные batch actions, кроме удаления, если появится понятный сценарий;
-- ручной beta-smoke на телефоне;
+- ручной beta-smoke на телефоне выполнен, результаты перенесены в
+  `docs/beta_smoke_findings_ru.md`;
 - store screenshots и финальная ручная проверка релизного APK/AAB.
 
 ## 1. К чему стремимся
@@ -78,17 +79,17 @@ MEMRYTH должен стать не просто списком цитат, а 
 
 Критично перед beta/internal testing:
 
-1. Ручной smoke test на телефоне:
-   - чистый первый запуск;
-   - создание, редактирование и удаление записей каждого типа;
-   - поиск, `#тема`, фильтры и сортировки;
-   - темы и массовые действия;
-   - export/import merge;
-   - share-to-app;
-   - quick add shortcut;
-   - Android home widget;
-   - PIN/biometric;
-   - светлая и темная тема.
+1. Закрыть beta-smoke findings из `docs/beta_smoke_findings_ru.md`:
+   - форма записи без внутреннего скролла многострочных полей;
+   - взаимоисключающие фильтры типов;
+   - реальное обновление `Случайного порядка`;
+   - long press как вход в массовый режим;
+   - осторожное массовое удаление через меню с подтверждением;
+   - portrait-only для Android beta;
+   - скрыть PIN/biometric из UI;
+   - полезные подсказки в onboarding/about;
+   - локализация Android quick add/widget;
+   - слайдеры настроек без тяжелого сохранения на каждом движении.
 2. Проверить импорт старых JSON backup после удаления лишнего отдельного поля
    источника.
 3. Подготовить актуальные screenshots / feature graphic.
@@ -96,21 +97,17 @@ MEMRYTH должен стать не просто списком цитат, а 
 
 Важно после beta-feedback:
 
-1. Архитектурная чистка:
-   - `QuoteSortMode`;
-   - `QuoteListViewModel`;
-   - `lib/controllers`.
-2. Реальный Play Console managed product `memryth_pro` и проверка
+1. Реальный Play Console managed product `memryth_pro` и проверка
    purchase/restore.
-3. Widgets для resurfacing / случайной избранной записи.
-4. Saved collections / resurfacing, если появится понятный сценарий возврата
+2. Widgets для resurfacing / случайной избранной записи.
+3. Saved collections / resurfacing, если появится понятный сценарий возврата
    к подборкам.
 
 ## 4. Ближайший порядок работ
 
 ### Этап 1. Архитектурная чистка
 
-Сделать следующим:
+Статус: выполнено.
 
 - `QuoteSortMode` вынесен в `lib/models/quote_sort_mode.dart`;
 - убрать зависимость settings-слоя от controller-слоя;
@@ -122,16 +119,17 @@ MEMRYTH должен стать не просто списком цитат, а 
 
 Результат: структура проекта станет чище перед дальнейшим ростом функций.
 
-### Этап 2. Ручной beta-smoke
+### Этап 2. Beta-smoke fixes
 
-Сделать после архитектурной чистки:
+Сделать после ручного теста на телефоне:
 
-- установить release APK на телефон;
-- пройти все основные сценарии;
-- отдельно проверить import/export после удаления лишнего поля источника;
-- записать реальные UX-баги и непонимания.
+- закрыть пункты из `docs/beta_smoke_findings_ru.md`, отмеченные как
+  `Сделать перед beta`;
+- оставить deferred-пункты в roadmap без расширения scope текущего beta;
+- после правок снова пройти короткий smoke на телефоне.
 
-Результат: появится фактический список правок перед beta.
+Результат: beta перестает содержать найденные UX-блокеры и опасные сценарии
+потери доступа к данным.
 
 ### Этап 3. Store preparation
 

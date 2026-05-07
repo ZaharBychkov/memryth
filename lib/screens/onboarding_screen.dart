@@ -185,13 +185,19 @@ class _OnboardingText {
           icon: Icons.sell_rounded,
           title: 'Добавляйте контекст',
           body:
-              'Темы, источник, автор и личная заметка помогают понять, зачем запись была сохранена.',
+              'Темы, источник, автор и личная заметка помогают понять, зачем запись была сохранена. Для вложенных тем используйте /, например книги/философия.',
         ),
         _OnboardingPageData(
           icon: Icons.manage_search_rounded,
           title: 'Возвращайтесь к нужному быстрее',
           body:
-              'Поиск, темы, типы записей и избранное помогают находить сохранённое без лишнего шума.',
+              'Поиск, #тема, типы записей, избранное и индекс тем помогают находить сохранённое без лишнего шума.',
+        ),
+        _OnboardingPageData(
+          icon: Icons.add_to_home_screen_rounded,
+          title: 'Сохраняйте без лишних шагов',
+          body:
+              'Android shortcut, widget и системное Поделиться открывают MEMRYTH сразу в форме новой записи.',
         ),
       ];
     }
@@ -207,13 +213,19 @@ class _OnboardingText {
         icon: Icons.sell_rounded,
         title: 'Keep the context',
         body:
-            'Topics, source, author and personal notes explain why each entry matters.',
+            'Topics, source, author and personal notes explain why each entry matters. Use / for nested topics, for example books/philosophy.',
       ),
       _OnboardingPageData(
         icon: Icons.manage_search_rounded,
         title: 'Return quickly',
         body:
-            'Search, topics, entry types and favorites help you find saved meaning fast.',
+            'Search, #topic, entry types, favorites and the topic index help you find saved meaning fast.',
+      ),
+      _OnboardingPageData(
+        icon: Icons.add_to_home_screen_rounded,
+        title: 'Save without extra steps',
+        body:
+            'The Android shortcut, widget and system Share action open MEMRYTH directly in a new entry form.',
       ),
     ];
   }
