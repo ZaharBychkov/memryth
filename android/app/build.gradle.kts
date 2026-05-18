@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.gradle.api.GradleException
 
 plugins {
     id("com.android.application")
@@ -13,6 +14,37 @@ val hasReleaseKeystore = keystorePropertiesFile.exists()
 
 if (hasReleaseKeystore) {
     keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+}
+
+val requiredKeystoreProperties = listOf(
+    "storePassword",
+    "keyPassword",
+    "keyAlias",
+    "storeFile",
+)
+val hasCompleteReleaseKeystore = hasReleaseKeystore &&
+    requiredKeystoreProperties.all { !keystoreProperties.getProperty(it).isNullOrBlank() }
+
+if (hasReleaseKeystore && !hasCompleteReleaseKeystore) {
+    val missing = requiredKeystoreProperties
+        .filter { keystoreProperties.getProperty(it).isNullOrBlank() }
+        .joinToString()
+    throw GradleException(
+        "Release signing is misconfigured. Missing android/key.properties values: $missing"
+    )
+}
+
+gradle.taskGraph.whenReady {
+    val releaseTaskRequested = allTasks.any { task ->
+        task.name.contains("Release") &&
+            (task.name.startsWith("assemble") || task.name.startsWith("bundle"))
+    }
+    if (releaseTaskRequested && !hasCompleteReleaseKeystore) {
+        throw GradleException(
+            "Release builds require android/key.properties and a real upload keystore. " +
+                "Copy android/key.properties.example, fill it, and keep the keystore backed up."
+        )
+    }
 }
 
 android {
@@ -41,7 +73,7 @@ android {
 
     signingConfigs {
         create("release") {
-            if (hasReleaseKeystore) {
+            if (hasCompleteReleaseKeystore) {
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
                 storeFile = file(keystoreProperties.getProperty("storeFile"))
@@ -52,10 +84,8 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (hasReleaseKeystore) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            if (hasCompleteReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
             }
         }
     }
