@@ -49,4 +49,7 @@ This policy may be updated as MEMRYTH adds features. If cloud sync, accounts, an
 
 ## Contact
 
-Support contact: to be added before Google Play publication.
+Developer: Zahar Bychkov.
+
+Privacy and support inquiries can be submitted at:
+https://github.com/ZaharBychkov/memryth/issues

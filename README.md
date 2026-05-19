@@ -66,26 +66,24 @@ Detailed Russian documentation about architecture and responsibilities is availa
 
 ## Screenshots
 
-### English
+Russian screenshots from the current Android interface:
 
 <p align="center">
-  <img src="docs/screenshots/en-home.png" alt="English home screen" width="260" />
-  <img src="docs/screenshots/en-create.png" alt="English create screen" width="260" />
+  <img src="docs/screenshots/ru-home.png" alt="Russian home screen" width="250" />
+  <img src="docs/screenshots/ru-create.png" alt="Russian create entry screen" width="250" />
+  <img src="docs/screenshots/ru-detail.png" alt="Russian entry detail screen" width="250" />
 </p>
-
-### Russian
 
 <p align="center">
-  <img src="docs/screenshots/ru-home.png" alt="Russian home screen" width="260" />
-  <img src="docs/screenshots/ru-create.png" alt="Russian create screen" width="260" />
+  <img src="docs/screenshots/ru-topics.png" alt="Russian topics screen" width="250" />
+  <img src="docs/screenshots/settings.png" alt="Russian settings screen" width="250" />
+  <img src="docs/screenshots/dark-theme.png" alt="Russian dark theme home screen" width="250" />
 </p>
 
-### Settings
+## Privacy Policy
 
-<p align="center">
-  <img src="docs/screenshots/settings.png" alt="Settings screen" width="260" />
-  <img src="docs/screenshots/dark-theme.png" alt="Dark theme home screen" width="260" />
-</p>
+The current privacy policy for Google Play review is available at
+[docs/privacy_policy.md](docs/privacy_policy.md).
 
 ## Getting Started
 

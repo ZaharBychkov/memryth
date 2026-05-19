@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'data/demo_seed.dart';
 import 'models/quote.dart';
 import 'models/tag.dart';
 import 'screens/app_lock_screen.dart';
@@ -10,6 +11,8 @@ import 'screens/quotes_screen.dart';
 import 'settings/app_settings.dart';
 import 'settings/app_settings_controller.dart';
 import 'settings/app_settings_scope.dart';
+
+const _screenshotMode = bool.fromEnvironment('MEMRYTH_SCREENSHOT_MODE');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +27,14 @@ Future<void> main() async {
   await Hive.openBox<Quote>('quotes');
   await Hive.openBox('settings');
 
+  if (_screenshotMode) {
+    await DemoSeed.ensureSeeded();
+  }
+
   final settingsController = await AppSettingsController.create();
+  if (_screenshotMode && !settingsController.settings.hasCompletedOnboarding) {
+    await settingsController.completeOnboarding();
+  }
   runApp(MemrythApp(settingsController: settingsController));
 }
 

@@ -78,7 +78,8 @@ Security practices:
 Required before publication:
 
 - Add final support email.
-- Publish final privacy policy URL.
+- Publish final privacy policy URL:
+  `https://raw.githubusercontent.com/ZaharBychkov/memryth/main/docs/privacy_policy.md`.
 - Re-check Data Safety answers after adding payments, analytics, sync, app lock, or widgets.
 
 ## Screenshot Plan
@@ -120,7 +121,7 @@ Suggested copy:
 - App name: `MEMRYTH`.
 - Short description: use the draft above unless Google Play length validation requires shortening.
 - Full description: use the draft above and re-check after screenshots are final.
-- Privacy policy: publish `docs/privacy_policy.md` as a public URL before submission.
+- Privacy policy: `https://raw.githubusercontent.com/ZaharBychkov/memryth/main/docs/privacy_policy.md`.
 - Support email: add the real address before publication.
 - Feature graphic: create the final `1024 x 500` asset.
 - Screenshots: capture final release build on a phone, preferably in Russian first and English later if needed.
