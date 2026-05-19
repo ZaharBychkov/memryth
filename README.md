@@ -69,15 +69,15 @@ Detailed Russian documentation about architecture and responsibilities is availa
 Russian screenshots from the current Android interface:
 
 <p align="center">
-  <img src="docs/screenshots/ru-home.png" alt="Russian home screen" width="250" />
-  <img src="docs/screenshots/ru-create.png" alt="Russian create entry screen" width="250" />
-  <img src="docs/screenshots/ru-detail.png" alt="Russian entry detail screen" width="250" />
+  <img src="docs/screenshots/ru-home.png?v=2026-05-19" alt="Russian home screen" width="250" />
+  <img src="docs/screenshots/ru-create.png?v=2026-05-19" alt="Russian create entry screen" width="250" />
+  <img src="docs/screenshots/ru-detail.png?v=2026-05-19" alt="Russian entry detail screen" width="250" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/ru-topics.png" alt="Russian topics screen" width="250" />
-  <img src="docs/screenshots/settings.png" alt="Russian settings screen" width="250" />
-  <img src="docs/screenshots/dark-theme.png" alt="Russian dark theme home screen" width="250" />
+  <img src="docs/screenshots/ru-topics.png?v=2026-05-19" alt="Russian topics screen" width="250" />
+  <img src="docs/screenshots/settings.png?v=2026-05-19" alt="Russian settings screen" width="250" />
+  <img src="docs/screenshots/dark-theme.png?v=2026-05-19" alt="Russian dark theme home screen" width="250" />
 </p>
 
 ## Privacy Policy
