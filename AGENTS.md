@@ -52,21 +52,32 @@ contains:
 ```powershell
 npx autoskills
 npx -y socraticode
+C:\Users\msi\AppData\Local\Microsoft\WinGet\Packages\Oven-sh.Bun_Microsoft.Winget.Source_8wekyb3d8bbwe\bun-windows-x64\bun.exe C:\Users\msi\all\Tools\gbrain-master\src\cli.ts doctor
 ```
 
 - `npx autoskills` finds relevant skills and returns links/instructions.
 - `npx -y socraticode` is the SocratiCode MCP server command. It is normally
   configured in the MCP host, not used as a one-off terminal command.
+- `gbrain doctor` checks the local GBrain memory store. On this machine GBrain
+  is installed from `C:\Users\msi\all\Tools\gbrain-master` and should be run via
+  the explicit Bun path above if `gbrain` is not yet visible in PATH.
 - For OpenAI Codex CLI, the expected MCP config is:
 
 ```toml
 [mcp_servers.socraticode]
 command = "npx"
 args = ["-y", "socraticode"]
+
+[mcp_servers.gbrain]
+command = "C:\\Users\\msi\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Oven-sh.Bun_Microsoft.Winget.Source_8wekyb3d8bbwe\\bun-windows-x64\\bun.exe"
+args = ["C:\\Users\\msi\\all\\Tools\\gbrain-master\\src\\cli.ts", "serve"]
 ```
 
 - This machine already has SocratiCode configured in
   `C:\Users\msi\.codex\config.toml`.
+- This machine also has GBrain configured in `C:\Users\msi\.codex\config.toml`
+  as a second MCP server. Keep SocratiCode and GBrain enabled together unless
+  the user explicitly asks to remove one.
 - Restart the agent/Codex session after adding or changing MCP config. A running
   session may not see newly configured MCP tools until restart.
 - A running agent cannot attach a new MCP server to itself just by executing
@@ -82,10 +93,11 @@ args = ["-y", "socraticode"]
   status report. It speaks MCP over stdio; if stdin closes, it can exit with code
   0 and no output.
 - At the start of a new substantial task, run `npx autoskills` when practical and
-  use SocratiCode MCP tools when they are available. If SocratiCode MCP tools are
-  not visible, verify Docker/Qdrant/Ollama with the checks below, report that the
-  current session needs restart to expose MCP tools, and continue with local code
-  inspection, `flutter analyze`, `flutter test`, and relevant builds.
+  use SocratiCode and GBrain MCP tools when they are available. If newly
+  configured MCP tools are not visible, verify the local services/config below,
+  report that the current session needs restart to expose MCP tools, and
+  continue with local code inspection, `flutter analyze`, `flutter test`, and
+  relevant builds.
 
 ## SocratiCode Local Services
 
@@ -117,6 +129,40 @@ curl.exe -s http://localhost:11435/api/tags
   availability is proven only when `mcp__socraticode__...` tools are present in
   the session.
 
+## GBrain Local Memory
+
+- GBrain is installed locally from:
+  `C:\Users\msi\all\Tools\gbrain-master`.
+- Bun is installed at:
+  `C:\Users\msi\AppData\Local\Microsoft\WinGet\Packages\Oven-sh.Bun_Microsoft.Winget.Source_8wekyb3d8bbwe\bun-windows-x64\bun.exe`.
+- GBrain uses local PGLite storage, not Docker, at:
+  `C:\Users\msi\.gbrain\brain.pglite`.
+- The current project is registered in GBrain as source `memryth-dart`.
+- Use GBrain for long-lived project memory, notes, markdown/code recall, and
+  knowledge graph queries. Use SocratiCode first for codebase indexing,
+  dependency graph, and code-impact analysis while both MCP servers are present.
+- Useful checks:
+
+```powershell
+C:\Users\msi\AppData\Local\Microsoft\WinGet\Packages\Oven-sh.Bun_Microsoft.Winget.Source_8wekyb3d8bbwe\bun-windows-x64\bun.exe C:\Users\msi\all\Tools\gbrain-master\src\cli.ts doctor
+C:\Users\msi\AppData\Local\Microsoft\WinGet\Packages\Oven-sh.Bun_Microsoft.Winget.Source_8wekyb3d8bbwe\bun-windows-x64\bun.exe C:\Users\msi\all\Tools\gbrain-master\src\cli.ts sources list
+C:\Users\msi\AppData\Local\Microsoft\WinGet\Packages\Oven-sh.Bun_Microsoft.Winget.Source_8wekyb3d8bbwe\bun-windows-x64\bun.exe C:\Users\msi\all\Tools\gbrain-master\src\cli.ts stats
+```
+
+- To refresh this project in GBrain after meaningful docs/code changes:
+
+```powershell
+C:\Users\msi\AppData\Local\Microsoft\WinGet\Packages\Oven-sh.Bun_Microsoft.Winget.Source_8wekyb3d8bbwe\bun-windows-x64\bun.exe C:\Users\msi\all\Tools\gbrain-master\src\cli.ts sync --source memryth-dart --no-embed
+C:\Users\msi\AppData\Local\Microsoft\WinGet\Packages\Oven-sh.Bun_Microsoft.Winget.Source_8wekyb3d8bbwe\bun-windows-x64\bun.exe C:\Users\msi\all\Tools\gbrain-master\src\cli.ts sync --source memryth-dart --full --strategy code --no-embed
+```
+
+- Current GBrain state after setup: 857 pages, 1451 chunks, source
+  `memryth-dart`, search mode `conservative`, no embeddings because provider
+  credentials are not configured.
+- Do not install bundled GBrain skillpacks automatically. GBrain asks the agent
+  to show the list and get explicit user approval before running
+  `gbrain skillpack install --all`.
+
 ## Recommended Start Routine
 
 For a new task in this repository:
@@ -132,6 +178,7 @@ For a new task in this repository:
 4. Run or attempt the bootstrap commands:
    - `npx autoskills`;
    - SocratiCode MCP health/status tools if available.
+   - GBrain MCP health/stats tools if available.
 5. Verify factual project health with:
    - `flutter analyze`;
    - `flutter test`;
